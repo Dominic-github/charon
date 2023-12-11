@@ -12,11 +12,14 @@
 </template>
 
 <script lang="ts" setup>
-import ScreenHeader from '@/components/ui/ScreenHeader.vue'
-import ProfileForm from '@/components/profile-preferences/ProfileForm.vue'
-import LastfmIntegration from '@/components/profile-preferences/LastfmIntegration.vue'
-import PreferencesForm from '@/components/profile-preferences/PreferencesForm.vue'
-import ThemeList from '@/components/profile-preferences/ThemeList.vue'
+import { defineAsyncComponent} from 'vue'
+
+const ScreenHeader = defineAsyncComponent(() => import('@/components/ui/ScreenHeader.vue'))
+const ProfileForm = defineAsyncComponent(() => import('@/components/profile-preferences/ProfileForm.vue'))
+const LastfmIntegration = defineAsyncComponent(() => import('@/components/profile-preferences/LastfmIntegration.vue'))
+const PreferencesForm = defineAsyncComponent(() => import('@/components/profile-preferences/PreferencesForm.vue'))
+const ThemeList = defineAsyncComponent(() => import('@/components/profile-preferences/ThemeList.vue'))
+
 </script>
 
 <style lang="scss">
