@@ -47,7 +47,9 @@ up:
 
 cache:
 	php artisan config:cache
-
+	
+sync:
+	php artisan charon:sync
 
 # For docker
 
