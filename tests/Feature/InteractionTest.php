@@ -2,33 +2,30 @@
 
 namespace Tests\Feature;
 
+use App\Events\MultipleSongsLiked;
+use App\Events\PlaybackStarted;
 use App\Events\SongLikeToggled;
-use App\Events\SongsBatchLiked;
+use App\Models\Interaction;
 use App\Models\Song;
-use App\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+use function Tests\create_user;
 
 class InteractionTest extends TestCase
 {
-    public function setUp(): void
+    #[Test]
+    public function increasePlayCount(): void
     {
-        parent::setUp();
+        Event::fake(PlaybackStarted::class);
 
-        static::createSampleMediaSet();
-    }
+        $user = create_user();
+        $song = Song::factory()->create();
 
-    public function testIncreasePlayCount(): void
-    {
-        $this->withoutEvents();
-
-        /** @var User $user */
-        $user = User::factory()->create();
-
-        /** @var Song $song */
-        $song = Song::query()->orderBy('id')->first();
         $this->postAs('api/interaction/play', ['song' => $song->id], $user);
 
-        self::assertDatabaseHas('interactions', [
+        self::assertDatabaseHas(Interaction::class, [
             'user_id' => $user->id,
             'song_id' => $song->id,
             'play_count' => 1,
@@ -37,25 +34,24 @@ class InteractionTest extends TestCase
         // Try again
         $this->postAs('api/interaction/play', ['song' => $song->id], $user);
 
-        self::assertDatabaseHas('interactions', [
+        self::assertDatabaseHas(Interaction::class, [
             'user_id' => $user->id,
             'song_id' => $song->id,
             'play_count' => 2,
         ]);
     }
 
-    public function testToggle(): void
+    #[Test]
+    public function toggleLike(): void
     {
-        $this->expectsEvents(SongLikeToggled::class);
+        Event::fake(SongLikeToggled::class);
 
-        /** @var User $user */
-        $user = User::factory()->create();
+        $user = create_user();
+        $song = Song::factory()->create();
 
-        /** @var Song $song */
-        $song = Song::query()->orderBy('id')->first();
         $this->postAs('api/interaction/like', ['song' => $song->id], $user);
 
-        self::assertDatabaseHas('interactions', [
+        self::assertDatabaseHas(Interaction::class, [
             'user_id' => $user->id,
             'song_id' => $song->id,
             'liked' => 1,
@@ -64,28 +60,28 @@ class InteractionTest extends TestCase
         // Try again
         $this->postAs('api/interaction/like', ['song' => $song->id], $user);
 
-        self::assertDatabaseHas('interactions', [
+        self::assertDatabaseHas(Interaction::class, [
             'user_id' => $user->id,
             'song_id' => $song->id,
             'liked' => 0,
         ]);
+
+        Event::assertDispatched(SongLikeToggled::class);
     }
 
-    public function testToggleBatch(): void
+    #[Test]
+    public function toggleLikeBatch(): void
     {
-        $this->expectsEvents(SongsBatchLiked::class);
+        Event::fake(MultipleSongsLiked::class);
 
-        /** @var User $user */
-        $user = User::factory()->create();
-
-        /** @var Collection|array<Song> $songs */
-        $songs = Song::query()->orderBy('id')->take(2)->get();
-        $songIds = array_pluck($songs->toArray(), 'id');
+        $user = create_user();
+        $songs = Song::factory(2)->create();
+        $songIds = $songs->pluck('id')->all();
 
         $this->postAs('api/interaction/batch/like', ['songs' => $songIds], $user);
 
         foreach ($songs as $song) {
-            self::assertDatabaseHas('interactions', [
+            self::assertDatabaseHas(Interaction::class, [
                 'user_id' => $user->id,
                 'song_id' => $song->id,
                 'liked' => 1,
@@ -95,11 +91,13 @@ class InteractionTest extends TestCase
         $this->postAs('api/interaction/batch/unlike', ['songs' => $songIds], $user);
 
         foreach ($songs as $song) {
-            self::assertDatabaseHas('interactions', [
+            self::assertDatabaseHas(Interaction::class, [
                 'user_id' => $user->id,
                 'song_id' => $song->id,
                 'liked' => 0,
             ]);
         }
+
+        Event::assertDispatched(MultipleSongsLiked::class);
     }
 }

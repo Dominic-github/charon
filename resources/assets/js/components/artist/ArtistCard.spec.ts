@@ -1,9 +1,12 @@
 import { screen } from '@testing-library/vue'
 import { expect, it } from 'vitest'
 import factory from '@/__tests__/factory'
-import { downloadService, playbackService } from '@/services'
 import UnitTestCase from '@/__tests__/UnitTestCase'
-import { commonStore, songStore } from '@/stores'
+import { downloadService } from '@/services/downloadService'
+import { playbackService } from '@/services/playbackService'
+import { commonStore } from '@/stores/commonStore'
+import { songStore } from '@/stores/songStore'
+import { eventBus } from '@/utils/eventBus'
 import ArtistCard from './ArtistCard.vue'
 
 let artist: Artist
@@ -11,23 +14,10 @@ let artist: Artist
 new class extends UnitTestCase {
   protected beforeEach () {
     super.beforeEach(() => {
-      artist = factory<Artist>('artist', {
+      artist = factory('artist', {
         id: 42,
-        name: 'Led Zeppelin'
+        name: 'Led Zeppelin',
       })
-    })
-  }
-
-  private renderComponent () {
-    return this.render(ArtistCard, {
-      props: {
-        artist
-      },
-      global: {
-        stubs: {
-          AlbumArtistThumbnail: this.stub('thumbnail')
-        }
-      }
     })
   }
 
@@ -43,14 +33,14 @@ new class extends UnitTestCase {
     })
 
     it('does not have an option to download if downloading is disabled', async () => {
-      commonStore.state.allow_download = false
+      commonStore.state.allows_download = false
       this.renderComponent()
 
       expect(screen.queryByText('Download')).toBeNull()
     })
 
     it('shuffles', async () => {
-      const songs = factory<Song>('song', 16)
+      const songs = factory('song', 16)
       const fetchMock = this.mock(songStore, 'fetchForArtist').mockResolvedValue(songs)
       const playMock = this.mock(playbackService, 'queueAndPlay')
 
@@ -61,6 +51,27 @@ new class extends UnitTestCase {
 
       expect(fetchMock).toHaveBeenCalledWith(artist)
       expect(playMock).toHaveBeenCalledWith(songs, true)
+    })
+
+    it('requests context menu', async () => {
+      this.renderComponent()
+      const emitMock = this.mock(eventBus, 'emit')
+      await this.trigger(screen.getByTestId('artist-album-card'), 'contextMenu')
+
+      expect(emitMock).toHaveBeenCalledWith('ARTIST_CONTEXT_MENU_REQUESTED', expect.any(MouseEvent), artist)
+    })
+  }
+
+  private renderComponent () {
+    return this.render(ArtistCard, {
+      props: {
+        artist,
+      },
+      global: {
+        stubs: {
+          AlbumArtistThumbnail: this.stub('thumbnail'),
+        },
+      },
     })
   }
 }

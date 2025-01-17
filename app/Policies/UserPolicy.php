@@ -15,4 +15,9 @@ class UserPolicy
     {
         return $currentUser->is_admin && $currentUser->isNot($userToDestroy);
     }
+
+    public function upload(User $currentUser): bool
+    {
+        return  true;
+    }
 }

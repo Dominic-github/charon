@@ -1,43 +1,46 @@
 <template>
-  <section id="favoritesWrapper">
-    <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
-      Songs You Love
-      <ControlsToggle v-model="showingControls" />
+  <ScreenBase>
+    <template #header>
+      <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
+        Your Favorites
+        <ControlsToggle v-model="showingControls" />
 
-      <template #thumbnail>
-        <ThumbnailStack :thumbnails="thumbnails" />
-      </template>
+        <template #thumbnail>
+          <ThumbnailStack :thumbnails="thumbnails" />
+        </template>
 
-      <template v-if="songs.length" #meta>
-        <span>{{ pluralize(songs, 'song') }}</span>
-        <span>{{ duration }}</span>
+        <template v-if="songs.length" #meta>
+          <span>{{ pluralize(songs, 'item') }}</span>
+          <span>{{ duration }}</span>
 
-        <a
-          v-if="allowDownload"
-          class="download"
-          role="button"
-          title="Download all songs in playlist"
-          @click.prevent="download"
-        >
-          Download All
-        </a>
-      </template>
+          <a
+            v-if="downloadable"
+            class="download"
+            role="button"
+            title="Download all favorites"
+            @click.prevent="download"
+          >
+            Download All
+          </a>
+        </template>
 
-      <template #controls>
-        <SongListControls
-          v-if="songs.length && (!isPhone || showingControls)"
-          @filter="applyFilter"
-          @play-all="playAll"
-          @play-selected="playSelected"
-        />
-      </template>
-    </ScreenHeader>
+        <template #controls>
+          <SongListControls
+            v-if="songs.length && (!isPhone || showingControls)"
+            :config="config"
+            @filter="applyFilter"
+            @play-all="playAll"
+            @play-selected="playSelected"
+          />
+        </template>
+      </ScreenHeader>
+    </template>
 
-    <SongListSkeleton v-if="loading" />
+    <SongListSkeleton v-if="loading" class="-m-6" />
     <SongList
       v-if="songs.length"
       ref="songList"
-      @sort="sort"
+      class="-m-6"
       @press:delete="removeSelected"
       @press:enter="onPressEnter"
       @scroll-breakpoint="onScrollBreakpoint"
@@ -45,42 +48,45 @@
 
     <ScreenEmptyState v-else>
       <template #icon>
-        <icon :icon="faHeartBroken" />
+        <Icon :icon="faHeartBroken" />
       </template>
       No favorites yet.
-      <span class="secondary d-block">
+      <span class="secondary block">
         Click the&nbsp;
-        <icon :icon="faHeart" />&nbsp;
+        <Icon :icon="faHeart" />&nbsp;
         icon to mark a song as favorite.
       </span>
     </ScreenEmptyState>
-  </section>
+  </ScreenBase>
 </template>
 
 <script lang="ts" setup>
 import { faHeartBroken } from '@fortawesome/free-solid-svg-icons'
 import { faHeart } from '@fortawesome/free-regular-svg-icons'
-import { pluralize } from '@/utils'
-import { commonStore, favoriteStore } from '@/stores'
-import { downloadService } from '@/services'
-import { useRouter, useSongList } from '@/composables'
-import { nextTick, ref, toRef } from 'vue'
+import { ref, toRef } from 'vue'
+import { pluralize } from '@/utils/formatters'
+import { favoriteStore } from '@/stores/favoriteStore'
+import { downloadService } from '@/services/downloadService'
+import { useRouter } from '@/composables/useRouter'
+import { useSongList } from '@/composables/useSongList'
+import { useSongListControls } from '@/composables/useSongListControls'
 
 import ScreenHeader from '@/components/ui/ScreenHeader.vue'
 import ScreenEmptyState from '@/components/ui/ScreenEmptyState.vue'
 import SongListSkeleton from '@/components/ui/skeletons/SongListSkeleton.vue'
+import ScreenBase from '@/components/screens/ScreenBase.vue'
 
 const {
   SongList,
-  SongListControls,
   ControlsToggle,
   ThumbnailStack,
   headerLayout,
   songs,
   songList,
   duration,
+  downloadable,
   thumbnails,
-  selectedSongs,
+  selectedPlayables,
   showingControls,
   isPhone,
   onPressEnter,
@@ -88,13 +94,12 @@ const {
   playSelected,
   applyFilter,
   onScrollBreakpoint,
-  sort
-} = useSongList(toRef(favoriteStore.state, 'songs'))
+} = useSongList(toRef(favoriteStore.state, 'playables'), { type: 'Favorites' })
 
-const allowDownload = toRef(commonStore.state, 'allow_download')
+const { SongListControls, config } = useSongListControls('Favorites')
 
 const download = () => downloadService.fromFavorites()
-const removeSelected = () => selectedSongs.value.length && favoriteStore.unlike(selectedSongs.value)
+const removeSelected = () => selectedPlayables.value.length && favoriteStore.unlike(selectedPlayables.value)
 
 let initialized = false
 const loading = ref(false)
@@ -103,8 +108,6 @@ const fetchSongs = async () => {
   loading.value = true
   await favoriteStore.fetch()
   loading.value = false
-  await nextTick()
-  sort()
 }
 
 useRouter().onScreenActivated('Favorites', async () => {

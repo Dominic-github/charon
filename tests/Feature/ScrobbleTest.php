@@ -6,15 +6,17 @@ use App\Models\Song;
 use App\Models\User;
 use App\Services\LastfmService;
 use Mockery;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+use function Tests\create_user;
 
 class ScrobbleTest extends TestCase
 {
-    public function testLastfmScrobble(): void
+    #[Test]
+    public function lastfmScrobble(): void
     {
-        $this->withoutEvents();
-
-        /** @var User $user */
-        $user = User::factory()->create();
+        $user = create_user();
 
         /** @var Song $song */
         $song = Song::factory()->create();
@@ -28,7 +30,7 @@ class ScrobbleTest extends TestCase
             )
             ->once();
 
-        $this->postAs("/api/$song->id/scrobble", ['timestamp' => 100], $user)
+        $this->postAs("/api/songs/$song->id/scrobble", ['timestamp' => 100], $user)
             ->assertNoContent();
     }
 }

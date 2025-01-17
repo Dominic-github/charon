@@ -1,47 +1,47 @@
 import { expect, it } from 'vitest'
+import { ref } from 'vue'
 import { screen } from '@testing-library/vue'
 import UnitTestCase from '@/__tests__/UnitTestCase'
-import { playlistStore } from '@/stores'
 import factory from '@/__tests__/factory'
-import { ref } from 'vue'
+import { playlistStore } from '@/stores/playlistStore'
 import { ModalContextKey } from '@/symbols'
-import CreatePlaylistForm from './CreatePlaylistForm.vue'
+import Component from './CreatePlaylistForm.vue'
 
 new class extends UnitTestCase {
   protected test () {
-    it('creates playlist with no songs', async () => {
-      const folder = factory<PlaylistFolder>('playlist-folder')
-      const storeMock = this.mock(playlistStore, 'store').mockResolvedValue(factory<Playlist>('playlist'))
+    it('creates playlist with no playables', async () => {
+      const folder = factory('playlist-folder')
+      const storeMock = this.mock(playlistStore, 'store').mockResolvedValue(factory('playlist'))
 
-      this.render(CreatePlaylistForm, {
+      this.render(Component, {
         global: {
           provide: {
-            [<symbol>ModalContextKey]: [ref({ folder })]
-          }
-        }
+            [<symbol>ModalContextKey]: [ref({ folder })],
+          },
+        },
       })
 
-      expect(screen.queryByTestId('from-songs')).toBeNull()
+      expect(screen.queryByTestId('from-playables')).toBeNull()
 
       await this.type(screen.getByPlaceholderText('Playlist name'), 'My playlist')
       await this.user.click(screen.getByRole('button', { name: 'Save' }))
 
       expect(storeMock).toHaveBeenCalledWith('My playlist', {
-        folder_id: folder.id
+        folder_id: folder.id,
       }, [])
     })
 
-    it('creates playlist with songs', async () => {
-      const songs = factory<Song>('song', 3)
-      const folder = factory<PlaylistFolder>('playlist-folder')
-      const storeMock = this.mock(playlistStore, 'store').mockResolvedValue(factory<Playlist>('playlist'))
+    it('creates playlist with playables', async () => {
+      const playables = factory('song', 3)
+      const folder = factory('playlist-folder')
+      const storeMock = this.mock(playlistStore, 'store').mockResolvedValue(factory('playlist'))
 
-      this.render(CreatePlaylistForm, {
+      this.render(Component, {
         global: {
           provide: {
-            [<symbol>ModalContextKey]: [ref({ folder, songs })]
-          }
-        }
+            [<symbol>ModalContextKey]: [ref({ folder, playables })],
+          },
+        },
       })
 
       screen.getByText('from 3 songs')
@@ -50,8 +50,8 @@ new class extends UnitTestCase {
       await this.user.click(screen.getByRole('button', { name: 'Save' }))
 
       expect(storeMock).toHaveBeenCalledWith('My playlist', {
-        folder_id: folder.id
-      }, songs)
+        folder_id: folder.id,
+      }, playables)
     })
   }
 }

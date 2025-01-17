@@ -1,71 +1,67 @@
 <template>
-  <button type="button" :class="playing ? 'playing' : 'stopped'" title="Play or resume" @click.prevent="toggle">
-    <icon v-if="playing" :icon="faPause" />
-    <icon v-else :icon="faPlay" />
-  </button>
+  <FooterButton
+    :title="playing ? 'Pause' : 'Play or resume'"
+    class="!w-[3rem] rounded-full border-2 border-solid aspect-square !transition-transform hover:scale-125 !text-2xl
+    has-[.icon-play]:indent-[0.23rem]"
+    @click.prevent="toggle"
+  >
+    <Icon v-if="playing" :icon="faPause" />
+    <Icon v-else :icon="faPlay" class="icon-play" />
+  </FooterButton>
 </template>
 
 <script lang="ts" setup>
 import { faPause, faPlay } from '@fortawesome/free-solid-svg-icons'
 import { computed, ref } from 'vue'
-import { playbackService } from '@/services'
-import { commonStore, favoriteStore, queueStore, recentlyPlayedStore, songStore } from '@/stores'
-import { requireInjection } from '@/utils'
-import { useRouter } from '@/composables'
-import { CurrentSongKey } from '@/symbols'
+import { playbackService } from '@/services/playbackService'
+import { commonStore } from '@/stores/commonStore'
+import { favoriteStore } from '@/stores/favoriteStore'
+import { queueStore } from '@/stores/queueStore'
+import { recentlyPlayedStore } from '@/stores/recentlyPlayedStore'
+import { songStore } from '@/stores/songStore'
+import { useRouter } from '@/composables/useRouter'
+import { requireInjection } from '@/utils/helpers'
+import { CurrentPlayableKey } from '@/symbols'
 
-const { getCurrentScreen, getRouteParam, go } = useRouter()
-const song = requireInjection(CurrentSongKey, ref())
+import FooterButton from '@/components/layout/app-footer/FooterButton.vue'
+
+const { getCurrentScreen, getRouteParam, go, url } = useRouter()
+const song = requireInjection(CurrentPlayableKey, ref())
 
 const libraryEmpty = computed(() => commonStore.state.song_count === 0)
 const playing = computed(() => song.value?.playback_state === 'Playing')
 
-const toggle = async () => song.value ? playbackService.toggle() : initiatePlayback()
-
 const initiatePlayback = async () => {
-  if (libraryEmpty.value) return
+  if (libraryEmpty.value) {
+    return
+  }
 
-  let songs: Song[]
+  let playables: Playable[]
 
   switch (getCurrentScreen()) {
     case 'Album':
-      songs = await songStore.fetchForAlbum(parseInt(getRouteParam('id')!))
+      playables = await songStore.fetchForAlbum(Number.parseInt(getRouteParam('id')!))
       break
     case 'Artist':
-      songs = await songStore.fetchForArtist(parseInt(getRouteParam('id')!))
+      playables = await songStore.fetchForArtist(Number.parseInt(getRouteParam('id')!))
       break
     case 'Playlist':
-      songs = await songStore.fetchForPlaylist(parseInt(getRouteParam('id')!))
+      playables = await songStore.fetchForPlaylist(getRouteParam('id')!)
       break
     case 'Favorites':
-      songs = await favoriteStore.fetch()
+      playables = await favoriteStore.fetch()
       break
     case 'RecentlyPlayed':
-      songs = await recentlyPlayedStore.fetch()
+      playables = await recentlyPlayedStore.fetch()
       break
     default:
-      songs = await queueStore.fetchRandom()
+      playables = await queueStore.fetchRandom()
       break
   }
 
-  playbackService.queueAndPlay(songs)
-  go('queue')
+  await playbackService.queueAndPlay(playables)
+  go(url('queue'))
 }
+
+const toggle = async () => song.value ? playbackService.toggle() : initiatePlayback()
 </script>
-
-<style lang="scss" scoped>
-button {
-  width: 3rem !important;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-
-  &.stopped {
-    text-indent: 0.2rem;
-  }
-
-  &:hover {
-    border-color: var(--color-text-primary) !important;
-    transform: scale(1.2);
-  }
-}
-</style>

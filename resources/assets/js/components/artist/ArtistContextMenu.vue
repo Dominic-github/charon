@@ -1,5 +1,5 @@
 <template>
-  <ContextMenuBase ref="base" data-testid="artist-context-menu" extra-class="artist-menu">
+  <ContextMenu ref="base" data-testid="artist-context-menu" extra-class="artist-menu">
     <template v-if="artist">
       <li @click="play">Play All</li>
       <li @click="shuffle">Shuffle All</li>
@@ -12,42 +12,46 @@
         <li @click="download">Download</li>
       </template>
     </template>
-  </ContextMenuBase>
+  </ContextMenu>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, toRef } from 'vue'
-import { artistStore, commonStore, songStore } from '@/stores'
-import { downloadService, playbackService } from '@/services'
-import { useContextMenu, useRouter } from '@/composables'
-import { eventBus } from '@/utils'
+import { artistStore } from '@/stores/artistStore'
+import { commonStore } from '@/stores/commonStore'
+import { songStore } from '@/stores/songStore'
+import { downloadService } from '@/services/downloadService'
+import { playbackService } from '@/services/playbackService'
+import { useContextMenu } from '@/composables/useContextMenu'
+import { useRouter } from '@/composables/useRouter'
+import { eventBus } from '@/utils/eventBus'
 
-const { go } = useRouter()
-const { base, ContextMenuBase, open, trigger } = useContextMenu()
+const { go, url } = useRouter()
+const { base, ContextMenu, open, trigger } = useContextMenu()
 
 const artist = ref<Artist>()
-const allowDownload = toRef(commonStore.state, 'allow_download')
+const allowDownload = toRef(commonStore.state, 'allows_download')
 
 const isStandardArtist = computed(() =>
   !artistStore.isUnknown(artist.value!)
-  && !artistStore.isVarious(artist.value!)
+  && !artistStore.isVarious(artist.value!),
 )
 
 const play = () => trigger(async () => {
   playbackService.queueAndPlay(await songStore.fetchForArtist(artist.value!))
-  go('queue')
+  go(url('queue'))
 })
 
 const shuffle = () => trigger(async () => {
   playbackService.queueAndPlay(await songStore.fetchForArtist(artist.value!), true)
-  go('queue')
+  go(url('queue'))
 })
 
-const viewArtistDetails = () => trigger(() => go(`artist/${artist.value!.id}`))
+const viewArtistDetails = () => trigger(() => go(url('artists.show', { id: artist.value!.id })))
 const download = () => trigger(() => downloadService.fromArtist(artist.value!))
 
-eventBus.on('ARTIST_CONTEXT_MENU_REQUESTED', async (e, _artist) => {
+eventBus.on('ARTIST_CONTEXT_MENU_REQUESTED', async ({ pageX, pageY }, _artist) => {
   artist.value = _artist
-  await open(e.pageY, e.pageX)
+  await open(pageY, pageX)
 })
 </script>

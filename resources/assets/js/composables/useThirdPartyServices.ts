@@ -1,14 +1,11 @@
 import { toRef } from 'vue'
-import { commonStore } from '@/stores'
+import { commonStore } from '@/stores/commonStore'
 
 export const useThirdPartyServices = () => {
-  const useLastfm = toRef(commonStore.state, 'use_last_fm')
-  const useYouTube = toRef(commonStore.state, 'use_you_tube')
-  const useAppleMusic = toRef(commonStore.state, 'use_i_tunes')
-
   return {
-    useLastfm,
-    useYouTube,
-    useAppleMusic
+    useLastfm: toRef(commonStore.state, 'uses_last_fm'),
+    useYouTube: toRef(commonStore.state, 'uses_you_tube'),
+    useAppleMusic: toRef(commonStore.state, 'uses_i_tunes'),
+    useSpotify: toRef(commonStore.state, 'uses_spotify'),
   }
 }

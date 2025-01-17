@@ -1,19 +1,19 @@
-import { eventBus } from '@/utils'
-import factory from '@/__tests__/factory'
 import { expect, it } from 'vitest'
 import UnitTestCase from '@/__tests__/UnitTestCase'
+import factory from '@/__tests__/factory'
+import { eventBus } from '@/utils/eventBus'
 import { youTubeService } from './youTubeService'
 
 new class extends UnitTestCase {
   protected test () {
     it('plays a video', () => {
-      const video = factory<YouTubeVideo>('video', {
+      const video = factory('video', {
         id: {
-          videoId: 'foo'
+          videoId: 'foo',
         },
         snippet: {
-          title: 'Bar'
-        }
+          title: 'Bar',
+        },
       })
 
       const emitMock = this.mock(eventBus, 'emit')

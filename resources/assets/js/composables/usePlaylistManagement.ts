@@ -1,39 +1,54 @@
-import { playlistStore } from '@/stores'
-import { eventBus, logger, pluralize } from '@/utils'
-import { useDialogBox, useMessageToaster } from '@/composables'
+import { playlistStore } from '@/stores/playlistStore'
+import { eventBus } from '@/utils/eventBus'
+import { getPlayableCollectionContentType } from '@/utils/typeGuards'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useMessageToaster } from '@/composables/useMessageToaster'
 
 export const usePlaylistManagement = () => {
+  const { handleHttpError } = useErrorHandler('dialog')
   const { toastSuccess } = useMessageToaster()
-  const { showErrorDialog } = useDialogBox()
 
-  const addSongsToPlaylist = async (playlist: Playlist, songs: Song[]) => {
-    if (playlist.is_smart || songs.length === 0) return
-
-    try {
-      await playlistStore.addSongs(playlist, songs)
-      eventBus.emit('PLAYLIST_UPDATED', playlist)
-      toastSuccess(`Added ${pluralize(songs, 'song')} into "${playlist.name}."`)
-    } catch (error) {
-      logger.error(error)
-      showErrorDialog('Something went wrong. Please try again.', 'Error')
+  const inflect = (playables: Playable[]) => {
+    switch (getPlayableCollectionContentType(playables)) {
+      case 'songs':
+        return playables.length === 1 ? 'Song' : 'Songs'
+      case 'episodes':
+        return playables.length === 1 ? 'Episode' : 'Episodes'
+      default:
+        return playables.length === 1 ? 'Item' : 'Items'
     }
   }
 
-  const removeSongsFromPlaylist = async (playlist: Playlist, songs: Song[]) => {
-    if (playlist.is_smart) return
+  const addToPlaylist = async (playlist: Playlist, playables: Playable[]) => {
+    if (playlist.is_smart || playables.length === 0) {
+      return
+    }
 
     try {
-      await playlistStore.removeSongs(playlist, songs)
-      eventBus.emit('PLAYLIST_SONGS_REMOVED', playlist, songs)
-      toastSuccess(`Removed ${pluralize(songs, 'song')} from "${playlist.name}."`)
-    } catch (error) {
-      logger.error(error)
-      showErrorDialog('Something went wrong. Please try again.', 'Error')
+      await playlistStore.addContent(playlist, playables)
+      eventBus.emit('PLAYLIST_UPDATED', playlist)
+      toastSuccess(`${inflect(playables)} added into "${playlist.name}."`)
+    } catch (error: unknown) {
+      handleHttpError(error)
+    }
+  }
+
+  const removeFromPlaylist = async (playlist: Playlist, playables: Playable[]) => {
+    if (playlist.is_smart) {
+      return
+    }
+
+    try {
+      await playlistStore.removeContent(playlist, playables)
+      eventBus.emit('PLAYLIST_CONTENT_REMOVED', playlist, playables)
+      toastSuccess(`${inflect(playables)} removed from "${playlist.name}."`)
+    } catch (error: unknown) {
+      handleHttpError(error)
     }
   }
 
   return {
-    addSongsToPlaylist,
-    removeSongsFromPlaylist
+    addToPlaylist,
+    removeFromPlaylist,
   }
 }

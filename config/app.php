@@ -34,6 +34,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted hosts
+    |--------------------------------------------------------------------------
+    |
+    | An array of (Charon server) hostnames accepted to access Charon.
+    | An empty array allows access to Charon with any hostname.
+    | Example: ['localhost', '192.168.0.1', 'yourdomain.com']
+    |
+    */
+
+    'trusted_hosts' => explode(',', env('TRUSTED_HOSTS', '')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
@@ -123,7 +136,6 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Aws\Laravel\AwsServiceProvider::class,
         Jackiedo\DotenvEditor\DotenvEditorServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
 
@@ -137,13 +149,13 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\MediaCacheServiceProvider::class,
         App\Providers\UtilServiceProvider::class,
         App\Providers\YouTubeServiceProvider::class,
         App\Providers\DownloadServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\ITunesServiceProvider::class,
         App\Providers\StreamerServiceProvider::class,
+        App\Providers\SongStorageServiceProvider::class,
         App\Providers\ObjectStorageServiceProvider::class,
         App\Providers\MacroProvider::class,
     ],

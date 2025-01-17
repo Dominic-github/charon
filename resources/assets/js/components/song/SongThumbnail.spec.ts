@@ -1,39 +1,41 @@
-import { expect, it } from 'vitest'
-import factory from '@/__tests__/factory'
-import UnitTestCase from '@/__tests__/UnitTestCase'
-import { playbackService } from '@/services'
-import SongThumbnail from '@/components/song/SongThumbnail.vue'
 import { screen } from '@testing-library/vue'
+import { expect, it } from 'vitest'
+import UnitTestCase from '@/__tests__/UnitTestCase'
+import factory from '@/__tests__/factory'
+import { playbackService } from '@/services/playbackService'
+import { queueStore } from '@/stores/queueStore'
+import Component from './SongThumbnail.vue'
 
-let song: Song
+let playable: Playable
 
 new class extends UnitTestCase {
-  private renderComponent (playbackState: PlaybackState = 'Stopped') {
-    song = factory<Song>('song', {
-      playback_state: playbackState,
-      play_count: 10,
-      title: 'Foo bar'
-    })
+  protected test () {
+    it.each<[PlaybackState, MethodOf<typeof playbackService>]>([
+      ['Stopped', 'play'],
+      ['Playing', 'pause'],
+      ['Paused', 'resume'],
+    ])('if state is currently "%s", %ss', async (state, method) => {
+      this.mock(queueStore, 'queueIfNotQueued')
+      const playbackMock = this.mock(playbackService, method)
+      this.renderComponent(state)
 
-    return this.render(SongThumbnail, {
-      props: {
-        song
-      }
+      await this.user.click(screen.getByRole('button'))
+
+      expect(playbackMock).toHaveBeenCalled()
     })
   }
 
-  protected test () {
-    it.each<[PlaybackState, string, MethodOf<typeof playbackService>]>([
-      ['Stopped', 'Play', 'play'],
-      ['Playing', 'Pause', 'pause'],
-      ['Paused', 'Resume', 'resume']
-    ])('if state is currently "%s", %ss', async (state, name, method) => {
-      const mock = this.mock(playbackService, method)
-      this.renderComponent(state)
+  private renderComponent (playbackState: PlaybackState = 'Stopped') {
+    playable = factory('song', {
+      playback_state: playbackState,
+      play_count: 10,
+      title: 'Foo bar',
+    })
 
-      await this.user.click(screen.getByRole('button', { name }))
-
-      expect(mock).toHaveBeenCalled()
+    return this.render(Component, {
+      props: {
+        playable,
+      },
     })
   }
 }

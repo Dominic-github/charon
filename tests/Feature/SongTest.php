@@ -2,28 +2,65 @@
 
 namespace Tests\Feature;
 
+use App\Http\Resources\SongResource;
 use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Song;
-use App\Models\User;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+use function Tests\create_admin;
 
 class SongTest extends TestCase
 {
-    public function setUp(): void
+    #[Test]
+    public function index(): void
     {
-        parent::setUp();
+        Song::factory(10)->create();
 
-        static::createSampleMediaSet();
+        $this->getAs('api/songs')->assertJsonStructure(SongResource::PAGINATION_JSON_STRUCTURE);
+        $this->getAs('api/songs?sort=title&order=desc')->assertJsonStructure(SongResource::PAGINATION_JSON_STRUCTURE);
     }
 
-    public function testSingleUpdateAllInfoNoCompilation(): void
+    #[Test]
+    public function show(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-
         /** @var Song $song */
-        $song = Song::query()->first();
+        $song = Song::factory()->create();
+
+        $this->getAs('api/songs/' . $song->id)->assertJsonStructure(SongResource::JSON_STRUCTURE);
+    }
+
+    #[Test]
+    public function destroy(): void
+    {
+        /** @var Collection<array-key, Song> $songs */
+        $songs = Song::factory(3)->create();
+
+        $this->deleteAs('api/songs', ['songs' => $songs->pluck('id')->all()], create_admin())
+            ->assertNoContent();
+
+        $songs->each(fn (Song $song) => $this->assertModelMissing($song));
+    }
+
+    #[Test]
+    public function unauthorizedDelete(): void
+    {
+        /** @var Collection<array-key, Song> $songs */
+        $songs = Song::factory(3)->create();
+
+        $this->deleteAs('api/songs', ['songs' => $songs->pluck('id')->all()])
+            ->assertForbidden();
+
+        $songs->each(fn (Song $song) => $this->assertModelExists($song));
+    }
+
+    #[Test]
+    public function singleUpdateAllInfoNoCompilation(): void
+    {
+        /** @var Song $song */
+        $song = Song::factory()->create();
 
         $this->putAs('/api/songs', [
             'songs' => [$song->id],
@@ -35,7 +72,7 @@ class SongTest extends TestCase
                 'track' => 1,
                 'disc' => 2,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
         /** @var Artist $artist */
@@ -55,13 +92,11 @@ class SongTest extends TestCase
         ]);
     }
 
-    public function testSingleUpdateSomeInfoNoCompilation(): void
+    #[Test]
+    public function singleUpdateSomeInfoNoCompilation(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-
         /** @var Song $song */
-        $song = Song::query()->first();
+        $song = Song::factory()->create();
 
         $originalArtistId = $song->artist->id;
 
@@ -74,7 +109,7 @@ class SongTest extends TestCase
                 'lyrics' => 'Lorem ipsum dolor sic amet.',
                 'track' => 1,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
         // We don't expect the song's artist to change
@@ -84,11 +119,10 @@ class SongTest extends TestCase
         self::assertSame('One by One', $song->album->name);
     }
 
-    public function testMultipleUpdateNoCompilation(): void
+    #[Test]
+    public function multipleUpdateNoCompilation(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-        $songIds = Song::query()->latest()->take(3)->pluck('id')->toArray();
+        $songIds = Song::factory(3)->create()->pluck('id')->all();
 
         $this->putAs('/api/songs', [
             'songs' => $songIds,
@@ -99,10 +133,10 @@ class SongTest extends TestCase
                 'lyrics' => null,
                 'track' => 9999,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
-        /** @var Collection|array<array-key, Song> $songs */
+        /** @var Collection<array-key, Song> $songs */
         $songs = Song::query()->whereIn('id', $songIds)->get();
 
         // All of these songs must now belong to a new album and artist set
@@ -122,16 +156,17 @@ class SongTest extends TestCase
         self::assertSame(9999, $songs[2]->track);
     }
 
-    public function testMultipleUpdateCreatingNewAlbumsAndArtists(): void
+    #[Test]
+    public function multipleUpdateCreatingNewAlbumsAndArtists(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-
-        /** @var array<array-key, Song>|Collection $originalSongs */
-        $originalSongs = Song::query()->latest()->take(3)->get();
+        /** @var Collection<array-key, Song> $originalSongs */
+        $originalSongs = Song::factory(3)->create();
+        $originalSongIds = $originalSongs->pluck('id')->all();
+        $originalAlbumNames = $originalSongs->pluck('album.name')->all();
+        $originalAlbumIds = $originalSongs->pluck('album_id')->all();
 
         $this->putAs('/api/songs', [
-            'songs' =>  $originalSongs->pluck('id')->toArray(),
+            'songs' =>  $originalSongIds,
             'data' => [
                 'title' => 'Foo Bar',
                 'artist_name' => 'John Cena',
@@ -139,20 +174,18 @@ class SongTest extends TestCase
                 'lyrics' => 'Lorem ipsum dolor sic amet.',
                 'track' => 1,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
-        /** @var array<array-key, Song>|Collection $songs */
-        $songs = Song::query()->whereIn('id', $originalSongs->pluck('id'))->get();
+        /** @var Collection<array-key, Song> $songs */
+        $songs = Song::query()->whereIn('id', $originalSongIds)->get()->orderByArray($originalSongIds);
 
         // Even though the album name doesn't change, a new artist should have been created
         // and thus, a new album with the same name was created as well.
-        self::assertSame($songs[0]->album->name, $originalSongs[0]->album->name);
-        self::assertNotSame($songs[0]->album->id, $originalSongs[0]->album->id);
-        self::assertSame($songs[1]->album->name, $originalSongs[1]->album->name);
-        self::assertNotSame($songs[1]->album->id, $originalSongs[1]->album->id);
-        self::assertSame($songs[2]->album->name, $originalSongs[2]->album->name);
-        self::assertNotSame($songs[2]->album->id, $originalSongs[2]->album->id);
+        collect([0, 1, 2])->each(static function (int $i) use ($songs, $originalAlbumNames, $originalAlbumIds): void {
+            self::assertSame($songs[$i]->album->name, $originalAlbumNames[$i]);
+            self::assertNotSame($songs[$i]->album_id, $originalAlbumIds[$i]);
+        });
 
         // And of course, the new artist is...
         self::assertSame('John Cena', $songs[0]->artist->name); // JOHN CENA!!!
@@ -160,13 +193,11 @@ class SongTest extends TestCase
         self::assertSame('John Cena', $songs[2]->artist->name); // And... JOHN CENAAAAAAAAAAA!!!
     }
 
-    public function testSingleUpdateAllInfoWithCompilation(): void
+    #[Test]
+    public function singleUpdateAllInfoWithCompilation(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-
         /** @var Song $song */
-        $song = Song::query()->first();
+        $song = Song::factory()->create();
 
         $this->putAs('/api/songs', [
             'songs' => [$song->id],
@@ -179,7 +210,7 @@ class SongTest extends TestCase
                 'track' => 1,
                 'disc' => 2,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
         /** @var Album $album */
@@ -203,11 +234,9 @@ class SongTest extends TestCase
         self::assertTrue($album->artist->is($albumArtist));
     }
 
-    public function testUpdateSingleSongWithEmptyTrackAndDisc(): void
+    #[Test]
+    public function updateSingleSongWithEmptyTrackAndDisc(): void
     {
-        /** @var User $user */
-        $user = User::factory()->admin()->create();
-
         /** @var Song $song */
         $song = Song::factory()->create([
             'track' => 12,
@@ -220,7 +249,7 @@ class SongTest extends TestCase
                 'track' => null,
                 'disc' => null,
             ],
-        ], $user)
+        ], create_admin())
             ->assertOk();
 
         $song->refresh();
@@ -229,12 +258,15 @@ class SongTest extends TestCase
         self::assertSame(1, $song->disc);
     }
 
-    public function testDeletingByChunk(): void
+    #[Test]
+    public function deletingByChunk(): void
     {
+        Song::factory(5)->create();
+
         self::assertNotSame(0, Song::query()->count());
         $ids = Song::query()->select('id')->get()->pluck('id')->all();
 
-        Song::deleteByChunk($ids, 'id', 1);
+        Song::deleteByChunk($ids, 1);
 
         self::assertSame(0, Song::query()->count());
     }

@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
   title: Charon API
-  version: 1.0.0
-  description: 'The API for [Charon](https://github.com/night12-00/charon).'
+  version: 2.0.0
+  description: 'The API for [Charon](https://github.com/dominic-github/charon).'
   contact:
     name: Tan Hoang
-    url: 'https://github.com/Dominic-github'
+    url: 'https://github.com/dominic-github'
   license:
     name: MIT
-    url: 'https://github.com/night12-00/charon/blob/main/LICENSE'
+    url: 'https://github.com/dominic-github/charon/blob/main/LICENSE'
 servers:
   - url: 'https://charon.test'
     description: Local
@@ -1203,8 +1203,8 @@ components:
       x-examples:
         Sample User:
           id: 1
-          name: Dominci
-          email: hoangkimv.tan@gmail.com
+          name: Dominic
+          email: dominic@gmail.com
           password: ''
           is_admin: true
           preferences:

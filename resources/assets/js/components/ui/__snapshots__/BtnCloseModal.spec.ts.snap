@@ -1,3 +1,0 @@
-// Vitest Snapshot v1
-
-exports[`renders 1`] = `<button data-testid="close-modal-btn" title="Dismiss" type="button" data-v-2d6954b5=""><br data-testid="icon" icon="[object Object]" data-v-2d6954b5=""></button>`;

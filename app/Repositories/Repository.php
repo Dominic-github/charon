@@ -2,55 +2,80 @@
 
 namespace App\Repositories;
 
+use App\Repositories\Contracts\RepositoryInterface;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
+/**
+ * @template T of Model
+ * @implements RepositoryInterface<T>
+ */
 abstract class Repository implements RepositoryInterface
 {
-    private string $modelClass;
-    protected Model $model;
+    /** @var class-string<T> $modelClass */
+    public string $modelClass;
+
     protected Guard $auth;
 
+    /** @param class-string<T> $modelClass */
     public function __construct(?string $modelClass = null)
     {
         $this->modelClass = $modelClass ?: self::guessModelClass();
-        $this->model = app($this->modelClass);
 
         // This instantiation may fail during a console command if e.g. APP_KEY is empty,
         // rendering the whole installation failing.
-        attempt(fn () => $this->auth = app(Guard::class), false);
+        rescue(fn () => $this->auth = app(Guard::class));
     }
 
+    /** @return class-string<T> */
     private static function guessModelClass(): string
     {
         return preg_replace('/(.+)\\\\Repositories\\\\(.+)Repository$/m', '$1\Models\\\$2', static::class);
     }
 
-    public function getOneById($id): ?Model
+    /** @inheritDoc */
+    public function getOne($id): Model
     {
-        return $this->model->find($id);
+        return $this->modelClass::query()->findOrFail($id);
     }
 
-    /** @return Collection|array<Model> */
-    public function getByIds(array $ids): Collection
+    /** @inheritDoc */
+    public function findOne($id): ?Model
     {
-        return $this->model->find($ids);
+        return $this->modelClass::query()->find($id);
     }
 
-    /** @return Collection|array<Model> */
-    public function getAll(): Collection
+    /** @inheritDoc */
+    public function getOneBy(array $params): Model
     {
-        return $this->model->all();
+        return $this->modelClass::query()->where($params)->firstOrFail();
     }
 
-    public function getFirstWhere(...$params): ?Model
+    /** @inheritDoc */
+    public function findOneBy(array $params): ?Model
     {
-        return $this->model->firstWhere(...$params);
+        return $this->modelClass::query()->where($params)->first();
     }
 
-    public function getModelClass(): string
+    /** @inheritDoc */
+    public function getMany(array $ids, bool $preserveOrder = false): Collection
     {
-        return $this->modelClass;
+        $models = $this->modelClass::query()->find($ids);
+
+        return $preserveOrder ? $models->orderByArray($ids) : $models;
+    }
+
+    /** @inheritDoc */ // @phpcs:ignore
+    public function getAll(): EloquentCollection
+    {
+        return $this->modelClass::all();
+    }
+
+    /** @inheritDoc */
+    public function findFirstWhere(...$params): ?Model
+    {
+        return $this->modelClass::query()->firstWhere(...$params);
     }
 }

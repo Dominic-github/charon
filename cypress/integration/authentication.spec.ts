@@ -7,11 +7,11 @@ context('Authentication', () => {
 
   it('logs in with valid credentials', () => {
     cy.intercept('POST', '/api/me', {
-      token: 'mock-token'
+      token: 'mock-token',
     })
 
     cy.intercept('/api/data', {
-      fixture: 'data.get.200.json'
+      fixture: 'data.get.200.json',
     })
 
     cy.visit('/')
@@ -21,7 +21,7 @@ context('Authentication', () => {
 
   it('fails to log in with invalid credentials', () => {
     cy.intercept('POST', '/api/me', {
-      statusCode: 401
+      statusCode: 401,
     })
 
     cy.visit('/')

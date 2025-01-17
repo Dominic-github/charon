@@ -4,17 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreatePlaylistSongTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('playlist_song', static function (Blueprint $table): void {
             $table->increments('id');
             $table->integer('playlist_id')->unsigned();
-            $table->string('song_id', 36);
+            $table->string('song_id', 32);
         });
 
         Schema::table('playlist_song', static function (Blueprint $table): void {
@@ -23,11 +20,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('playlist_song');
+        Schema::drop('playlist_song');
     }
-};
+}

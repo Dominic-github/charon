@@ -2,19 +2,20 @@
 
 namespace App\Console\Commands;
 
-use App\Console\Commands\Traits\AskForPassword;
+use App\Console\Commands\Concerns\AskForPassword;
 use App\Exceptions\InstallationFailedException;
 use App\Models\Setting;
 use App\Models\User;
-use App\Services\MediaCacheService;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\Kernel as Artisan;
-use Illuminate\Contracts\Hashing\Hasher as Hash;
-use Illuminate\Database\DatabaseManager as DB;
 use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Jackiedo\DotenvEditor\DotenvEditor;
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 class InitCommand extends Command
@@ -26,19 +27,14 @@ class InitCommand extends Command
     private const DEFAULT_ADMIN_PASSWORD = 'admin';
     private const NON_INTERACTION_MAX_DATABASE_ATTEMPT_COUNT = 10;
 
-    protected $signature = 'charon:init {--no-assets}';
+    protected $signature =
+        'charon:init {--no-assets : Do not compile front-end assets} {--no-scheduler : Do not install scheduler}';
     protected $description = 'Install or upgrade Charon';
 
     private bool $adminSeeded = false;
 
-    public function __construct(
-        private MediaCacheService $mediaCacheService,
-        private Artisan $artisan,
-        private Hash $hash,
-        private DotenvEditor $dotenvEditor,
-        private DB $db,
-        private LoggerInterface $logger
-    ) {
+    public function __construct(private readonly DotenvEditor $dotenvEditor)
+    {
         parent::__construct();
     }
 
@@ -65,12 +61,12 @@ class InitCommand extends Command
             $this->maybeSetMediaPath();
             $this->maybeCompileFrontEndAssets();
             $this->dotenvEditor->save();
+            $this->tryInstallingScheduler();
         } catch (Throwable $e) {
-            $this->logger->error($e);
+            Log::error($e);
 
             $this->components->error("Oops! Charon installation or upgrade didn't finish successfully.");
             $this->components->error('Please check the error log at storage/logs/laravel.log and try again.');
-            $this->components->error('You can also visit ' . config('charon.misc.docs_url') . ' for other options.');
             $this->components->error('😥 Sorry for this. You deserve better.');
 
             return self::FAILURE;
@@ -86,14 +82,14 @@ class InitCommand extends Command
             );
         }
 
-        if (Setting::get('media_path')) {
-            $this->info('You can also scan for media now with `php artisan charon:sync`.');
+        if (!Setting::get('media_path')) {
+            $this->info('You can set up the storage with `php artisan charon:storage`.');
         }
 
         $this->info('Again, visit 📙 ' . config('charon.misc.docs_url') . ' for more tips and tweaks.');
 
         $this->info(
-            "Feeling generous and want to support Charon's development? Check out "
+            "Feeling generous and want to support Charon’s development? Check out "
             . config('charon.misc.sponsor_github_url')
             . ' 🤗'
         );
@@ -105,20 +101,20 @@ class InitCommand extends Command
 
     private function clearCaches(): void
     {
-        $this->components->task('Clearing caches', function (): void {
-            $this->artisan->call('config:clear');
-            $this->artisan->call('cache:clear');
+        $this->components->task('Clearing caches', static function (): void {
+            Artisan::call('config:clear', ['--quiet' => true]);
+            Artisan::call('cache:clear', ['--quiet' => true]);
         });
     }
 
     private function loadEnvFile(): void
     {
-        if (!file_exists(base_path('.env'))) {
+        if (!File::exists(base_path('.env'))) {
             $this->components->task('Copying .env file', static function (): void {
-                copy(base_path('.env.example'), base_path('.env'));
+                File::copy(base_path('.env.example'), base_path('.env'));
             });
         } else {
-            $this->components->info('.env file exists -- skipping');
+            $this->components->task('.env file exists -- skipping');
         }
 
         $this->dotenvEditor->load(base_path('.env'));
@@ -137,8 +133,7 @@ class InitCommand extends Command
             }
         });
 
-        $this->newLine();
-        $this->components->info('Using app key: ' . Str::limit($key, 16));
+        $this->components->task('Using app key: ' . Str::limit($key, 16));
     }
 
     /**
@@ -174,10 +169,7 @@ class InitCommand extends Command
             $config['DB_PASSWORD'] = (string) $this->ask('DB password');
         }
 
-        foreach ($config as $key => $value) {
-            $this->dotenvEditor->setKey($key, $value);
-        }
-
+        $this->dotenvEditor->setKeys($config);
         $this->dotenvEditor->save();
 
         // Set the config so that the next DB attempt uses refreshed credentials
@@ -207,7 +199,7 @@ class InitCommand extends Command
             User::query()->create([
                 'name' => self::DEFAULT_ADMIN_NAME,
                 'email' => self::DEFAULT_ADMIN_EMAIL,
-                'password' => $this->hash->make(self::DEFAULT_ADMIN_PASSWORD),
+                'password' => Hash::make(self::DEFAULT_ADMIN_PASSWORD),
                 'is_admin' => true,
             ]);
 
@@ -220,12 +212,11 @@ class InitCommand extends Command
         if (!User::query()->count()) {
             $this->setUpAdminAccount();
 
-            $this->components->task('Seeding data', function (): void {
-                $this->artisan->call('db:seed', ['--force' => true]);
+            $this->components->task('Seeding data', static function (): void {
+                Artisan::call('db:seed', ['--force' => true, '--quiet' => true]);
             });
         } else {
-            $this->newLine();
-            $this->components->info('Data already seeded -- skipping');
+            $this->components->task('Data already seeded -- skipping');
         }
     }
 
@@ -246,12 +237,13 @@ class InitCommand extends Command
 
             try {
                 // Make sure the config cache is cleared before another attempt.
-                $this->artisan->call('config:clear');
-                $this->db->reconnect()->getPdo();
+                Artisan::call('config:clear', ['--quiet' => true]);
+                DB::reconnect();
+                DB::getDoctrineSchemaManager()->listTables();
 
                 break;
             } catch (Throwable $e) {
-                $this->logger->error($e);
+                Log::error($e);
 
                 // We only try to update credentials if running in interactive mode.
                 // Otherwise, we require admin intervention to fix them.
@@ -274,12 +266,9 @@ class InitCommand extends Command
 
     private function migrateDatabase(): void
     {
-        $this->components->task('Migrating database', function (): void {
-            $this->artisan->call('migrate', ['--force' => true]);
+        $this->components->task('Migrating database', static function (): void {
+            Artisan::call('migrate', ['--force' => true, '--quiet' => true]);
         });
-
-        // Clear the media cache, just in case we did any media-related migration
-        $this->mediaCacheService->clear();
     }
 
     private function maybeSetMediaPath(): void
@@ -295,7 +284,8 @@ class InitCommand extends Command
         }
 
         $this->newLine();
-        $this->info('The absolute path to your media directory. If this is skipped (left blank) now, you can set it later via the web interface.'); // @phpcs-ignore-line
+        $this->info('The absolute path to your media directory. You can leave it blank and set it later via the web interface.'); // @phpcs-ignore-line
+        $this->info('If you plan to use Charon with a cloud provider (S3 or Dropbox), you can also skip this.');
 
         while (true) {
             $path = $this->ask('Media path', config('charon.media_path'));
@@ -320,16 +310,18 @@ class InitCommand extends Command
             return;
         }
 
+        $this->newLine();
         $this->components->info('Now to front-end stuff');
-
-        $runOkOrThrow = static function (string $command): void {
-            passthru($command, $status);
-            throw_if((bool) $status, InstallationFailedException::class);
-        };
-
-        $runOkOrThrow('yarn install --colors');
+        $this->components->info('Installing npm dependencies');
+        $this->newLine();
+        self::runOkOrThrow('yarn install --colors');
         $this->components->info('Compiling assets');
-        $runOkOrThrow('yarn build');
+        self::runOkOrThrow('yarn run --colors build');
+    }
+
+    private static function runOkOrThrow(string $command): void
+    {
+        throw_unless(Process::forever()->run($command)->successful(), InstallationFailedException::class);
     }
 
     private function setMediaPathFromEnvFile(): void
@@ -349,14 +341,33 @@ class InitCommand extends Command
 
     private static function isValidMediaPath(string $path): bool
     {
-        return is_dir($path) && is_readable($path);
+        return File::isDirectory($path) && File::isReadable($path);
     }
 
-    /**
-     * Generate a random key for the application.
-     */
     private function generateRandomKey(): string
     {
         return 'base64:' . base64_encode(Encrypter::generateKey($this->laravel['config']['app.cipher']));
+    }
+
+    private function tryInstallingScheduler(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows' || PHP_OS_FAMILY === 'Unknown') {
+            return;
+        }
+
+        if ((bool) $this->option('no-scheduler')) {
+            return;
+        }
+
+        $this->components->info('Trying to install Charon scheduler…');
+
+        if (Artisan::call('charon:scheduler:install') !== self::SUCCESS) {
+            $this->components->warn(
+                'Failed to install scheduler. ' .
+                'Please install manually: https://docs.charon.dev/cli-commands#command-scheduling'
+            );
+        } else {
+            $this->components->info('Charon scheduler installed successfully.');
+        }
     }
 }
