@@ -22,6 +22,11 @@
   php artisan serve
 ```
 
+### Default Account Administrator
+- email: admin@charon.dev
+- password: admin
+
+
 ## ⚙️ Settings
 
 ### Php
