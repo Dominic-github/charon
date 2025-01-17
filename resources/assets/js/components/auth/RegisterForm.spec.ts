@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/vue'
-import { expect, it, Mock } from 'vitest'
-import { userStore } from '@/stores'
+import type { Mock } from 'vitest'
+import { expect, it } from 'vitest'
+import { userStore } from '@/stores/userStore'
 import UnitTestCase from '@/__tests__/UnitTestCase'
 import RegisterForm from './RegisterForm.vue'
 
@@ -20,16 +21,16 @@ new class extends UnitTestCase {
   protected test () {
     it('renders', () => expect(this.render(RegisterForm).html()).toMatchSnapshot())
 
-    it('logs in', async () => {
-      expect((await this.submitForm(this.mock(userStore, 'register'))).emitted().loggedin).toBeTruthy()
+    it('register', async () => {
+      expect((await this.submitForm(this.mock(userStore, 'register'))).emitted().registeredin).toBeTruthy()
     })
 
-    it('fails to log in', async () => {
+    it('fails to register', async () => {
       const mock = this.mock(userStore, 'register').mockRejectedValue(new Error('Unauthenticated'))
       const { emitted } = await this.submitForm(mock)
       await this.tick()
 
-      expect(emitted().loggedin).toBeFalsy()
+      expect(emitted().registeredin).toBeFalsy()
       expect(screen.getByTestId('register-form').classList.contains('error')).toBe(true)
     })
   }

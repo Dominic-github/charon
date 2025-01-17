@@ -5,22 +5,22 @@
         <h1>New Smart Playlist</h1>
       </header>
 
-      <main>
-        <div class="form-row cols">
-          <label class="name">
-            Name
-            <input v-model="name" v-charon-focus name="name" placeholder="Playlist name" required type="text">
-          </label>
-          <label class="folder">
-            Folder
-            <select v-model="folderId">
+      <main class="space-y-5">
+        <FormRow :cols="2">
+          <FormRow>
+            <template #label>Name</template>
+            <TextInput v-model="name" v-charon-focus name="name" placeholder="Playlist name" required />
+          </FormRow>
+          <FormRow>
+            <template #label>Folder</template>
+            <SelectBox v-model="folderId">
               <option :value="null" />
               <option v-for="folder in folders" :key="folder.id" :value="folder.id">{{ folder.name }}</option>
-            </select>
-          </label>
-        </div>
+            </SelectBox>
+          </FormRow>
+        </FormRow>
 
-        <div class="form-row rules">
+        <div v-charon-overflow-fade class="group-container space-y-5 overflow-auto max-h-[480px]">
           <RuleGroup
             v-for="(group, index) in collectedRuleGroups"
             :key="group.id"
@@ -28,10 +28,17 @@
             :is-first-group="index === 0"
             @input="onGroupChanged"
           />
-          <Btn class="btn-add-group" green small title="Add a new group" uppercase @click.prevent="addGroup">
-            <icon :icon="faPlus" />
+          <Btn class="btn-add-group" small success title="Add a new group" uppercase @click.prevent="addGroup">
+            <Icon :icon="faPlus" />
             Group
           </Btn>
+        </div>
+
+        <div class="form-row">
+          <label class="text-k-text-secondary">
+            <CheckBox v-model="ownSongsOnly" />
+            Only include songs from my own library
+          </label>
         </div>
       </main>
 
@@ -46,9 +53,22 @@
 <script lang="ts" setup>
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { ref, toRef } from 'vue'
-import { playlistFolderStore, playlistStore } from '@/stores'
-import { logger } from '@/utils'
-import { useDialogBox, useMessageToaster, useModal, useOverlay, useRouter, useSmartPlaylistForm } from '@/composables'
+import { playlistFolderStore } from '@/stores/playlistFolderStore'
+import { playlistStore } from '@/stores/playlistStore'
+import { useDialogBox } from '@/composables/useDialogBox'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { useModal } from '@/composables/useModal'
+import { useOverlay } from '@/composables/useOverlay'
+import { useSmartPlaylistForm } from '@/composables/useSmartPlaylistForm'
+import { useRouter } from '@/composables/useRouter'
+
+import CheckBox from '@/components/ui/form/CheckBox.vue'
+import TextInput from '@/components/ui/form/TextInput.vue'
+import FormRow from '@/components/ui/form/FormRow.vue'
+import SelectBox from '@/components/ui/form/SelectBox.vue'
+
+const emit = defineEmits<{ (e: 'close'): void }>()
 
 const {
   Btn,
@@ -56,20 +76,21 @@ const {
   RuleGroup,
   collectedRuleGroups,
   addGroup,
-  onGroupChanged
+  onGroupChanged,
 } = useSmartPlaylistForm()
 
 const { showOverlay, hideOverlay } = useOverlay()
 const { toastSuccess } = useMessageToaster()
-const { showConfirmDialog, showErrorDialog } = useDialogBox()
-const { go } = useRouter()
+const { showConfirmDialog } = useDialogBox()
+const { go, url } = useRouter()
+
 const targetFolder = useModal().getFromContext<PlaylistFolder | null>('folder')
 
 const name = ref('')
 const folderId = ref(targetFolder?.id)
 const folders = toRef(playlistFolderStore.state, 'folders')
+const ownSongsOnly = ref(false)
 
-const emit = defineEmits<{ (e: 'close'): void }>()
 const close = () => emit('close')
 
 const isPristine = () => name.value === ''
@@ -91,17 +112,23 @@ const submit = async () => {
   try {
     const playlist = await playlistStore.store(name.value, {
       rules: collectedRuleGroups.value,
-      folder_id: folderId.value
+      folder_id: folderId.value,
+      own_songs_only: ownSongsOnly.value,
     })
 
     close()
     toastSuccess(`Playlist "${playlist.name}" created.`)
-    go(`playlist/${playlist.id}`)
-  } catch (error) {
-    showErrorDialog('Something went wrong. Please try again.', 'Error')
-    logger.error(error)
+    go(url('playlists.show', { id: playlist.id }))
+  } catch (error: unknown) {
+    useErrorHandler('dialog').handleHttpError(error)
   } finally {
     hideOverlay()
   }
 }
 </script>
+
+<style lang="postcss" scoped>
+.group-container {
+  scrollbar-gutter: stable;
+}
+</style>

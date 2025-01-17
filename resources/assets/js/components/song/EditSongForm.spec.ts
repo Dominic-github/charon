@@ -1,48 +1,41 @@
-import { expect, it } from 'vitest'
-import factory from '@/__tests__/factory'
-import UnitTestCase from '@/__tests__/UnitTestCase'
-import { arrayify, eventBus } from '@/utils'
-import { ModalContextKey } from '@/symbols'
-import { ref } from 'vue'
 import { screen } from '@testing-library/vue'
-import { songStore } from '@/stores'
+import { ref } from 'vue'
+import { expect, it } from 'vitest'
+import UnitTestCase from '@/__tests__/UnitTestCase'
+import factory from '@/__tests__/factory'
+import { arrayify } from '@/utils/helpers'
+import { eventBus } from '@/utils/eventBus'
+import { ModalContextKey } from '@/symbols'
+import type { SongUpdateResult } from '@/stores/songStore'
+import { songStore } from '@/stores/songStore'
 import { MessageToasterStub } from '@/__tests__/stubs'
 import EditSongForm from './EditSongForm.vue'
 
 let songs: Song[]
 
 new class extends UnitTestCase {
-  private async renderComponent (_songs: Song | Song[], initialTab: EditSongFormTabName = 'details') {
-    songs = arrayify(_songs)
-
-    const rendered = this.render(EditSongForm, {
-      global: {
-        provide: {
-          [<symbol>ModalContextKey]: [ref({
-            songs,
-            initialTab
-          })]
-        }
-      }
-    })
-
-    await this.tick()
-
-    return rendered
-  }
-
   protected test () {
     it('edits a single song', async () => {
-      const updateMock = this.mock(songStore, 'update')
+      const result: SongUpdateResult = {
+        albums: [],
+        artists: [],
+        removed: {
+          albums: [],
+          artists: [],
+        },
+        playables: [],
+      }
+
+      const updateMock = this.mock(songStore, 'update').mockResolvedValue(result)
       const emitMock = this.mock(eventBus, 'emit')
       const alertMock = this.mock(MessageToasterStub.value, 'success')
 
-      const { html } = await this.renderComponent(factory<Song>('song', {
+      const { html } = await this.renderComponent(factory('song', {
         title: 'Rocket to Heaven',
         artist_name: 'Led Zeppelin',
         album_name: 'IV',
         album_cover: 'http://test/album.jpg',
-        genre: 'Rock'
+        genre: 'Rock',
       }))
 
       expect(html()).toMatchSnapshot()
@@ -68,19 +61,29 @@ new class extends UnitTestCase {
         track: 10,
         disc: 1,
         genre: 'Rock & Roll',
-        year: 1971
+        year: 1971,
       })
 
       expect(alertMock).toHaveBeenCalledWith('Updated 1 song.')
-      expect(emitMock).toHaveBeenCalledWith('SONGS_UPDATED')
+      expect(emitMock).toHaveBeenCalledWith('SONGS_UPDATED', result)
     })
 
     it('edits multiple songs', async () => {
-      const updateMock = this.mock(songStore, 'update')
+      const result: SongUpdateResult = {
+        albums: [],
+        artists: [],
+        removed: {
+          albums: [],
+          artists: [],
+        },
+        playables: [],
+      }
+
+      const updateMock = this.mock(songStore, 'update').mockResolvedValue(result)
       const emitMock = this.mock(eventBus, 'emit')
       const alertMock = this.mock(MessageToasterStub.value, 'success')
 
-      const { html } = await this.renderComponent(factory<Song>('song', 3))
+      const { html } = await this.renderComponent(factory('song', 3))
 
       expect(html()).toMatchSnapshot()
       expect(screen.queryByTestId('title-input')).toBeNull()
@@ -103,23 +106,42 @@ new class extends UnitTestCase {
         track: 10,
         disc: 1,
         genre: 'Pop',
-        year: 1990
+        year: 1990,
       })
 
       expect(alertMock).toHaveBeenCalledWith('Updated 3 songs.')
-      expect(emitMock).toHaveBeenCalledWith('SONGS_UPDATED')
+      expect(emitMock).toHaveBeenCalledWith('SONGS_UPDATED', result)
     })
 
     it('displays artist name if all songs have the same artist', async () => {
-      await this.renderComponent(factory<Song>('song', 4, {
+      await this.renderComponent(factory('song', 4, {
         artist_id: 1000,
         artist_name: 'Led Zeppelin',
         album_id: 1001,
-        album_name: 'IV'
+        album_name: 'IV',
       }))
 
       expect(screen.getByTestId('displayed-artist-name').textContent).toBe('Led Zeppelin')
       expect(screen.getByTestId('displayed-album-name').textContent).toBe('IV')
     })
+  }
+
+  private async renderComponent (_songs: MaybeArray<Song>, initialTab: EditSongFormTabName = 'details') {
+    songs = arrayify(_songs)
+
+    const rendered = this.render(EditSongForm, {
+      global: {
+        provide: {
+          [<symbol>ModalContextKey]: [ref({
+            songs,
+            initialTab,
+          })],
+        },
+      },
+    })
+
+    await this.tick()
+
+    return rendered
   }
 }

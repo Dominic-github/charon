@@ -4,73 +4,75 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\UserLoginRequest;
-use App\Models\User;
-use App\Http\Resources\UserResource;
-use App\Services\UserService;
-use App\Repositories\UserRepository;
-use App\Services\TokenManager;
-use Illuminate\Contracts\Auth\Authenticatable;
+use App\Http\Requests\API\UserRegisterRequest;
+use App\Services\AuthenticationService;
+use App\Values\CompositeToken;
+use Closure;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
-use Illuminate\Hashing\HashManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Throwable;
 
 class AuthController extends Controller
 {
     use ThrottlesLogins;
 
-    /** @param User $user */
-    public function __construct(
-        private UserRepository $userRepository,
-        private HashManager $hash,
-        private TokenManager $tokenManager,
-        private UserService $userService,
-        private ?Authenticatable $user
-    ) {
+    public function __construct(private readonly AuthenticationService $auth)
+    {
     }
 
     public function login(UserLoginRequest $request)
     {
-        /** @var User|null $user */
-        $user = $this->userRepository->getFirstWhere('email', $request->email);
+        $compositeToken = $this->throttleLoginRequest(
+            fn () => $this->auth->login($request->email, $request->password),
+            $request
+        );
 
-        if (!$user || !$this->hash->check($request->password, $user->password)) {
-            abort(Response::HTTP_UNAUTHORIZED, 'Invalid credentials');
-        }
-
-        $token = $this->tokenManager->createCompositionToken($user);
-
-        return response()->json([
-            'token' => $token->apiToken,
-            'audio-token' => $token->audioToken,
-        ]);
+        return response()->json($compositeToken->toArray());
     }
 
-    public function register(UserLoginRequest $request)
+    public function register(UserRegisterRequest $request)
     {
-        /** @var User|null $user */
-        $user = $this->userRepository->getFirstWhere('email', $request->email);
-        if($user || $request->password != $request->rePassword){
-            abort(Response::HTTP_UNAUTHORIZED, 'Invalid credentials');
-        }else{
-            
-            return UserResource::make($this->userService->createUser(
-                $request->fullName,
-                $request->email,
-                $request->password,
-                false
-            ));
-        }
-
-
+             return $this->auth->register($request->fullName, $request->email, $request->password, $request->rePassword);
     }
 
-    public function logout(Request $request)
+    public function loginUsingOneTimeToken(Request $request)
     {
-        if ($this->user) {
-            attempt(fn () => $this->tokenManager->deleteCompositionToken($request->bearerToken()));
+        $compositeToken = $this->throttleLoginRequest(
+            fn () => $this->auth->loginViaOneTimeToken($request->input('token')),
+            $request
+        );
+
+        return response()->json($compositeToken->toArray());
+    }
+
+    private function throttleLoginRequest(Closure $callback, Request $request): CompositeToken
+    {
+        if ($this->hasTooManyLoginAttempts($request)) {
+            $this->fireLockoutEvent($request);
+            $this->sendLockoutResponse($request);
         }
+
+        try {
+            return $callback();
+        } catch (Throwable) {
+            $this->incrementLoginAttempts($request);
+            abort(Response::HTTP_UNAUTHORIZED, 'Invalid credentials');
+        }
+    }
+
+    public function logout(Request $request): Response
+    {
+        rescue(fn () => $this->auth->logoutViaBearerToken($request->bearerToken()));
 
         return response()->noContent();
+    }
+
+    /**
+     * For the throttle middleware.
+     */
+    protected function username(): string
+    {
+        return 'email';
     }
 }

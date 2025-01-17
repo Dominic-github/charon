@@ -1,59 +1,99 @@
 <template>
-  <form :class="{ error: failed }" data-testid="register-form" @submit.prevent="register">
-    <div class="logo">
-      <img alt="Charon's logo" src="@/../img/logo.png" width="156">
-    </div>
-    <input v-model="fullName" autofocus placeholder="Full Name" required type="text">
-    <input v-model="email" autofocus placeholder="Email Address" required type="email">
-    <input v-model="password" placeholder="Password" required type="password">
-    <input v-model="rePassword" placeholder="Confirm Password" required type="password">
-    <Btn type="submit">Create Account</Btn>
-    <p class="register">Already have an account? <a @click="goLogin">Login</a></p>
-  </form>
+  <div class="flex items-center justify-center min-h-screen mx-4 flex-col gap-5">
+    <form
+      :class="{ error: failed }"
+      class="w-full sm:w-[302px] sm:border duration-500 p-7 rounded-xl border-transparent sm:bg-white/6 space-y-3 "
+      data-testid="register-form"
+      @submit.prevent="register"
+    >
+      <div class="text-center mb-8">
+        <img alt="Charon's logo" class="inline-block" src="@/../img/logo.svg" width="156">
+      </div>
+
+      <FormRow>
+        <TextInput v-model="fullName" autofocus placeholder="Full Name" required type="text" />
+      </FormRow>
+
+      <FormRow>
+        <TextInput v-model="email" autofocus placeholder="Email Address" required type="email" />
+      </FormRow>
+
+      <FormRow>
+        <PasswordField v-model="password" placeholder="Password" required />
+      </FormRow>
+
+      <FormRow>
+        <PasswordField v-model="rePassword" placeholder="Confirm Password" required />
+        <template #help>Min. 10 characters. Should be a mix of characters, numbers, and symbols.</template>
+      </FormRow>
+
+      <FormRow>
+        <Btn data-testid="submit" type="submit">Create Account</Btn>
+      </FormRow>
+
+      <FormRow>
+        <p class="register text-center">Already have an account? <a style="font-weight: 500;" @click="goLogin">Login</a></p>
+      </FormRow>
+    </form>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { userStore } from '@/stores'
-import Btn from '@/components/ui/Btn.vue'
+import { authService } from '@/services/authService'
+import { logger } from '@/utils/logger'
+import type { CreateUserData } from '@/stores/userStore'
+import { userStore } from '@/stores/userStore'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
-const DEFAULT= {
+import Btn from '@/components/ui/form/Btn.vue'
+import PasswordField from '@/components/ui/form/PasswordField.vue'
+import TextInput from '@/components/ui/form/TextInput.vue'
+import FormRow from '@/components/ui/form/FormRow.vue'
+
+const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'toggleIsLogin'): void }>()
+
+const { toastSuccess } = useMessageToaster()
+
+const DEFAULT = {
   fullName: '',
   email: '',
   password: '',
-  rePassword: ''
-
+  rePassword: '',
 }
 
-const url = ref('')
 const fullName = ref(DEFAULT.fullName)
 const email = ref(DEFAULT.email)
-const password= ref(DEFAULT.password)
+const password = ref(DEFAULT.password)
 const rePassword = ref(DEFAULT.rePassword)
 const failed = ref(false)
 
-const emit = defineEmits<{ (e: 'registeredin'): void , (e: 'toggleIsLogin'):void }>()
-
+// const newUser = reactive<CreateUserData>(Object.assign({}, emptyUserData))
 
 const goLogin = () => {
   emit('toggleIsLogin')
 }
+
 const register = async () => {
   try {
-    await userStore.register(fullName.value, email.value, password.value, rePassword.value)
+    await authService.register(fullName.value, email.value, password.value, rePassword.value)
     failed.value = false
     // Reset the password so that the next login will have this field empty.
     password.value = ''
     rePassword.value = ''
+    toastSuccess('Account created successfully!')
     emit('registeredin')
-  } catch (err) {
+  } catch (error: unknown) {
+    useErrorHandler('dialog').handleHttpError(error)
     failed.value = true
+    logger.error(error)
     window.setTimeout(() => (failed.value = false), 2000)
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="postcss" scoped>
 /**
  * I like to move it move it
  * I like to move it move it
@@ -61,10 +101,12 @@ const register = async () => {
  * You like to - move it!
  */
 @keyframes shake {
-  8%, 41% {
+  8%,
+  41% {
     transform: translateX(-10px);
   }
-  25%, 58% {
+  25%,
+  58% {
     transform: translateX(10px);
   }
   75% {
@@ -73,38 +115,17 @@ const register = async () => {
   92% {
     transform: translateX(5px);
   }
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
 }
 
 form {
-  width: 280px;
-  padding: 1.8rem;
-  background: rgba(255, 255, 255, .08);
-  border-radius: .6rem;
-  border: 1px solid transparent;
-  transition: .5s;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
+  background: rgba(255, 255, 255, 0.08);
   &.error {
-    border-color: var(--color-red);
-    animation: shake .5s;
-  }
-
-  .logo {
-    text-align: center;
-  }
-  .register{
-    text-align: center;
-  }
-
-
-  @media only screen and (max-width: 414px) {
-    border: 0;
-    background: transparent;
+    @apply border-red-500;
+    animation: shake 0.5s;
   }
 }
 </style>

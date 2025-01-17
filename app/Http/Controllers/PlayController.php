@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Factories\StreamerFactory;
 use App\Http\Requests\SongPlayRequest;
 use App\Models\Song;
+use App\Models\User;
+use App\Services\Streamer\Streamer;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class PlayController extends Controller
 {
-    public function __construct(private StreamerFactory $streamerFactory)
+    /** @param User $user */
+    public function __invoke(Authenticatable $user, SongPlayRequest $request, Song $song, ?bool $transcode = null)
     {
-    }
+        $this->authorize('access', $song);
 
-    public function show(SongPlayRequest $request, Song $song, ?bool $transcode = null, ?int $bitRate = null)
-    {
-        return $this->streamerFactory
-            ->createStreamer($song, $transcode, $bitRate, (float) $request->time)
-            ->stream();
+        return (new Streamer(song: $song, config: [
+            'transcode' => (bool) $transcode,
+            'bit_rate' => $user->preferences->transcodeQuality,
+            'start_time' => (float) $request->time,
+        ]))->stream();
     }
 }

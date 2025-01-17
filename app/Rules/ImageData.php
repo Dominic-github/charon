@@ -2,21 +2,20 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Support\Str;
 
-class ImageData implements Rule
+class ImageData implements ValidationRule
 {
-    public function passes($attribute, $value): bool
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        return attempt(static function () use ($value) {
-            [$header,] = explode(';', $value);
+        $passes = rescue(static function () use ($value) {
+            return (bool) preg_match('/data:image\/(jpe?g|png|webp|gif)/i', Str::before($value, ';'));
+        }) ?? false;
 
-            return (bool) preg_match('/data:image\/(jpe?g|png|webp|gif)/i', $header);
-        }, false) ?? false;
-    }
-
-    public function message(): string
-    {
-        return 'Invalid DataURL string';
+        if (!$passes) {
+            $fail('Invalid DataURL string');
+        }
     }
 }

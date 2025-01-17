@@ -1,36 +1,19 @@
-import { expect, it } from 'vitest'
-import factory from '@/__tests__/factory'
-import UnitTestCase from '@/__tests__/UnitTestCase'
-import { eventBus } from '@/utils'
 import { screen, waitFor } from '@testing-library/vue'
-import { playlistStore, songStore } from '@/stores'
-import { downloadService } from '@/services'
+import { expect, it } from 'vitest'
+import UnitTestCase from '@/__tests__/UnitTestCase'
+import factory from '@/__tests__/factory'
+import { eventBus } from '@/utils/eventBus'
+import { playlistStore } from '@/stores/playlistStore'
+import { songStore } from '@/stores/songStore'
+import { downloadService } from '@/services/downloadService'
 import PlaylistScreen from './PlaylistScreen.vue'
 
 let playlist: Playlist
 
 new class extends UnitTestCase {
-  private async renderComponent (songs: Song[]) {
-    playlist = playlist || factory<Playlist>('playlist')
-    playlistStore.init([playlist])
-
-    const fetchMock = this.mock(songStore, 'fetchForPlaylist').mockResolvedValue(songs)
-
-    this.render(PlaylistScreen)
-
-    await this.router.activateRoute({
-      path: `playlists/${playlist.id}`,
-      screen: 'Playlist'
-    }, { id: playlist.id.toString() })
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(playlist, false))
-
-    return { fetchMock }
-  }
-
   protected test () {
     it('renders the playlist', async () => {
-      await this.renderComponent(factory<Song>('song', 10))
+      await this.renderComponent(factory('song', 10))
 
       await waitFor(() => {
         screen.getByTestId('song-list')
@@ -49,9 +32,9 @@ new class extends UnitTestCase {
 
     it('downloads the playlist', async () => {
       const downloadMock = this.mock(downloadService, 'fromPlaylist')
-      await this.renderComponent(factory<Song>('song', 10))
+      await this.renderComponent(factory('song', 10))
 
-      await this.tick()
+      await this.tick(2)
       await this.user.click(screen.getByRole('button', { name: 'Download All' }))
 
       await waitFor(() => expect(downloadMock).toHaveBeenCalledWith(playlist))
@@ -73,5 +56,26 @@ new class extends UnitTestCase {
 
       expect(fetchMock).toHaveBeenCalledWith(playlist, true)
     })
+  }
+
+  private async renderComponent (songs: Playable[]) {
+    playlist = playlist || factory('playlist')
+    this.be(factory('user', { id: playlist.user_id }))
+
+    playlistStore.init([playlist])
+    playlist.playables = songs
+
+    const fetchMock = this.mock(songStore, 'fetchForPlaylist').mockResolvedValue(songs)
+
+    const rendered = this.render(PlaylistScreen)
+
+    await this.router.activateRoute({
+      path: `playlists/${playlist.id}`,
+      screen: 'Playlist',
+    }, { id: playlist.id })
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(playlist, false))
+
+    return { rendered, fetchMock }
   }
 }

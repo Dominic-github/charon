@@ -1,113 +1,99 @@
 <template>
-  <article :class="{ me: isCurrentUser }" class="user-card">
-    <img :alt="`${user.name}'s avatar`" :src="user.avatar" height="80" width="80">
+  <article
+    :class="{ me: isCurrentUser }"
+    class="apply p-4 flex items-center rounded-md bg-k-bg-secondary border border-k-border
+    gap-3 transition-[border-color] duration-200 ease-in-out hover:border-white/15"
+  >
+    <UserAvatar :user="user" width="48" />
 
-    <main>
-      <h1>
-        <span class="name">{{ user.name }}</span>
-        <icon v-if="isCurrentUser" :icon="faCircleCheck" class="you text-highlight" title="This is you!" />
-        <icon
+    <main class="flex flex-col justify-between relative flex-1 gap-1">
+      <h3 class="font-medium flex gap-2 items-center">
+        <span v-if="user.name" class="name">{{ user.name }}</span>
+        <span v-else class="name font-light text-k-text-secondary">Anonymous</span>
+        <Icon v-if="isCurrentUser" :icon="faCircleCheck" class="you text-k-highlight" title="This is you!" />
+        <Icon
           v-if="user.is_admin"
           :icon="faShield"
-          class="is-admin text-blue"
+          class="is-admin text-k-primary"
           title="User has admin privileges"
         />
-      </h1>
+        <img
+          v-if="user.sso_provider === 'Google'"
+          :src="googleLogo"
+          alt="Google"
+          height="14"
+          title="Google SSO"
+          width="14"
+        >
+      </h3>
 
-      <p class="email text-secondary">{{ user.email }}</p>
+      <p class="text-k-text-secondary">{{ user.email }}</p>
+    </main>
 
-      <footer>
-        <Btn class="btn-edit" orange small @click="edit">
+    <div class="space-x-2">
+      <template v-if="user.is_prospect">
+        <Btn class="btn-revoke" danger small @click="revokeInvite">Revoke</Btn>
+      </template>
+      <template v-else>
+        <Btn v-if="!user.is_prospect" highlight small @click="edit">
           {{ isCurrentUser ? 'Your Profile' : 'Edit' }}
         </Btn>
-        <Btn v-if="!isCurrentUser" class="btn-delete" red small @click="confirmDelete">
-          Delete
-        </Btn>
-      </footer>
-    </main>
+        <Btn v-if="!isCurrentUser" danger small @click="destroy">Delete</Btn>
+      </template>
+    </div>
   </article>
 </template>
 
 <script lang="ts" setup>
+import googleLogo from '@/../img/logos/google.svg'
 import { faCircleCheck, faShield } from '@fortawesome/free-solid-svg-icons'
 import { computed, toRefs } from 'vue'
-import { userStore } from '@/stores'
-import { eventBus } from '@/utils'
-import { useAuthorization, useDialogBox, useMessageToaster, useRouter } from '@/composables'
+import { userStore } from '@/stores/userStore'
+import { invitationService } from '@/services/invitationService'
+import { eventBus } from '@/utils/eventBus'
+import { useRouter } from '@/composables/useRouter'
+import { useAuthorization } from '@/composables/useAuthorization'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { useDialogBox } from '@/composables/useDialogBox'
 
-import Btn from '@/components/ui/Btn.vue'
+import Btn from '@/components/ui/form/Btn.vue'
+import UserAvatar from '@/components/user/UserAvatar.vue'
 
 const props = defineProps<{ user: User }>()
 const { user } = toRefs(props)
 
 const { toastSuccess } = useMessageToaster()
 const { showConfirmDialog } = useDialogBox()
-const { go } = useRouter()
+const { go, url } = useRouter()
 
 const { currentUser } = useAuthorization()
 
 const isCurrentUser = computed(() => user.value.id === currentUser.value.id)
 
-const edit = () => isCurrentUser.value ? go('profile') : eventBus.emit('MODAL_SHOW_EDIT_USER_FORM', user.value)
-
-const confirmDelete = async () =>
-  await showConfirmDialog(`You’re about to unperson ${user.value.name}. Are you sure?`) && await destroy()
+const edit = () => isCurrentUser.value ? go(url('profile')) : eventBus.emit('MODAL_SHOW_EDIT_USER_FORM', user.value)
 
 const destroy = async () => {
+  if (!await showConfirmDialog(`Unperson ${user.value.name}?`)) {
+    return
+  }
+
   await userStore.destroy(user.value)
   toastSuccess(`User "${user.value.name}" deleted.`)
 }
-</script>
 
-<style lang="scss" scoped>
-.user-card {
-  padding: 10px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  border-radius: 5px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-bg-secondary);
-  gap: 1rem;
-
-  img {
-    border-radius: 50%;
-    flex: 0 0 80px;
-    background: rgba(0, 0, 0, .2)
+const revokeInvite = async () => {
+  if (!await showConfirmDialog(`Revoke the invite for ${user.value.email}?`)) {
+    return
   }
 
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position: relative;
-    gap: .5rem;
-  }
-
-  h1 {
-    font-size: 1rem;
-    font-weight: var(--font-weight-normal);
-
-    > * + * {
-      margin-left: .5rem
-    }
-  }
-
-  footer {
-    visibility: hidden;
-
-    > * + * {
-      margin-left: .3rem;
-    }
-
-    @media (hover: none) {
-      visibility: visible;
-    }
-  }
-
-  &:hover footer {
-    visibility: visible;
+  try {
+    await invitationService.revoke(user.value)
+    toastSuccess(`Invitation for ${user.value.email} revoked.`)
+  } catch (error: unknown) {
+    useErrorHandler('dialog').handleHttpError(error, {
+      404: 'Cannot revoke the invite. Maybe it has been accepted?',
+    })
   }
 }
-</style>
+</script>

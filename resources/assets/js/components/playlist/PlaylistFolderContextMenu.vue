@@ -1,5 +1,5 @@
 <template>
-  <ContextMenuBase ref="base">
+  <ContextMenu ref="base">
     <template v-if="folder">
       <template v-if="playable">
         <li @click="play">Play All</li>
@@ -12,18 +12,21 @@
       <li @click="rename">Rename</li>
       <li @click="destroy">Delete</li>
     </template>
-  </ContextMenuBase>
+  </ContextMenu>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { eventBus } from '@/utils'
-import { playlistStore, songStore } from '@/stores'
-import { playbackService } from '@/services'
-import { useContextMenu, useMessageToaster, useRouter } from '@/composables'
+import { eventBus } from '@/utils/eventBus'
+import { playlistStore } from '@/stores/playlistStore'
+import { playbackService } from '@/services/playbackService'
+import { useRouter } from '@/composables/useRouter'
+import { useContextMenu } from '@/composables/useContextMenu'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { songStore } from '@/stores/songStore'
 
-const { base, ContextMenuBase, open, trigger } = useContextMenu()
-const { go } = useRouter()
+const { base, ContextMenu, open, trigger } = useContextMenu()
+const { go, url } = useRouter()
 const { toastWarning } = useMessageToaster()
 
 const folder = ref<PlaylistFolder>()
@@ -36,7 +39,7 @@ const play = () => trigger(async () => {
 
   if (songs.length) {
     playbackService.queueAndPlay(songs)
-    go('queue')
+    go(url('queue'))
   } else {
     toastWarning('No songs available.')
   }
@@ -47,7 +50,7 @@ const shuffle = () => trigger(async () => {
 
   if (songs.length) {
     playbackService.queueAndPlay(songs, true)
-    go('queue')
+    go(url('queue'))
   } else {
     toastWarning('No songs available.')
   }
@@ -58,8 +61,8 @@ const createSmartPlaylist = () => trigger(() => eventBus.emit('MODAL_SHOW_CREATE
 const rename = () => trigger(() => eventBus.emit('MODAL_SHOW_EDIT_PLAYLIST_FOLDER_FORM', folder.value!))
 const destroy = () => trigger(() => eventBus.emit('PLAYLIST_FOLDER_DELETE', folder.value!))
 
-eventBus.on('PLAYLIST_FOLDER_CONTEXT_MENU_REQUESTED', async (e, _folder) => {
+eventBus.on('PLAYLIST_FOLDER_CONTEXT_MENU_REQUESTED', async ({ pageX, pageY }, _folder) => {
   folder.value = _folder
-  await open(e.pageY, e.pageX)
+  await open(pageY, pageX)
 })
 </script>

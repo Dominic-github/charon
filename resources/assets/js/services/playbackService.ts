@@ -2,21 +2,25 @@ import isMobile from 'ismobilejs'
 import plyr from 'plyr'
 import { watch } from 'vue'
 import { shuffle, throttle } from 'lodash'
-
-import {
-  commonStore,
-  preferenceStore as preferences,
-  queueStore,
-  recentlyPlayedStore,
-  songStore,
-  userStore
-} from '@/stores'
-
-import { arrayify, isAudioContextSupported, logger } from '@/utils'
-import { audioService, socketService, volumeManager } from '@/services'
+import { commonStore } from '@/stores/commonStore'
+import { preferenceStore as preferences } from '@/stores/preferenceStore'
+import { queueStore } from '@/stores/queueStore'
+import { recentlyPlayedStore } from '@/stores/recentlyPlayedStore'
+import { songStore } from '@/stores/songStore'
+import { userStore } from '@/stores/userStore'
+import { logger } from '@/utils/logger'
+import { isEpisode, isSong } from '@/utils/typeGuards'
+import { arrayify, getPlayableProp } from '@/utils/helpers'
+import { eventBus } from '@/utils/eventBus'
+import { isAudioContextSupported } from '@/utils/supports'
+import { audioService } from '@/services/audioService'
+import { http } from '@/services/http'
+import { socketService } from '@/services/socketService'
+import { volumeManager } from '@/services/volumeManager'
+import { useEpisodeProgressTracking } from '@/composables/useEpisodeProgressTracking'
 
 /**
- * The number of seconds before the current song ends to start preload the next one.
+ * The number of seconds before the current playable ends to start preload the next one.
  */
 const PRELOAD_BUFFER = 30
 
@@ -25,8 +29,42 @@ class PlaybackService {
   private repeatModes: RepeatMode[] = ['NO_REPEAT', 'REPEAT_ALL', 'REPEAT_ONE']
   private initialized = false
 
+  public get isTranscoding () {
+    return isMobile.any && preferences.transcode_on_mobile
+  }
+
+  /**
+   * The next item in the queue.
+   * If we're in REPEAT_ALL mode and there's no next item, just get the first item.
+   */
+  public get next () {
+    if (queueStore.next) {
+      return queueStore.next
+    }
+
+    if (preferences.repeat_mode === 'REPEAT_ALL') {
+      return queueStore.first
+    }
+  }
+
+  /**
+   * The previous item in the queue.
+   * If we're in REPEAT_ALL mode and there's no prev item, get the last item.
+   */
+  public get previous () {
+    if (queueStore.previous) {
+      return queueStore.previous
+    }
+
+    if (preferences.repeat_mode === 'REPEAT_ALL') {
+      return queueStore.last
+    }
+  }
+
   public init (plyrWrapper: HTMLElement) {
-    if (this.initialized) return
+    if (this.initialized) {
+      return
+    }
 
     this.player = plyr.setup(plyrWrapper, { controls: [] })[0]
 
@@ -38,18 +76,18 @@ class PlaybackService {
     this.initialized = true
   }
 
-  public registerPlay (song: Song) {
-    recentlyPlayedStore.add(song)
-    songStore.registerPlay(song)
-    song.play_count_registered = true
+  public registerPlay (playable: Playable) {
+    recentlyPlayedStore.add(playable)
+    songStore.registerPlay(playable)
+    playable.play_count_registered = true
   }
 
-  public preload (song: Song) {
+  public preload (playable: Playable) {
     const audioElement = document.createElement('audio')
-    audioElement.setAttribute('src', songStore.getSourceUrl(song))
+    audioElement.setAttribute('src', songStore.getSourceUrl(playable))
     audioElement.setAttribute('preload', 'auto')
     audioElement.load()
-    song.preloaded = true
+    playable.preloaded = true
   }
 
   /**
@@ -60,145 +98,131 @@ class PlaybackService {
    * So many dreams swinging out of the blue
    * We'll let them come true
    */
-  public async play (song: Song) {
-    // If for any reason (most likely a bug), the requested song has been deleted, just attempt the next song.
-    if (song.deleted) {
-      logger.warn('Attempted to play a deleted song', song)
+  public async play (playable: Playable, position = 0) {
+    if (isEpisode(playable)) {
+      useEpisodeProgressTracking().trackEpisode(playable)
+    }
 
-      if (this.next && this.next.id !== song.id) {
+    queueStore.queueIfNotQueued(playable)
+
+    // If for any reason (most likely a bug), the requested song has been deleted, just attempt the next item in queue.
+    if (isSong(playable) && playable.deleted) {
+      logger.warn('Attempted to play a deleted song', playable)
+
+      if (this.next && this.next.id !== playable.id) {
         await this.playNext()
       }
 
       return
     }
 
-    document.title = `${song.title} ♫ Charon`
-    this.player.media.setAttribute('title', `${song.artist_name} - ${song.title}`)
-
     if (queueStore.current) {
       queueStore.current.playback_state = 'Stopped'
     }
 
-    song.playback_state = 'Playing'
+    playable.playback_state = 'Playing'
+
+    await this.setNowPlayingMeta(playable)
 
     // Manually set the `src` attribute of the audio to prevent plyr from resetting
     // the audio media object and cause our equalizer to malfunction.
-    this.player.media.src = songStore.getSourceUrl(song)
+    this.player.media.src = songStore.getSourceUrl(playable)
 
-    // We'll just "restart" playing the song, which will handle notification, scrobbling etc.
-    // Fixes #898
-    if (isAudioContextSupported) {
-      await audioService.context.resume()
+    if (position === 0) {
+      // We'll just "restart" playing the item, which will handle notification, scrobbling etc.
+      // Fixes #898
+      await this.restart()
+    } else {
+      this.player.seek(position)
+      await this.resume()
     }
 
-    await this.restart()
+    this.setMediaSessionActionHandlers()
   }
 
-  public showNotification (song: Song) {
-    if (preferences.notify) {
+  public showNotification (playable: Playable) {
+    if (!isSong(playable) && !isEpisode(playable)) {
+      throw new Error('Invalid playable type.')
+    }
+
+    if (preferences.show_now_playing_notification) {
       try {
-        const notification = new window.Notification(`♫ ${song.title}`, {
-          icon: song.album_cover,
-          body: `${song.album_name} – ${song.artist_name}`
+        const notification = new window.Notification(`♫ ${playable.title}`, {
+          icon: getPlayableProp(playable, 'album_cover', 'episode_image'),
+          body: isSong(playable)
+            ? `${playable.album_name} – ${playable.artist_name}`
+            : playable.title,
         })
 
         notification.onclick = () => window.focus()
 
         window.setTimeout(() => notification.close(), 5000)
-      } catch (e) {
+      } catch (error: unknown) {
         // Notification fails.
         // @link https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
-        logger.error(e)
+        logger.error(error)
       }
     }
 
-    if (!navigator.mediaSession) return
+    if (!navigator.mediaSession) {
+      return
+    }
 
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: song.title,
-      artist: song.artist_name,
-      album: song.album_name,
+      title: playable.title,
+      artist: getPlayableProp(playable, 'artist_name', 'podcast_author'),
+      album: getPlayableProp(playable, 'album_name', 'podcast_title'),
       artwork: [48, 64, 96, 128, 192, 256, 384, 512].map(d => ({
-        src: song.album_cover,
+        src: getPlayableProp(playable, 'album_cover', 'episode_image'),
         sizes: `${d}x${d}`,
-        type: 'image/png'
-      }))
+        type: 'image/png',
+      })),
     })
   }
 
   public async restart () {
-    const song = queueStore.current!
+    const playable = queueStore.current!
 
-    // Record the UNIX timestamp the song starts playing, for scrobbling purpose
-    song.play_start_time = Math.floor(Date.now() / 1000)
-    song.play_count_registered = false
+    this.recordStartTime(playable)
+    this.broadcast(playable)
 
-    socketService.broadcast('SOCKET_SONG', song)
+    try {
+      http.silently.put('queue/playback-status', {
+        song: playable.id,
+        position: 0,
+      })
+    } catch (error: unknown) {
+      logger.error(error)
+    }
 
     this.player.restart()
 
     try {
       await this.player.media.play()
       navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing')
-      this.showNotification(song)
-    } catch (error) {
+      this.showNotification(playable)
+    } catch (error: unknown) {
       // convert this into a warning, as an error will cause Cypress to fail the tests entirely
       logger.warn(error)
     }
   }
 
-  public get isTranscoding () {
-    return isMobile.any && preferences.transcodeOnMobile
-  }
-
-  /**
-   * The next song in the queue.
-   * If we're in REPEAT_ALL mode and there's no next song, just get the first song.
-   */
-  public get next () {
-    if (queueStore.next) {
-      return queueStore.next
-    }
-
-    if (preferences.repeatMode === 'REPEAT_ALL') {
-      return queueStore.first
-    }
-  }
-
-  /**
-   * The previous song in the queue.
-   * If we're in REPEAT_ALL mode and there's no prev song, get the last song.
-   */
-  public get previous () {
-    if (queueStore.previous) {
-      return queueStore.previous
-    }
-
-    if (preferences.repeatMode === 'REPEAT_ALL') {
-      return queueStore.last
-    }
-  }
-
-  /**
-   * Circle through the repeat mode.
-   * The selected mode will be stored into local storage as well.
-   */
-  public changeRepeatMode () {
-    let index = this.repeatModes.indexOf(preferences.repeatMode) + 1
+  public rotateRepeatMode () {
+    let index = this.repeatModes.indexOf(preferences.repeat_mode) + 1
 
     if (index >= this.repeatModes.length) {
       index = 0
     }
 
-    preferences.repeatMode = this.repeatModes[index]
+    preferences.repeat_mode = this.repeatModes[index]
   }
 
   /**
-   * Play the prev song in the queue, if one is found.
-   * If the prev song is not found and the current mode is NO_REPEAT, we stop completely.
+   * Play the prev item the queue, if one is found.
+   * If there's no prev item and the current mode is NO_REPEAT, we stop completely.
    */
   public async playPrev () {
-    // If the song's duration is greater than 5 seconds, and we've passed 5 seconds into it,
+    // If the item's duration is greater than 5 seconds, and we've passed 5 seconds into it,
     // restart playing instead.
     if (this.player.media.currentTime > 5 && queueStore.current!.length > 5) {
       this.player.restart()
@@ -206,7 +230,7 @@ class PlaybackService {
       return
     }
 
-    if (!this.previous && preferences.repeatMode === 'NO_REPEAT') {
+    if (!this.previous && preferences.repeat_mode === 'NO_REPEAT') {
       await this.stop()
     } else {
       this.previous && await this.play(this.previous)
@@ -214,11 +238,11 @@ class PlaybackService {
   }
 
   /**
-   * Play the next song in the queue, if one is found.
-   * If the next song is not found and the current mode is NO_REPEAT, we stop completely.
+   * Play the next item in the queue, if one is found.
+   * If there's no next item and the current mode is NO_REPEAT, we stop completely.
    */
   public async playNext () {
-    if (!this.next && preferences.repeatMode === 'NO_REPEAT') {
+    if (!this.next && preferences.repeat_mode === 'NO_REPEAT') {
       await this.stop() //  Nothing lasts forever, even cold November rain.
     } else {
       this.next && await this.play(this.next)
@@ -246,16 +270,28 @@ class PlaybackService {
   }
 
   public async resume () {
+    const playable = queueStore.current!
+
+    if (!this.player.media.src) {
+      // on first load when the queue is loaded from saved state, the player's src is empty
+      // we need to properly set it as well as any kind of playback metadata
+      this.player.media.src = songStore.getSourceUrl(playable)
+      this.player.seek(commonStore.state.queue_state.playback_position)
+
+      await this.setNowPlayingMeta(queueStore.current!)
+      this.recordStartTime(playable)
+    }
+
     try {
       await this.player.media.play()
-    } catch (error) {
+    } catch (error: unknown) {
       logger.error(error)
     }
 
     queueStore.current!.playback_state = 'Playing'
     navigator.mediaSession && (navigator.mediaSession.playbackState = 'playing')
 
-    socketService.broadcast('SOCKET_SONG', queueStore.current)
+    this.broadcast(playable)
   }
 
   public async toggle () {
@@ -272,21 +308,24 @@ class PlaybackService {
     this.pause()
   }
 
+  public seekBy (seconds: number) {
+    if (this.player.media.duration) {
+      this.player.media.currentTime += seconds
+    }
+  }
+
   /**
-   * Queue up songs (replace them into the queue) and start playing right away.
-   *
-   * @param {?Song[]} songs  An array of song objects. Defaults to all songs if null.
-   * @param {Boolean=false}   shuffled Whether to shuffle the songs before playing.
+   * Queue up playables (replace them into the queue) and start playing right away.
    */
-  public async queueAndPlay (songs: Song | Song[], shuffled = false) {
-    songs = arrayify(songs)
+  public async queueAndPlay (playables: MaybeArray<Playable>, shuffled = false) {
+    playables = arrayify(playables)
 
     if (shuffled) {
-      songs = shuffle(songs)
+      playables = shuffle(playables)
     }
 
     await this.stop()
-    queueStore.replaceQueueWith(songs)
+    queueStore.replaceQueueWith(playables)
     await this.play(queueStore.first)
   }
 
@@ -294,8 +333,36 @@ class PlaybackService {
     queueStore.all.length && await this.play(queueStore.first)
   }
 
+  private async setNowPlayingMeta (playable: Playable) {
+    document.title = `${playable.title} ♫ Charon`
+    this.player.media.setAttribute(
+      'title',
+      isSong(playable) ? `${playable.artist_name} - ${playable.title}` : playable.title,
+    )
+
+    if (isAudioContextSupported) {
+      await audioService.context.resume()
+    }
+  }
+
+  // Record the UNIX timestamp the song starts playing, for scrobbling purpose
+  private recordStartTime (song: Playable) {
+    if (!isSong(song)) {
+      return
+    }
+
+    song.play_start_time = Math.floor(Date.now() / 1000)
+    song.play_count_registered = false
+  }
+
+  private broadcast (playable: Playable) {
+    socketService.broadcast('SOCKET_SONG', playable)
+  }
+
   private setMediaSessionActionHandlers () {
-    if (!navigator.mediaSession) return
+    if (!navigator.mediaSession) {
+      return
+    }
 
     navigator.mediaSession.setActionHandler('play', () => this.resume())
     navigator.mediaSession.setActionHandler('pause', () => this.pause())
@@ -303,13 +370,15 @@ class PlaybackService {
     navigator.mediaSession.setActionHandler('previoustrack', () => this.playPrev())
     navigator.mediaSession.setActionHandler('nexttrack', () => this.playNext())
 
-    navigator.mediaSession.setActionHandler('seekbackward', details => {
-      this.player.media.currentTime -= (details.seekOffset || 10)
-    })
+    if (!isMobile.apple) {
+      navigator.mediaSession.setActionHandler('seekbackward', details => {
+        this.player.media.currentTime -= (details.seekOffset || 10)
+      })
 
-    navigator.mediaSession.setActionHandler('seekforward', details => {
-      this.player.media.currentTime += (details.seekOffset || 10)
-    })
+      navigator.mediaSession.setActionHandler('seekforward', details => {
+        this.player.media.currentTime += (details.seekOffset || 10)
+      })
+    }
 
     navigator.mediaSession.setActionHandler('seekto', details => {
       if (details.fastSeek && 'fastSeek' in this.player.media) {
@@ -325,33 +394,55 @@ class PlaybackService {
     media.addEventListener('error', () => this.playNext(), true)
 
     media.addEventListener('ended', () => {
-      if (commonStore.state.use_last_fm && userStore.current.preferences!.lastfm_session_key) {
+      if (
+        isSong(queueStore.current!)
+        && commonStore.state.uses_last_fm
+        && userStore.current.preferences!.lastfm_session_key
+      ) {
         songStore.scrobble(queueStore.current!)
       }
 
-      preferences.repeatMode === 'REPEAT_ONE' ? this.restart() : this.playNext()
+      preferences.repeat_mode === 'REPEAT_ONE' ? this.restart() : this.playNext()
     })
 
     let timeUpdateHandler = () => {
-      const currentSong = queueStore.current
+      const currentPlayable = queueStore.current
 
-      if (!currentSong) return
+      if (!currentPlayable) {
+        return
+      }
 
-      if (!currentSong.play_count_registered && !this.isTranscoding) {
-        // if we've passed 25% of the song, it's safe to say the song has been "played".
+      if (!currentPlayable.play_count_registered && !this.isTranscoding) {
         if (!media.duration || media.currentTime * 4 >= media.duration) {
-          this.registerPlay(currentSong)
+          this.registerPlay(currentPlayable)
         }
       }
 
-      const nextSong = queueStore.next
+      if (Math.ceil(media.currentTime) % 5 === 0) {
+        // every 5 seconds, we save the current playback position to the server
+        try {
+          http.silently.put('queue/playback-status', {
+            song: currentPlayable.id,
+            position: Math.ceil(media.currentTime),
+          })
+        } catch (error: unknown) {
+          logger.error(error)
+        }
 
-      if (!nextSong || nextSong.preloaded || this.isTranscoding) {
+        // if the current item is an episode, we emit an event to update the progress on the client side as well
+        if (isEpisode(currentPlayable)) {
+          eventBus.emit('EPISODE_PROGRESS_UPDATED', currentPlayable, Math.ceil(media.currentTime))
+        }
+      }
+
+      const nextPlayable = queueStore.next
+
+      if (!nextPlayable || nextPlayable.preloaded || this.isTranscoding) {
         return
       }
 
       if (media.duration && media.currentTime + PRELOAD_BUFFER > media.duration) {
-        this.preload(nextSong)
+        this.preload(nextPlayable)
       }
     }
 

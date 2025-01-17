@@ -1,17 +1,19 @@
 import isMobile from 'ismobilejs'
 import { isObject, mergeWith } from 'lodash'
-import { cleanup, render, RenderOptions } from '@testing-library/vue'
+import type { RenderOptions } from '@testing-library/vue'
+import userEvent from '@testing-library/user-event'
+import type { UserEvent } from '@testing-library/user-event/dist/types/setup/setup'
+import type { EventType } from '@testing-library/dom/types/events'
+import { cleanup, createEvent, fireEvent, render } from '@testing-library/vue'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { defineComponent, nextTick } from 'vue'
-import { commonStore, userStore } from '@/stores'
-import { http } from '@/services'
 import factory from '@/__tests__/factory'
-import { DialogBoxKey, MessageToasterKey, OverlayKey, RouterKey } from '@/symbols'
 import { DialogBoxStub, MessageToasterStub, OverlayStub } from '@/__tests__/stubs'
-import { routes } from '@/config'
+import { commonStore } from '@/stores/commonStore'
+import { userStore } from '@/stores/userStore'
+import { http } from '@/services/http'
+import { DialogBoxKey, MessageToasterKey, OverlayKey, RouterKey } from '@/symbols'
 import Router from '@/router'
-import userEvent from '@testing-library/user-event'
-import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup'
 
 // A deep-merge function that
 // - supports symbols as keys (_.merge doesn't)
@@ -19,22 +21,38 @@ import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup'
 // Credit: https://stackoverflow.com/a/60598589/794641
 const deepMerge = (first: object, second: object) => {
   return mergeWith(first, second, (a, b) => {
-    if (!isObject(b)) return b
+    if (!isObject(b)) {
+      return b
+    }
 
     // @ts-ignore
     return Array.isArray(a) ? [...a, ...b] : { ...a, ...b }
   })
 }
 
+const setPropIfNotExists = (obj: object | null, prop: any, value: any) => {
+  if (!obj) {
+    return
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(obj, prop)) {
+    obj[prop] = value
+  }
+}
+
 export default abstract class UnitTestCase {
-  private backupMethods = new Map()
   protected router: Router
   protected user: UserEvent
+  private backupMethods = new Map()
 
   public constructor () {
-    this.router = new Router(routes)
+    this.router = new Router()
     this.mock(http, 'request') // prevent actual HTTP requests from being made
     this.user = userEvent.setup({ delay: null }) // @see https://github.com/testing-library/user-event/issues/833
+
+    this.setReadOnlyProperty(navigator, 'clipboard', {
+      writeText: vi.fn(),
+    })
 
     this.beforeEach()
     this.afterEach()
@@ -43,28 +61,36 @@ export default abstract class UnitTestCase {
 
   protected beforeEach (cb?: Closure) {
     beforeEach(() => {
-      commonStore.state.allow_download = true
-      commonStore.state.use_i_tunes = true
-      cb && cb()
+      commonStore.state.song_length = 10
+      commonStore.state.allows_download = true
+      commonStore.state.uses_i_tunes = true
+      commonStore.state.supports_batch_downloading = true
+      commonStore.state.supports_transcoding = true
+      cb?.()
     })
   }
 
   protected afterEach (cb?: Closure) {
     afterEach(() => {
+      isMobile.any = false
+      commonStore.state.song_length = 10
       cleanup()
       this.restoreAllMocks()
-      isMobile.any = false
-      cb && cb()
+      cb?.()
     })
   }
 
-  protected actingAs (user?: User) {
-    userStore.state.current = user || factory<User>('user')
+  protected auth (user?: User) {
+    return this.be(user)
+  }
+
+  protected be (user?: User) {
+    userStore.state.current = user || factory('user')
     return this
   }
 
-  protected actingAsAdmin () {
-    return this.actingAs(factory.states('admin')<User>('user'))
+  protected beAdmin () {
+    return this.be(factory.states('admin')('user'))
   }
 
   protected mock<T, M extends MethodOf<Required<T>>> (obj: T, methodName: M, implementation?: any) {
@@ -91,53 +117,21 @@ export default abstract class UnitTestCase {
     return render(component, deepMerge({
       global: {
         directives: {
-          'charon-clickaway': {},
           'charon-focus': {},
           'charon-tooltip': {},
           'charon-hide-broken-icon': {},
-          'charon-overflow-fade': {}
+          'charon-overflow-fade': {},
         },
         components: {
-          icon: this.stub('icon')
-        }
-      }
+          Icon: this.stub('Icon'),
+        },
+      },
     }, this.supplyRequiredProvides(options)))
-  }
-
-  private supplyRequiredProvides (options: RenderOptions) {
-    options.global = options.global || {}
-    options.global.provide = options.global.provide || {}
-
-    // @ts-ignore
-    if (!options.global.provide?.hasOwnProperty(DialogBoxKey)) {
-      // @ts-ignore
-      options.global.provide[DialogBoxKey] = DialogBoxStub
-    }
-
-    // @ts-ignore
-    if (!options.global.provide?.hasOwnProperty(MessageToasterKey)) {
-      // @ts-ignore
-      options.global.provide[MessageToasterKey] = MessageToasterStub
-    }
-
-    // @ts-ignore
-    if (!options.global.provide.hasOwnProperty(OverlayKey)) {
-      // @ts-ignore
-      options.global.provide[OverlayKey] = OverlayStub
-    }
-
-    // @ts-ignore
-    if (!options.global.provide.hasOwnProperty(RouterKey)) {
-      // @ts-ignore
-      options.global.provide[RouterKey] = this.router
-    }
-
-    return options
   }
 
   protected stub (testId = 'stub') {
     return defineComponent({
-      template: `<br data-testid="${testId}"/>`
+      template: `<br data-testid="${testId}"/>`,
     })
   }
 
@@ -151,8 +145,8 @@ export default abstract class UnitTestCase {
     return Object.defineProperties(obj, {
       [prop]: {
         value,
-        configurable: true
-      }
+        configurable: true,
+      },
     })
   }
 
@@ -161,5 +155,21 @@ export default abstract class UnitTestCase {
     await this.user.type(element, value)
   }
 
+  protected async trigger (element: HTMLElement, key: EventType | string, options: object = {}) {
+    await fireEvent(element, createEvent[key](element, options))
+  }
+
   protected abstract test ()
+
+  private supplyRequiredProvides (options: RenderOptions) {
+    options.global = options.global || {}
+    options.global.provide = options.global.provide || {}
+
+    setPropIfNotExists(options.global.provide, DialogBoxKey, DialogBoxStub)
+    setPropIfNotExists(options.global.provide, MessageToasterKey, MessageToasterStub)
+    setPropIfNotExists(options.global.provide, OverlayKey, OverlayStub)
+    setPropIfNotExists(options.global.provide, RouterKey, this.router)
+
+    return options
+  }
 }

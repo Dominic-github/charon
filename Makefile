@@ -24,13 +24,17 @@ init:
 
 setup:
 	@make env
-	@make generate-key
+	@make key
 
 env:
 	$(COPY) .env.example .env
 
-generate-key:
+key:
 	php artisan key:generate
+
+build:
+	yarn build
+
 
 data:
 	@make migrate
@@ -42,12 +46,14 @@ migrate:
 seed:
 	php artisan db:seed
 
-up:
-	php artisan serve --host=localhost --port=80
+run:
+	php artisan serve --port=8000
 
 cache:
 	php artisan config:cache
-
+	
+sync:
+	php artisan charon:sync
 
 # For docker
 

@@ -11,12 +11,12 @@
     <meta name="theme-color" content="#282828">
     <meta name="msapplication-navbutton-color" content="#282828">
 
-    <base href="{{ asset('') }}">
     <link rel="manifest" href="{{ static_url('manifest.json') }}"/>
     <meta name="msapplication-config" content="{{ static_url('browserconfig.xml') }}"/>
     <link rel="icon" type="image/x-icon" href="{{ static_url('img/favicon.ico') }}"/>
     <link rel="icon" href="{{ static_url('img/icon.png') }}">
     <link rel="apple-touch-icon" href="{{ static_url('img/icon.png') }}">
+
 
     <script>
         // Work around for "global is not defined" error with local-storage.js
@@ -30,6 +30,8 @@
 
 <script>
     window.BASE_URL = @json(asset(''));
+    window.IS_DEMO = @json(config('charon.misc.demo'));
+
     window.PUSHER_APP_KEY = @json(config('broadcasting.connections.pusher.key'));
     window.PUSHER_APP_CLUSTER = @json(config('broadcasting.connections.pusher.options.cluster'));
 </script>

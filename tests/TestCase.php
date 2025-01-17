@@ -2,22 +2,19 @@
 
 namespace Tests;
 
-use App\Models\Album;
-use App\Models\Artist;
-use App\Models\Song;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use ReflectionClass;
+use Illuminate\Support\Facades\File;
 use Tests\Traits\CreatesApplication;
-use Tests\Traits\SandboxesTests;
+use Tests\Traits\MakesHttpRequests;
 
 abstract class TestCase extends BaseTestCase
 {
     use ArraySubsetAsserts;
     use CreatesApplication;
     use DatabaseTransactions;
-    use SandboxesTests;
+    use MakesHttpRequests;
 
     public function setUp(): void
     {
@@ -33,31 +30,24 @@ abstract class TestCase extends BaseTestCase
         parent::tearDown();
     }
 
-    protected static function createSampleMediaSet(): void
+    private static function createSandbox(): void
     {
-        /** @var Artist $artist */
-        $artist = Artist::factory()->create();
-
-        /** @var array<Album> $albums */
-        $albums = Album::factory(3)->create([
-            'artist_id' => $artist->id,
+        config([
+            'charon.album_cover_dir' => 'sandbox/img/covers/',
+            'charon.artist_image_dir' => 'sandbox/img/artists/',
+            'charon.playlist_cover_dir' => 'sandbox/img/playlists/',
+            'charon.user_avatar_dir' => 'sandbox/img/avatars/',
         ]);
 
-        // 7-15 songs per albums
-        foreach ($albums as $album) {
-            Song::factory(random_int(7, 15))->create([
-                'album_id' => $album->id,
-                'artist_id' => $artist->id,
-            ]);
-        }
+        File::ensureDirectoryExists(public_path(config('charon.album_cover_dir')));
+        File::ensureDirectoryExists(public_path(config('charon.artist_image_dir')));
+        File::ensureDirectoryExists(public_path(config('charon.playlist_cover_dir')));
+        File::ensureDirectoryExists(public_path(config('charon.user_avatar_dir')));
+        File::ensureDirectoryExists(public_path('sandbox/media/'));
     }
 
-    protected static function getNonPublicProperty($object, string $property) // @phpcs:ignore
+    private static function destroySandbox(): void
     {
-        $reflection = new ReflectionClass($object);
-        $property = $reflection->getProperty($property);
-        $property->setAccessible(true);
-
-        return $property->getValue($object);
+        File::deleteDirectory(public_path('sandbox'));
     }
 }

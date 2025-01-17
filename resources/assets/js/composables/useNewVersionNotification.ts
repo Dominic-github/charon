@@ -1,6 +1,6 @@
 import compareVersions from 'compare-versions'
 import { computed, toRef } from 'vue'
-import { commonStore } from '@/stores'
+import { commonStore } from '@/stores/commonStore'
 import { useAuthorization } from '@/composables/useAuthorization'
 
 export const useNewVersionNotification = () => {
@@ -13,13 +13,13 @@ export const useNewVersionNotification = () => {
   const shouldNotifyNewVersion = computed(() => isAdmin.value && hasNewVersion.value)
 
   const latestVersionReleaseUrl = computed(() => {
-    return `https://github.com/koel/koel/releases/tag/${latestVersion.value}`
+    return `https://github.com/dominic-github/charon/releases/tag/${latestVersion.value}`
   })
 
   return {
     shouldNotifyNewVersion,
     currentVersion,
     latestVersion,
-    latestVersionReleaseUrl
+    latestVersionReleaseUrl,
   }
 }

@@ -1,29 +1,37 @@
 <template>
-  <section id="genreWrapper">
-    <ScreenHeader v-if="genre" :layout="headerLayout">
-      Genre: <span class="text-thin">{{ decodeURIComponent(name!) }}</span>
-      <ControlsToggle v-if="songs.length" v-model="showingControls" />
+  <ScreenBase>
+    <template #header>
+      <ScreenHeader v-if="genre" :layout="headerLayout">
+        Genre: <span class="text-thin">{{ decodeURIComponent(name!) }}</span>
+        <ControlsToggle v-if="songs.length" v-model="showingControls" />
 
-      <template #thumbnail>
-        <ThumbnailStack :thumbnails="thumbnails" />
-      </template>
+        <template #thumbnail>
+          <ThumbnailStack :thumbnails="thumbnails" />
+        </template>
 
-      <template v-if="genre" #meta>
-        <span>{{ pluralize(genre.song_count, 'song') }}</span>
-        <span>{{ duration }}</span>
-      </template>
+        <template v-if="genre" #meta>
+          <span>{{ pluralize(genre.song_count, 'song') }}</span>
+          <span>{{ duration }}</span>
+        </template>
 
-      <template #controls>
-        <SongListControls v-if="!isPhone || showingControls" @play-all="playAll" @play-selected="playSelected" />
-      </template>
-    </ScreenHeader>
-    <ScreenHeaderSkeleton v-else />
+        <template #controls>
+          <SongListControls
+            v-if="!isPhone || showingControls"
+            :config="config"
+            @play-all="playAll"
+            @play-selected="playSelected"
+          />
+        </template>
+      </ScreenHeader>
+      <ScreenHeaderSkeleton v-else />
+    </template>
 
-    <SongListSkeleton v-if="showSkeletons" />
+    <SongListSkeleton v-if="showSkeletons" class="-m-6" />
     <SongList
       v-else
       ref="songList"
-      @sort="sort"
+      class="-m-6"
+      @sort="fetchWithSort"
       @press:enter="onPressEnter"
       @scroll-breakpoint="onScrollBreakpoint"
       @scrolled-to-end="fetch"
@@ -31,30 +39,35 @@
 
     <ScreenEmptyState v-if="!songs.length && !loading">
       <template #icon>
-        <icon :icon="faTags" />
+        <GuitarIcon size="96" />
       </template>
 
       No songs in this genre.
     </ScreenEmptyState>
-  </section>
+  </ScreenBase>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { faTags } from '@fortawesome/free-solid-svg-icons'
-import { eventBus, logger, pluralize, secondsToHumanReadable } from '@/utils'
-import { playbackService } from '@/services'
-import { genreStore, songStore } from '@/stores'
-import { useDialogBox, useRouter, useSongList } from '@/composables'
+import { GuitarIcon } from 'lucide-vue-next'
+import { pluralize, secondsToHumanReadable } from '@/utils/formatters'
+import { eventBus } from '@/utils/eventBus'
+import { playbackService } from '@/services/playbackService'
+import { genreStore } from '@/stores/genreStore'
+import { songStore } from '@/stores/songStore'
+import { useRouter } from '@/composables/useRouter'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useSongList } from '@/composables/useSongList'
+import { useSongListControls } from '@/composables/useSongListControls'
 
 import ScreenHeader from '@/components/ui/ScreenHeader.vue'
 import ScreenEmptyState from '@/components/ui/ScreenEmptyState.vue'
 import SongListSkeleton from '@/components/ui/skeletons/SongListSkeleton.vue'
 import ScreenHeaderSkeleton from '@/components/ui/skeletons/ScreenHeaderSkeleton.vue'
+import ScreenBase from '@/components/screens/ScreenBase.vue'
 
 const {
   SongList,
-  SongListControls,
   ControlsToggle,
   ThumbnailStack,
   headerLayout,
@@ -65,13 +78,14 @@ const {
   isPhone,
   onPressEnter,
   playSelected,
-  onScrollBreakpoint
-} = useSongList(ref<Song[]>([]))
+  onScrollBreakpoint,
+} = useSongList(ref<Song[]>([]), { type: 'Genre' }, { sortable: true, filterable: false })
 
-const { showErrorDialog } = useDialogBox()
-const { getRouteParam, go, onRouteChanged } = useRouter()
+const { SongListControls, config } = useSongListControls('Genre')
 
-let sortField: SongListSortField = 'title'
+const { getRouteParam, go, onRouteChanged, url } = useRouter()
+
+let sortField: MaybeArray<PlayableListSortField> = 'title'
 let sortOrder: SortOrder = 'asc'
 
 const randomSongCount = 500
@@ -84,33 +98,29 @@ const moreSongsAvailable = computed(() => page.value !== null)
 const showSkeletons = computed(() => loading.value && songs.value.length === 0)
 const duration = computed(() => secondsToHumanReadable(genre.value?.length ?? 0))
 
-const sort = async (field: SongListSortField, order: SortOrder) => {
-  page.value = 1
-  songs.value = []
-  sortField = field
-  sortOrder = order
-
-  await fetch()
-}
-
 const fetch = async () => {
-  if (!moreSongsAvailable.value || loading.value) return
+  if (!moreSongsAvailable.value || loading.value) {
+    return
+  }
 
   loading.value = true
 
   try {
-    let fetched
+    let fetched: { songs: Playable[], nextPage: number | null }
 
     [genre.value, fetched] = await Promise.all([
       genreStore.fetchOne(name.value!),
-      songStore.paginateForGenre(name.value!, sortField, sortOrder, page.value!)
+      songStore.paginateForGenre(name.value!, {
+        sort: sortField,
+        order: sortOrder,
+        page: page.value!,
+      }),
     ])
 
     page.value = fetched.nextPage
     songs.value.push(...fetched.songs)
-  } catch (e) {
-    showErrorDialog('Failed to fetch genre details or genre was not found.', 'Error')
-    logger.error(e)
+  } catch (error: unknown) {
+    useErrorHandler('dialog').handleHttpError(error)
   } finally {
     loading.value = false
   }
@@ -124,15 +134,28 @@ const refresh = async () => {
   await fetch()
 }
 
+const fetchWithSort = async (field: MaybeArray<PlayableListSortField>, order: SortOrder) => {
+  page.value = 1
+  songs.value = []
+  sortField = field
+  sortOrder = order
+
+  await fetch()
+}
+
 const getNameFromRoute = () => getRouteParam('name') ?? null
 
 onRouteChanged(route => {
-  if (route.screen !== 'Genre') return
+  if (route.screen !== 'Genre') {
+    return
+  }
   name.value = getNameFromRoute()
 })
 
 const playAll = async () => {
-  if (!genre.value) return
+  if (!genre.value) {
+    return
+  }
 
   // we ignore the queueAndPlay's await to avoid blocking the UI
   if (genre.value!.song_count <= randomSongCount) {
@@ -141,7 +164,7 @@ const playAll = async () => {
     playbackService.queueAndPlay(await songStore.fetchRandomForGenre(genre.value!, randomSongCount))
   }
 
-  go('queue')
+  go(url('queue'))
 }
 
 onMounted(() => (name.value = getNameFromRoute()))

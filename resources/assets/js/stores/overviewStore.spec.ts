@@ -1,8 +1,12 @@
 import { expect, it } from 'vitest'
-import factory from '@/__tests__/factory'
 import UnitTestCase from '@/__tests__/UnitTestCase'
-import { http } from '@/services'
-import { albumStore, artistStore, overviewStore, recentlyPlayedStore, songStore } from '.'
+import factory from '@/__tests__/factory'
+import { http } from '@/services/http'
+import { albumStore } from '@/stores/albumStore'
+import { artistStore } from '@/stores/artistStore'
+import { overviewStore } from '@/stores/overviewStore'
+import { recentlyPlayedStore } from '@/stores/recentlyPlayedStore'
+import { songStore } from '@/stores/songStore'
 
 new class extends UnitTestCase {
   protected beforeEach () {
@@ -13,7 +17,7 @@ new class extends UnitTestCase {
         recentlyAddedAlbums: [],
         mostPlayedSongs: [],
         mostPlayedAlbums: [],
-        mostPlayedArtists: []
+        mostPlayedArtists: [],
       }
     })
   }
@@ -23,14 +27,14 @@ new class extends UnitTestCase {
       const songSyncMock = this.mock(songStore, 'syncWithVault')
       const albumSyncMock = this.mock(albumStore, 'syncWithVault')
       const artistSyncMock = this.mock(artistStore, 'syncWithVault')
-      const refreshMock = this.mock(overviewStore, 'refresh')
+      const refreshMock = this.mock(overviewStore, 'refreshPlayStats')
 
-      const mostPlayedSongs = factory<Song>('song', 7)
-      const mostPlayedAlbums = factory<Album>('album', 6)
-      const mostPlayedArtists = factory<Artist>('artist', 6)
-      const recentlyAddedSongs = factory<Song>('song', 9)
-      const recentlyAddedAlbums = factory<Album>('album', 6)
-      const recentlyPlayedSongs = factory<Song>('song', 9)
+      const mostPlayedSongs = factory('song', 7)
+      const mostPlayedAlbums = factory('album', 6)
+      const mostPlayedArtists = factory('artist', 6)
+      const recentlyAddedSongs = factory('song', 9)
+      const recentlyAddedAlbums = factory('album', 6)
+      const recentlyPlayedSongs = factory('song', 9)
 
       const getMock = this.mock(http, 'get').mockResolvedValueOnce({
         most_played_songs: mostPlayedSongs,
@@ -38,10 +42,10 @@ new class extends UnitTestCase {
         most_played_artists: mostPlayedArtists,
         recently_added_songs: recentlyAddedSongs,
         recently_added_albums: recentlyAddedAlbums,
-        recently_played_songs: recentlyPlayedSongs
+        recently_played_songs: recentlyPlayedSongs,
       })
 
-      await overviewStore.init()
+      await overviewStore.fetch()
 
       expect(getMock).toHaveBeenCalledWith('overview')
       expect(songSyncMock).toHaveBeenNthCalledWith(1, mostPlayedSongs)
@@ -54,13 +58,13 @@ new class extends UnitTestCase {
     })
 
     it('refreshes the store', () => {
-      const mostPlayedSongs = factory<Song>('song', 7)
-      const recentlyPlayedSongs = factory<Song>('song', 9)
+      const mostPlayedSongs = factory('song', 7)
+      const recentlyPlayedSongs = factory('song', 9)
 
       const mostPlayedSongsMock = this.mock(songStore, 'getMostPlayed', mostPlayedSongs)
-      recentlyPlayedStore.excerptState.songs = recentlyPlayedSongs
+      recentlyPlayedStore.excerptState.playables = recentlyPlayedSongs
 
-      overviewStore.refresh()
+      overviewStore.refreshPlayStats()
 
       expect(mostPlayedSongsMock).toHaveBeenCalled()
 

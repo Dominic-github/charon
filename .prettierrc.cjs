@@ -8,6 +8,6 @@ module.exports = {
   singleQuote: true,
   printWidth: 80,
   jsxSingleQuote: true,
-  parser: "php",
-  plugins: ['@prettier/plugin-php']
+  parser: 'php',
+  plugins: ['@prettier/plugin-php'],
 }

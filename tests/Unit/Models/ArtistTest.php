@@ -3,11 +3,17 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Artist;
+use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+
+use function Tests\test_path;
 
 class ArtistTest extends TestCase
 {
-    public function testExistingArtistCanBeRetrievedUsingName(): void
+    #[Test]
+    public function existingArtistCanBeRetrievedUsingName(): void
     {
         /** @var Artist $artist */
         $artist = Artist::factory()->create(['name' => 'Foo']);
@@ -15,14 +21,15 @@ class ArtistTest extends TestCase
         self::assertTrue(Artist::getOrCreate('Foo')->is($artist));
     }
 
-    public function testNewArtistIsCreatedWithName(): void
+    #[Test]
+    public function newArtistIsCreatedWithName(): void
     {
         self::assertNull(Artist::query()->where('name', 'Foo')->first());
         self::assertSame('Foo', Artist::getOrCreate('Foo')->name);
     }
 
     /** @return array<mixed> */
-    public function provideEmptyNames(): array
+    public static function provideEmptyNames(): array
     {
         return [
             [''],
@@ -32,15 +39,17 @@ class ArtistTest extends TestCase
         ];
     }
 
-    /** @dataProvider provideEmptyNames */
-    public function testGettingArtistWithEmptyNameReturnsUnknownArtist($name): void
+    #[DataProvider('provideEmptyNames')]
+    #[Test]
+    public function gettingArtistWithEmptyNameReturnsUnknownArtist($name): void
     {
         self::assertTrue(Artist::getOrCreate($name)->is_unknown);
     }
 
-    public function testArtistsWithNameInUtf16EncodingAreRetrievedCorrectly(): void
+    #[Test]
+    public function artistsWithNameInUtf16EncodingAreRetrievedCorrectly(): void
     {
-        $name = file_get_contents(__DIR__ . '../../../blobs/utf16');
+        $name = File::get(test_path('blobs/utf16'));
         $artist = Artist::getOrCreate($name);
 
         self::assertTrue(Artist::getOrCreate($name)->is($artist));

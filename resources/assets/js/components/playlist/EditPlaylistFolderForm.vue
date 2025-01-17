@@ -5,17 +5,9 @@
     </header>
 
     <main>
-      <div class="form-row">
-        <input
-          v-model="name"
-          v-charon-focus
-          name="name"
-          placeholder="Folder name"
-          required
-          title="Folder name"
-          type="text"
-        >
-      </div>
+      <FormRow>
+        <TextInput v-model="name" v-charon-focus name="name" placeholder="Folder name" required title="Folder name" />
+      </FormRow>
     </main>
 
     <footer>
@@ -27,18 +19,27 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { logger } from '@/utils'
-import { playlistFolderStore } from '@/stores'
-import { useDialogBox, useMessageToaster, useModal, useOverlay } from '@/composables'
+import { playlistFolderStore } from '@/stores/playlistFolderStore'
+import { useDialogBox } from '@/composables/useDialogBox'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { useOverlay } from '@/composables/useOverlay'
+import { useModal } from '@/composables/useModal'
 
-import Btn from '@/components/ui/Btn.vue'
+import Btn from '@/components/ui/form/Btn.vue'
+import TextInput from '@/components/ui/form/TextInput.vue'
+import FormRow from '@/components/ui/form/FormRow.vue'
+
+const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { showOverlay, hideOverlay } = useOverlay()
 const { toastSuccess } = useMessageToaster()
-const { showConfirmDialog, showErrorDialog } = useDialogBox()
+const { showConfirmDialog } = useDialogBox()
 const folder = useModal().getFromContext<PlaylistFolder>('folder')
 
 const name = ref(folder.name)
+
+const close = () => emit('close')
 
 const submit = async () => {
   showOverlay()
@@ -47,16 +48,12 @@ const submit = async () => {
     await playlistFolderStore.rename(folder, name.value)
     toastSuccess('Playlist folder renamed.')
     close()
-  } catch (error) {
-    showErrorDialog('Something went wrong. Please try again.', 'Error')
-    logger.error(error)
+  } catch (error: unknown) {
+    useErrorHandler('dialog').handleHttpError(error)
   } finally {
     hideOverlay()
   }
 }
-
-const emit = defineEmits<{ (e: 'close'): void }>()
-const close = () => emit('close')
 
 const maybeClose = async () => {
   if (name.value.trim() === folder.name) {
