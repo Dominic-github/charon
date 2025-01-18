@@ -1,17 +1,17 @@
 <?php
 
-namespace Tests\Feature\KoelPlus\SSO;
+namespace Tests\Feature;
 
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as GoogleUser;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\PlusTestCase;
+use Tests\TestCase;
 
 use function Tests\create_user;
 
-class GoogleTest extends PlusTestCase
+class GoogleTest extends TestCase
 {
     #[Test]
     public function callbackWithNewUser(): void

@@ -46,4 +46,58 @@ class ArtistImageTest extends TestCase
         $this->putAs('api/artist/9999/image', ['image' => 'data:image/jpeg;base64,Rm9v'])
             ->assertForbidden();
     }
+    
+    #[Test]
+    public function normalUserCanUploadImageIfOwningAllSongsInArtist(): void
+    {
+        $user = create_user();
+
+        /** @var Artist $artist */
+        $artist = Artist::factory()->create();
+        $artist->songs()->saveMany(Song::factory()->for($user, 'owner')->count(3)->create());
+
+        $this->mediaMetadataService
+            ->shouldReceive('writeArtistImage')
+            ->once()
+            ->with(Mockery::on(static fn (Artist $target) => $target->is($artist)), 'data:image/jpeg;base64,Rm9v');
+
+        $this->putAs("api/artists/$artist->id/image", ['image' => 'data:image/jpeg;base64,Rm9v'], $user)
+            ->assertOk();
+    }
+
+    #[Test]
+    public function normalUserCannotUploadImageIfNotOwningAllSongsInArtist(): void
+    {
+        $user = create_user();
+
+        /** @var Artist $artist */
+        $artist = Artist::factory()->create();
+        $artist->songs()->saveMany(Song::factory()->for($user, 'owner')->count(3)->create());
+        $artist->songs()->save(Song::factory()->create());
+
+        $this->mediaMetadataService
+            ->shouldReceive('writeArtistImage')
+            ->never();
+
+        $this->putAs("api/artists/$artist->id/image", ['image' => 'data:image/jpeg;base64,Rm9v'], $user)
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function adminCanUploadImageEvenIfNotOwningAllSongsInArtist(): void
+    {
+        $user = create_user();
+
+        /** @var Artist $artist */
+        $artist = Artist::factory()->create();
+        $artist->songs()->saveMany(Song::factory()->for($user, 'owner')->count(3)->create());
+
+        $this->mediaMetadataService
+            ->shouldReceive('writeArtistImage')
+            ->once()
+            ->with(Mockery::on(static fn (Artist $target) => $target->is($artist)), 'data:image/jpeg;base64,Rm9v');
+
+        $this->putAs("api/artists/$artist->id/image", ['image' => 'data:image/jpeg;base64,Rm9v'], create_admin())
+            ->assertOk();
+    }
 }

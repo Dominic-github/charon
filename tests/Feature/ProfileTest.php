@@ -101,4 +101,32 @@ class ProfileTest extends TestCase
 
         self::assertNull($user->getRawOriginal('avatar'));
     }
+
+    #[Test]
+    public function updateSSOProfile(): void
+    {
+        $user = create_user([
+            'sso_provider' => 'Google',
+            'sso_id' => '123',
+            'email' => 'user@charon.dev',
+            'name' => 'SSO User',
+            'avatar' => null,
+            // no current password required for SSO users
+        ]);
+
+        self::assertTrue($user->is_sso);
+        self::assertFalse($user->has_custom_avatar);
+
+        $this->putAs('api/me', [
+            'name' => 'Bruce Dickinson',
+            'email' => 'bruce@iron.com',
+            'avatar' => read_as_data_url(test_path('blobs/cover.png')),
+        ], $user)->assertOk();
+
+        $user->refresh();
+
+        self::assertSame('Bruce Dickinson', $user->name);
+        self::assertSame('user@charon.dev', $user->email); // email should not be updated
+        self::assertTrue($user->has_custom_avatar);
+    }
 }

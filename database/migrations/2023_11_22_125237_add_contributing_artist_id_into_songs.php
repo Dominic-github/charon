@@ -25,7 +25,17 @@ class AddContributingArtistIdIntoSongs extends Migration
     public function down(): void
     {
         Schema::table('songs', static function (Blueprint $table): void {
-            $table->dropColumn('contributing_artist_id');
+            rescue_if(Schema::hasColumn('songs', 'contributing_artist_id'), static function () use ($table): void {
+                Schema::disableForeignKeyConstraints();
+
+                if (DB::getDriverName() !== 'sqlite') { // @phpstan-ignore-line
+                    $table->dropForeign('songs_contributing_artist_id_foreign');
+                }
+
+                $table->dropColumn('contributing_artist_id');
+                Schema::enableForeignKeyConstraints();
+            });
         });
+        
     }
 }

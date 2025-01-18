@@ -58,4 +58,28 @@ class PlaylistCoverTest extends TestCase
 
         self::assertSame('cover.jpg', $playlist->refresh()->getRawOriginal('cover'));
     }
+
+    #[Test]
+    public function collaboratorCanNotUploadCover(): void
+    {
+        /** @var Playlist $playlist */
+        $playlist = Playlist::factory()->create();
+        $collaborator = create_user();
+        $playlist->addCollaborator($collaborator);
+
+        $this->putAs("api/playlists/$playlist->id/cover", ['cover' => 'data:image/jpeg;base64,Rm9v'], $collaborator)
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function collaboratorCannotDeleteCover(): void
+    {
+        /** @var Playlist $playlist */
+        $playlist = Playlist::factory()->create();
+        $collaborator = create_user();
+        $playlist->addCollaborator($collaborator);
+
+        $this->deleteAs("api/playlists/$playlist->id/cover", [], $collaborator)
+            ->assertForbidden();
+    }
 }

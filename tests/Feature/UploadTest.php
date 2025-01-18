@@ -20,7 +20,7 @@ class UploadTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
+        
         $this->file = UploadedFile::fromFile(test_path('songs/full.mp3'), 'song.mp3'); //@phpstan-ignore-line
     }
 
@@ -55,5 +55,21 @@ class UploadTest extends TestCase
         Setting::set('media_path', public_path('sandbox/media'));
 
         $this->postAs('/api/upload', ['file' => $this->file], create_admin())->assertJsonStructure(['song', 'album']);
+    }
+
+    #[Test]
+    public function uploads(): void
+    {
+        Setting::set('media_path', public_path('sandbox/media'));
+
+        $user = create_user();
+
+        $this->postAs('api/upload', ['file' => $this->file], $user)->assertSuccessful();
+        self::assertDirectoryExists(public_path("sandbox/media/__CHARON_UPLOADS_\${$user->id}__"));
+
+        /** @var Song $song */
+        $song = Song::query()->latest()->first();
+        self::assertSame($song->owner_id, $user->id);
+        self::assertFalse($song->is_public);
     }
 }
