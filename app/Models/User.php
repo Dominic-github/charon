@@ -125,7 +125,7 @@ class User extends Authenticatable
 
     protected function isSso(): Attribute
     {
-        return Attribute::get(fn (): bool => $this->sso_provider)->shouldCache();
+        return Attribute::get(fn (): bool => (bool) $this->sso_provider)->shouldCache();
     }
 
     protected function connectedToLastfm(): Attribute
