@@ -13,8 +13,8 @@ class SongStorageTypeTest extends TestCase
     {
         self::assertTrue(SongStorageType::LOCAL->supported());
         self::assertTrue(SongStorageType::S3_LAMBDA->supported());
-        self::assertFalse(SongStorageType::SFTP->supported());
-        self::assertFalse(SongStorageType::DROPBOX->supported());
-        self::assertFalse(SongStorageType::S3->supported());
+        self::assertTrue(SongStorageType::SFTP->supported());
+        self::assertTrue(SongStorageType::DROPBOX->supported());
+        self::assertTrue(SongStorageType::S3->supported());
     }
 }

@@ -11,7 +11,6 @@ use App\Values\SmartPlaylistRuleGroupCollection;
 use Illuminate\Support\Collection;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
-use Tests\PlusTestCase;
 use Tests\TestCase;
 use Webmozart\Assert\InvalidArgumentException;
 

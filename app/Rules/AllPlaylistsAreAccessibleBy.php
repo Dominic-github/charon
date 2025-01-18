@@ -15,13 +15,12 @@ final class AllPlaylistsAreAccessibleBy implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        
-        $accessiblePlaylists = $accessiblePlaylists->merge($this->user->collaboratedPlaylists);
+       $accessiblePlaylists = $this->user->playlists;
 
-        if (array_diff(Arr::wrap($value), $accessiblePlaylists->pluck('id')->toArray())) {
-            $fail(
-                 'Not all playlists are accessible by the user'
-            );
+       $accessiblePlaylists = $accessiblePlaylists->merge($this->user->collaboratedPlaylists);
+
+       if (array_diff(Arr::wrap($value), $accessiblePlaylists->modelKeys())) {
+            $fail('Not all playlists are accessible by the user');
         }
     }
 }
