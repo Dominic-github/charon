@@ -65,8 +65,6 @@ Dowload [cacert.pem](https://curl.se/ca/cacert.pem)
 [![paypal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/DominicPPal)
 [![patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/Dominic_patreon)
 
-<br/>
-
 ## License
 
 [MIT license](https://opensource.org/licenses/MIT).
