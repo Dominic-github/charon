@@ -9,10 +9,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRefs } from 'vue'
+import { computed, toRefs } from 'vue'
 import defaultCover from '@/../img/covers/default.svg'
 
 const props = defineProps<{ user: Pick<User, 'name' | 'avatar'> }>()
 const { user } = toRefs(props)
-const avatar = ref(user.value.avatar)
+
+const avatar = computed(() => user.value.avatar)
 </script>
