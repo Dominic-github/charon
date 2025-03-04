@@ -42,13 +42,14 @@ Dowload [cacert.pem](https://curl.se/ca/cacert.pem)
   extension=xsl
   extension=sodium
   extension=pdo_sqlite
+  extension=sqlite3
 
   ; Curl
   [curl]
-  curl.cainfo = "C:\xampp\php\extras\ssl\cacert.pem"
+  curl.cainfo = "C:\php\extras\ssl\cacert.pem" ; file path cacert.pem
   ; Openssl
   [openssl]
-  openssl.cafile = "C:\xampp\php\extras\ssl\cacert.pem"
+  openssl.cafile = "C:\php\extras\ssl\cacert.pem" ; file path cacert.pem
 
   ; Maximum allowed size for uploaded files.
   upload_max_filesize = 1000M
