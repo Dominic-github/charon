@@ -43,6 +43,7 @@ Dowload [cacert.pem](https://curl.se/ca/cacert.pem)
   extension=sodium
   extension=pdo_sqlite
   extension=sqlite3
+  extension=zip
 
   ; Curl
   [curl]
