@@ -1,19 +1,19 @@
 <template>
-  <footer class="h-[18vh] w-screen flex justify-around items-center border-t border-solid border-t-white/10 py-4">
+  <footer class="h-[18vh] pc:h-[12vh] w-screen pc:w-[430px] pc:w-500 flex justify-around items-center border-t border-solid border-t-white/10 py-4">
     <button
-      class="text-[5vmin] has-[.yep]:text-k-love"
+      class="text-[5vmin] pc:text-[3vmin] has-[.yep]:text-k-love"
       data-testid="btn-toggle-favorite"
       @click.prevent="toggleFavorite"
     >
       <Icon :class="playable.liked && 'yep'" :icon="playable.liked ? faHeart : faEmptyHeart" />
     </button>
 
-    <button class="text-[6vmin]" data-testid="btn-play-prev" @click.prevent="playPrev">
+    <button class="text-[6vmin] pc:text-[3vmin]" data-testid="btn-play-prev" @click.prevent="playPrev">
       <Icon :icon="faStepBackward" />
     </button>
 
     <button
-      class="text-[7vmin] w-[16vmin] aspect-square border border-solid border-k-text-primary rounded-full flex
+      class="text-[7vmin] pc:text-[3vmin] w-[16vmin] pc:w-[6vmin] aspect-square border border-solid border-k-text-primary rounded-full flex
       items-center justify-center has-[.paused]:pl-[4px]"
       data-testid="btn-toggle-playback"
       @click.prevent="togglePlayback"
@@ -21,11 +21,11 @@
       <Icon :class="playing || 'paused'" :icon="playing ? faPause : faPlay" />
     </button>
 
-    <button class="text-[6vmin]" data-testid="btn-play-next" @click.prevent="playNext">
+    <button class="text-[6vmin] pc:text-[3vmin]" data-testid="btn-play-next" @click.prevent="playNext">
       <Icon :icon="faStepForward" />
     </button>
 
-    <VolumeControl class="text-[5vmin]" />
+    <VolumeControl class="text-[5vmin] pc:text-[3vmin]" />
   </footer>
 </template>
 

@@ -29,6 +29,7 @@ export default {
       },
       screens: {
         'no-hover': { raw: '(hover: none)' },
+        'pc': '500px' 
       },
     },
   },

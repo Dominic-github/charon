@@ -2,8 +2,8 @@
   <article>
     <main class="relative">
       <template v-if="song">
-        <div v-show="song.lyrics">
-          <pre class="font-sans whitespace-pre-wrap leading-relaxed">{{ lyrics }}</pre>
+        <div v-show="song.lyrics" class="relative">
+          <pre class="font-sans whitespace-pre-wrap leading-relaxed pt-12">{{ lyrics }}</pre>
           <span class="magnifier-wrapper opacity-0 absolute top-0 right-0 hover:!opacity-100">
             <Magnifier @in="zoomIn" @out="zoomOut" />
           </span>
