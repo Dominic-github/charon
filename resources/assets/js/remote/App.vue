@@ -17,10 +17,10 @@
 
     <div v-else class="h-screen flex flex-col items-center justify-center">
       <div v-if="isLogin">
-      <LoginForm @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" />
+        <LoginForm @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" />
       </div>
       <div v-else>
-        <RegisterForm  @toggle-is-login="toggleIsLogin" @registeredin="onUserRegisteredIn" />
+        <RegisterForm @toggle-is-login="toggleIsLogin" @registeredin="onUserRegisteredIn" />
       </div>
     </div>
   </div>
@@ -37,8 +37,8 @@ import { isSong } from '@/utils/typeGuards'
 import { MessageToasterKey} from '@/symbols'
 import { logger } from '@/utils/logger'
 import type { RemoteState } from '@/remote/types'
-
 import MessageToaster from '@/components/ui/message-toaster/MessageToaster.vue'
+
 const PlayableDetails = defineAsyncComponent(() => import('@/remote/components/PlayableDetails.vue'))
 const Scanner = defineAsyncComponent(() => import('@/remote/components/Scanner.vue'))
 const RemoteFooter = defineAsyncComponent(() => import('@/remote/components/RemoteFooter.vue'))
@@ -67,7 +67,6 @@ const showAlbumArtOverlay = computed(() => {
 const toggleIsLogin = () => {
   isLogin.value = !isLogin.value
 }
-
 
 const onUserRegisteredIn = async () => {
   isLogin.value = true
