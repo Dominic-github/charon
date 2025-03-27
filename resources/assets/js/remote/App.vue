@@ -1,5 +1,6 @@
 <template>
-  <div :class="{ standalone: inStandaloneMode }" class="h-screen flex items-center justify-center bg-k-bg-primary overflow-auto pc:pt-4 pc:pb-4">
+  <MessageToaster ref="toaster" />
+  <div :class="{ standalone: inStandaloneMode }" class="h-screen flex items-center justify-center bg-k-bg-primary overflow-y-auto pc:pt-4 pc:pb-4">
     <template v-if="authenticated">
       <AlbumArtOverlay v-if="showAlbumArtOverlay" :album="(state.playable as Song).album_id" />
       <main class="h-screen pc:h-[90vh] pc:w-[500px] flex flex-col items-center justify-between text-center relative z-[1]">
@@ -15,29 +16,40 @@
     </template>
 
     <div v-else class="h-screen flex flex-col items-center justify-center">
-      <LoginForm @loggedin="onUserLoggedIn" />
+      <div v-if="isLogin">
+      <LoginForm @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" />
+      </div>
+      <div v-else>
+        <RegisterForm  @toggle-is-login="toggleIsLogin" @registeredin="onUserRegisteredIn" />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { defineAsyncComponent as defineAsyncComponentWithLoadingState } from '@/utils/helpers'
 import { computed, defineAsyncComponent, onMounted, provide, reactive, ref } from 'vue'
 import { authService } from '@/services/authService'
 import { socketService } from '@/services/socketService'
 import { preferenceStore } from '@/stores/preferenceStore'
 import { userStore } from '@/stores/userStore'
 import { isSong } from '@/utils/typeGuards'
+import { MessageToasterKey} from '@/symbols'
 import { logger } from '@/utils/logger'
 import type { RemoteState } from '@/remote/types'
 
+import MessageToaster from '@/components/ui/message-toaster/MessageToaster.vue'
 const PlayableDetails = defineAsyncComponent(() => import('@/remote/components/PlayableDetails.vue'))
 const Scanner = defineAsyncComponent(() => import('@/remote/components/Scanner.vue'))
 const RemoteFooter = defineAsyncComponent(() => import('@/remote/components/RemoteFooter.vue'))
 const AlbumArtOverlay = defineAsyncComponent(() => import('@/components/ui/AlbumArtOverlay.vue'))
-const LoginForm = defineAsyncComponent(() => import('@/components/auth/LoginForm.vue'))
+const LoginForm = defineAsyncComponentWithLoadingState(() => import('@/components/auth/LoginForm.vue'))
+const RegisterForm = defineAsyncComponentWithLoadingState(() => import('@/components/auth/RegisterForm.vue'))
 
+const toaster = ref<InstanceType<typeof MessageToaster>>()
 const authenticated = ref(false)
 const connected = ref(false)
+const isLogin = ref(true)
 
 const state = reactive<RemoteState>({
   playable: null,
@@ -51,6 +63,15 @@ const showAlbumArtOverlay = computed(() => {
     && state.playable
     && isSong(state.playable)
 })
+
+const toggleIsLogin = () => {
+  isLogin.value = !isLogin.value
+}
+
+
+const onUserRegisteredIn = async () => {
+  isLogin.value = true
+}
 
 const inStandaloneMode = ref(
   (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches,
@@ -88,6 +109,8 @@ onMounted(async () => {
     await init()
   }
 })
+provide(MessageToasterKey, toaster)
+
 </script>
 
 <style lang="postcss" scoped>
