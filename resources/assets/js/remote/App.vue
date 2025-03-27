@@ -1,15 +1,13 @@
 <template>
-  <div :class="{ standalone: inStandaloneMode }" class="h-screen flex items-center justify-center bg-k-bg-primary overflow-auto pc:pt-4 pc:pb-4" >
-    <template v-if="authenticated" class=" pt-4 pb-4">
+  <div :class="{ standalone: inStandaloneMode }" class="h-screen flex items-center justify-center bg-k-bg-primary overflow-auto pc:pt-4 pc:pb-4">
+    <template v-if="authenticated">
       <AlbumArtOverlay v-if="showAlbumArtOverlay" :album="(state.playable as Song).album_id" />
-
       <main class="h-screen pc:h-[90vh] pc:w-[500px] flex flex-col items-center justify-between text-center relative z-[1]">
         <template v-if="connected">
           <template v-if="state.playable">
             <PlayableDetails :playable="state.playable" />
             <RemoteFooter :playable="state.playable" />
           </template>
-
           <p v-else class="text-k-text-secondary">No song is playing.</p>
         </template>
         <Scanner v-else />
