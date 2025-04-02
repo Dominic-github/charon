@@ -34,8 +34,8 @@ defineExpose({
 })
 </script>
 
-<style lang="postcss" scoped>
+<style scoped>
 select {
-  background: none; /* remove background AND the dropdown arrow. Tailwind doesn't have a way to do this. */
+  color: white;
 }
 </style>
