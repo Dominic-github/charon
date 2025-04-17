@@ -20,7 +20,7 @@
         <LoginForm @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" />
       </div>
       <div v-else>
-        <RegisterForm @toggle-is-login="toggleIsLogin" @registeredin="onUserRegisteredIn" />
+        <RegisterForm @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" @registeredin="onUserRegisteredIn" />
       </div>
     </div>
   </div>

@@ -35,6 +35,9 @@
         <p class="register text-center">Already have an account? <a style="font-weight: 500;" @click="goLogin">Login</a></p>
       </FormRow>
     </form>
+    <div v-if="ssoProviders.length" class="flex gap-3 items-center">
+      <GoogleLoginButton v-if="ssoProviders.includes('Google')" @error="onSSOError" @success="onSSOSuccess" />
+    </div>
   </div>
 </template>
 
@@ -42,17 +45,16 @@
 import { ref } from 'vue'
 import { authService } from '@/services/authService'
 import { logger } from '@/utils/logger'
-import type { CreateUserData } from '@/stores/userStore'
-import { userStore } from '@/stores/userStore'
 import { useMessageToaster } from '@/composables/useMessageToaster'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
+import GoogleLoginButton from '@/components/auth/sso/GoogleLoginButton.vue'
 import Btn from '@/components/ui/form/Btn.vue'
 import PasswordField from '@/components/ui/form/PasswordField.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
 
-const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'toggleIsLogin'): void }>()
+const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
 
 const { toastSuccess } = useMessageToaster()
 
@@ -69,10 +71,20 @@ const password = ref(DEFAULT.password)
 const rePassword = ref(DEFAULT.rePassword)
 const failed = ref(false)
 
-// const newUser = reactive<CreateUserData>(Object.assign({}, emptyUserData))
+const ssoProviders = window.SSO_PROVIDERS || []
 
 const goLogin = () => {
   emit('toggleIsLogin')
+}
+
+const onSSOError = (error: any) => {
+  logger.error('SSO error: ', error)
+  useMessageToaster().toastError('Login failed. Please try again.')
+}
+
+const onSSOSuccess = (token: CompositeToken) => {
+  authService.setTokensUsingCompositeToken(token)
+  emit('loggedin')
 }
 
 const register = async () => {

@@ -30,7 +30,7 @@
       <LoginForm v-if="layout === 'auth'" @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" />
     </div>
     <div v-else>
-      <RegisterForm v-if="layout === 'auth'" @toggle-is-login="toggleIsLogin" @registeredin="onUserRegisteredIn" />
+      <RegisterForm v-if="layout === 'auth'" @toggle-is-login="toggleIsLogin" @loggedin="onUserLoggedIn" @registeredin="onUserRegisteredIn" />
     </div>
   </div>
 
