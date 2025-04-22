@@ -28,7 +28,7 @@
           </h2>
           <div class="prose text-gray-200">
             <div v-for="(item, i) in section.content" :key="i" class="list-disc pl-5 space-y-2">
-              <h3 v-if="item.startsWith('*')" class="text-xl font-bold">{{ item.slice(1) }} </h3>
+              <p v-if="item.startsWith('*')" class="text-xl font-bold">{{ item.slice(1) }} </p>
               <li v-else-if="item.startsWith('-')"> {{ item.slice(1) }}</li>
               <p v-else>{{ item }}</p>
               <br>
