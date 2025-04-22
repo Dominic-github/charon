@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen mx-4 flex-col gap-5">
+  <div v-if="!showAgreement" class="flex items-center justify-center min-h-screen mx-4 flex-col gap-5">
     <form
       :class="{ error: failed }"
       class="w-full sm:w-[302px] sm:border duration-500 p-7 rounded-xl border-transparent sm:bg-white/6 space-y-3 "
@@ -26,6 +26,14 @@
         <PasswordField v-model="rePassword" placeholder="Confirm Password" required />
         <template #help>Min. 10 characters. Should be a mix of characters, numbers, and symbols.</template>
       </FormRow>
+      <FormRow>
+        <div>
+          <CheckBox v-model="terms" name="terms" required />
+          <label class="text-k-text-secondary">
+            I have read and agree to <a @click="toggleAgreement">the terms of service</a>.
+          </label>
+        </div>
+      </FormRow>
 
       <FormRow>
         <Btn data-testid="submit" type="submit">Create Account</Btn>
@@ -39,6 +47,7 @@
       <GoogleLoginButton v-if="ssoProviders.includes('Google')" @error="onSSOError" @success="onSSOSuccess" />
     </div>
   </div>
+  <Agreement v-else @toggle-agreement="toggleAgreement" />
 </template>
 
 <script lang="ts" setup>
@@ -47,14 +56,19 @@ import { authService } from '@/services/authService'
 import { logger } from '@/utils/logger'
 import { useMessageToaster } from '@/composables/useMessageToaster'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { defineAsyncComponent as defineAsyncComponentWithLoadingState } from '@/utils/helpers'
 
 import GoogleLoginButton from '@/components/auth/sso/GoogleLoginButton.vue'
 import Btn from '@/components/ui/form/Btn.vue'
 import PasswordField from '@/components/ui/form/PasswordField.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
+import CheckBox from '@/components/ui/form/CheckBox.vue'
+
 import FormRow from '@/components/ui/form/FormRow.vue'
 
 const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
+
+const Agreement = defineAsyncComponentWithLoadingState(() => import('@/components/auth/Agreement.vue'))
 
 const { toastSuccess } = useMessageToaster()
 
@@ -65,16 +79,22 @@ const DEFAULT = {
   rePassword: '',
 }
 
+const showAgreement = ref(false)
 const fullName = ref(DEFAULT.fullName)
 const email = ref(DEFAULT.email)
 const password = ref(DEFAULT.password)
 const rePassword = ref(DEFAULT.rePassword)
 const failed = ref(false)
+const terms = ref(false)
 
 const ssoProviders = window.SSO_PROVIDERS || []
 
 const goLogin = () => {
   emit('toggleIsLogin')
+}
+
+const toggleAgreement = () => {
+  showAgreement.value = !showAgreement.value
 }
 
 const onSSOError = (error: any) => {
