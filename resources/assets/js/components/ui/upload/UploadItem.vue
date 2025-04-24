@@ -11,6 +11,12 @@
         <span v-if="file.status === 'Errored'" v-charon-tooltip.left :title="file.message" class="info !px-3">
           <Icon :icon="faInfoCircle" :title="file.message" />
         </span>
+        <Btn v-if="canDone" class="!px-3" icon-only title="Edit" transparent unrounded @click.prevent="done">
+          <Icon :icon="faCheck" />
+        </Btn>
+        <Btn v-if="canEdit" class="!px-3" icon-only title="Edit" transparent unrounded @click.prevent="() => file.song && eventBus.emit('MODAL_SHOW_EDIT_SONG_FORM', file.song, 'details')">
+          <Icon :icon="faPen" />
+        </Btn>
         <Btn v-if="canRetry" class="!px-3" icon-only title="Retry" transparent unrounded @click="retry">
           <Icon :icon="faRotateBack" />
         </Btn>
@@ -24,10 +30,11 @@
 
 <script lang="ts" setup>
 import slugify from 'slugify'
-import { faInfoCircle, faRotateBack, faTrashCan } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faInfoCircle, faPen, faRotateBack, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { computed, defineAsyncComponent, toRefs } from 'vue'
 import type { UploadFile } from '@/services/uploadService'
 import { uploadService } from '@/services/uploadService'
+import { eventBus } from '@/utils/eventBus'
 
 const props = defineProps<{ file: UploadFile }>()
 
@@ -36,10 +43,13 @@ const Btn = defineAsyncComponent(() => import('@/components/ui/form/Btn.vue'))
 const { file } = toRefs(props)
 
 const canRetry = computed(() => file.value.status === 'Canceled' || file.value.status === 'Errored')
-const canRemove = computed(() => file.value.status !== 'Uploading') // we're not supporting cancel tokens (yet).
+const canRemove = computed(() => file.value.status === 'Errored')
+const canDone = computed(() => file.value.status === 'Uploaded' && file.value.id)
+const canEdit = computed(() => file.value.status === 'Uploaded' && file.value.id)
 const cssClass = computed(() => slugify(file.value.status).toLowerCase())
 const progressBarWidth = computed(() => file.value.status === 'Uploading' ? `${file.value.progress}%` : '0')
 
+const done = () => uploadService.removeFile(file.value)
 const remove = () => uploadService.remove(file.value)
 const retry = () => uploadService.retry(file.value)
 </script>

@@ -23,6 +23,8 @@ export type UploadStatus =
 export interface UploadFile {
   id: string
   file: File
+  song?: Song
+  album?: Album
   status: UploadStatus
   name: string
   progress: number
@@ -86,6 +88,7 @@ export const uploadService = {
         file.progress = progressEvent.loaded * 100 / progressEvent.total
       })
 
+      file.song = result.song
       file.status = 'Uploaded'
 
       songStore.syncWithVault(result.song)
@@ -95,7 +98,7 @@ export const uploadService = {
 
       this.proceed() // upload the next file
 
-      window.setTimeout(() => this.remove(file), 1000)
+      // window.setTimeout(() => this.remove(file), 100000)
     } catch (error: unknown) {
       logger.error(error)
       file.status = 'Errored'
@@ -108,6 +111,10 @@ export const uploadService = {
 
       this.proceed() // upload the next file
     }
+  },
+
+  removeFile (file: UploadFile) {
+    this.remove(file)
   },
 
   retry (file: UploadFile) {
