@@ -63,8 +63,14 @@ class SetupDropboxStorageCommand extends Command
             return self::FAILURE;
         }
 
-        $config['DROPBOX_REFRESH_TOKEN'] = $response->json('refresh_token');
+        Cache::put(
+            'dropbox_access_token',
+            $response->json('access_token'),
+            now()->addSeconds($response->json('expires_in') - 60) // 60 seconds buffer
+        );
 
+        $config['DROPBOX_REFRESH_TOKEN'] = $response->json('refresh_token');
+        
         $this->dotenvEditor->setKeys($config);
         $this->dotenvEditor->save();
         Artisan::call('config:clear', ['--quiet' => true]);

@@ -56,7 +56,7 @@ final class DropboxStorage extends CloudStorage
         if ($accessToken) {
             return $accessToken;
         }
-
+        
         $response = Http::asForm()
             ->withBasicAuth($this->config['app_key'], $this->config['app_secret'])
             ->post('https://api.dropboxapi.com/oauth2/token', [
