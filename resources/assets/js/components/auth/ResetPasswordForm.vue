@@ -2,6 +2,7 @@
   <div class="flex items-center justify-center h-screen">
     <form
       v-if="validPayload"
+      :class="{ error: failed }"
       class="flex flex-col gap-3 sm:w-[480px] sm:bg-white/10 sm:rounded-lg p-7"
       @submit.prevent="submit"
     >
@@ -28,9 +29,12 @@ import { useRouter } from '@/composables/useRouter'
 
 import PasswordField from '@/components/ui/form/PasswordField.vue'
 import Btn from '@/components/ui/form/Btn.vue'
+import { checkPassword } from '@/utils/auth'
 
 const { getRouteParam, go } = useRouter()
 const { toastSuccess, toastError } = useMessageToaster()
+
+const failed = ref(false)
 
 const email = ref('')
 const token = ref('')
@@ -49,7 +53,15 @@ try {
 const submit = async () => {
   try {
     loading.value = true
+    const { isValid, message } = checkPassword(password.value)
+    if (!isValid) {
+      toastError(message)
+      failed.value = true
+      window.setTimeout(() => (failed.value = false), 2000)
+      return
+    }
     await authService.resetPassword(email.value, password.value, token.value)
+    failed.value = false
     toastSuccess('Password set.')
     await authService.login(email.value, password.value)
     setTimeout(() => go('/', true))

@@ -65,6 +65,7 @@ import TextInput from '@/components/ui/form/TextInput.vue'
 import CheckBox from '@/components/ui/form/CheckBox.vue'
 
 import FormRow from '@/components/ui/form/FormRow.vue'
+import { checkPassword } from '@/utils/auth'
 
 const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
 
@@ -109,6 +110,14 @@ const onSSOSuccess = (token: CompositeToken) => {
 
 const register = async () => {
   try {
+    const { isValid, message } = checkPassword(password.value, rePassword.value)
+    if (!isValid) {
+      useMessageToaster().toastError(message)
+      failed.value = true
+      window.setTimeout(() => (failed.value = false), 2000)
+      return
+    }
+
     await authService.register(fullName.value, email.value, password.value, rePassword.value)
     failed.value = false
     // Reset the password so that the next login will have this field empty.

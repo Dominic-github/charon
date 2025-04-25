@@ -58,6 +58,7 @@ import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm.vue'
 import GoogleLoginButton from '@/components/auth/sso/GoogleLoginButton.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
+import { checkPassword } from '@/utils/auth'
 
 const emit = defineEmits<{ (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
 
@@ -83,6 +84,17 @@ const showForgotPasswordForm = () => (showingForgotPasswordForm.value = true)
 
 const login = async () => {
   try {
+    const { isValid, message } = checkPassword(password.value)
+
+    if (password.value !== 'admin') {
+      if (!isValid) {
+        useMessageToaster().toastError(message)
+        failed.value = true
+        window.setTimeout(() => (failed.value = false), 2000)
+        return
+      }
+    }
+
     await authService.login(email.value, password.value)
     failed.value = false
 
