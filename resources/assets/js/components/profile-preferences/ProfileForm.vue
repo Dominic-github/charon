@@ -1,5 +1,5 @@
 <template>
-  <form data-testid="update-profile-form" @submit.prevent="update">
+  <form :class="{ error: failed }" data-testid="update-profile-form" @submit.prevent="update">
     <AlertBox v-if="currentUser.sso_provider">
       <template v-if="currentUser.sso_provider === 'Reverse Proxy'">
         You’re authenticated by a reverse proxy.
@@ -77,6 +77,7 @@ import { authService } from '@/services/authService'
 import { useAuthorization } from '@/composables/useAuthorization'
 import { useMessageToaster } from '@/composables/useMessageToaster'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { checkPassword } from '@/utils/auth'
 
 import Btn from '@/components/ui/form/Btn.vue'
 import PasswordField from '@/components/ui/form/PasswordField.vue'
@@ -85,13 +86,18 @@ import AlertBox from '@/components/ui/AlertBox.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
 
-const { toastSuccess } = useMessageToaster()
+const { toastSuccess, toastError } = useMessageToaster()
 const { currentUser } = useAuthorization()
+
+const failed = ref(false)
 
 const profile = ref<UpdateCurrentProfileData>({} as UpdateCurrentProfileData)
 const isDemo = window.IS_DEMO
 
+let isAdmin = currentUser.value.is_admin
+
 onMounted(() => {
+  isAdmin = currentUser.value.is_admin
   profile.value = {
     name: currentUser.value.name,
     email: currentUser.value.email,
@@ -111,12 +117,25 @@ const update = async () => {
   }
 
   try {
+    if (!isAdmin) {
+      const { isValid, message } = checkPassword(profile.value.current_password)
+      if (!isValid) {
+        toastError(message)
+        failed.value = true
+        window.setTimeout(() => (failed.value = false), 2000)
+        return
+      }
+    }
+
     await authService.updateProfile(Object.assign({}, profile.value))
+    failed.value = false
     profile.value.current_password = null
     delete profile.value.new_password
     toastSuccess('Profile updated.')
   } catch (error: unknown) {
+    failed.value = true
     useErrorHandler('dialog').handleHttpError(error)
+    window.setTimeout(() => (failed.value = false), 2000)
   }
 }
 </script>

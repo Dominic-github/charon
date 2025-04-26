@@ -66,7 +66,9 @@ const submit = async () => {
     await authService.login(email.value, password.value)
     setTimeout(() => go('/', true))
   } catch (error: unknown) {
+    failed.value = true
     useErrorHandler().handleHttpError(error)
+    window.setTimeout(() => (failed.value = false), 2000)
   } finally {
     loading.value = false
   }
