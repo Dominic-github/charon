@@ -1,6 +1,6 @@
-export const checkPassword = (password: string | null, rePassword?: string) => {
+export const checkPassword = (password: string | null | undefined, rePassword?: string) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&.])[A-Z\d@$!%*?&.]{10,}$/i
-  if (password === null) {
+  if (password === null || password === undefined) {
     return { isValid: false, message: 'Password cannot be null.' }
   }
   if (rePassword && password !== rePassword) {

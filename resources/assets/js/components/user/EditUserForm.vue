@@ -1,5 +1,5 @@
 <template>
-  <form data-testid="edit-user-form" @submit.prevent="submit" @keydown.esc="maybeClose">
+  <form data-testid="edit-user-form" :class="{ error: failed }" @submit.prevent="submit" @keydown.esc="maybeClose">
     <header>
       <h1>Edit User</h1>
     </header>
@@ -33,6 +33,7 @@
           placeholder="Leave blank for no changes"
           title="Password"
           type="password"
+          minlength="10"
         />
         <template #help>Min. 10 characters. Should be a mix of characters, numbers, and symbols.</template>
       </FormRow>
@@ -54,7 +55,7 @@
 
 <script lang="ts" setup>
 import { isEqual } from 'lodash'
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import type { UpdateUserData } from '@/stores/userStore'
 import { userStore } from '@/stores/userStore'
 import { useDialogBox } from '@/composables/useDialogBox'
@@ -69,12 +70,15 @@ import CheckBox from '@/components/ui/form/CheckBox.vue'
 import AlertBox from '@/components/ui/AlertBox.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
+import { checkPassword } from '@/utils/auth'
 
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { showOverlay, hideOverlay } = useOverlay()
 const { toastSuccess } = useMessageToaster()
-const { showConfirmDialog } = useDialogBox()
+const { showConfirmDialog, showErrorDialog } = useDialogBox()
+
+const failed = ref(false)
 
 const user = useModal().getFromContext<User>('user')
 
@@ -97,10 +101,21 @@ const submit = async () => {
   showOverlay()
 
   try {
+    const { isValid, message } = checkPassword(updateData.password)
+    if (!isValid) {
+      showErrorDialog(message)
+      failed.value = true
+      window.setTimeout(() => (failed.value = false), 2000)
+      return
+    }
     await userStore.update(user, updateData)
+    failed.value = false
     toastSuccess('User profile updated.')
     close()
   } catch (error: unknown) {
+    failed.value = true
+    showErrorDialog('Failed to update user profile.')
+    window.setTimeout(() => (failed.value = false), 2000)
     useErrorHandler('dialog').handleHttpError(error)
   } finally {
     hideOverlay()

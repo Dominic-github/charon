@@ -2,6 +2,7 @@
   <div class="flex items-center justify-center h-screen flex-col">
     <form
       v-if="userProspect"
+      :class="{ error: failed }"
       autocomplete="off"
       class="w-full sm:w-[320px] p-7 sm:bg-white/10 rounded-lg flex flex-col space-y-5"
       @submit.prevent="submit"
@@ -54,6 +55,8 @@ import Btn from '@/components/ui/form/Btn.vue'
 import PasswordField from '@/components/ui/form/PasswordField.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
+import { useMessageToaster } from '@/composables/useMessageToaster'
+import { checkPassword } from '@/utils/auth'
 
 const { getRouteParam } = useRouter()
 const { handleHttpError } = useErrorHandler('dialog')
@@ -63,6 +66,8 @@ const password = ref('')
 const userProspect = ref<User>()
 const validToken = ref(true)
 const loading = ref(false)
+const failed = ref(false)
+const { toastSuccess, toastError } = useMessageToaster()
 
 const token = String(getRouteParam('token')!)
 
@@ -74,9 +79,20 @@ const goToHomeAndReload = () => {
 const submit = async () => {
   try {
     loading.value = true
+    const { isValid, message } = checkPassword(password.value)
+    if (!isValid) {
+      toastError(message)
+      failed.value = true
+      window.setTimeout(() => (failed.value = false), 2000)
+      return
+    }
     await invitationService.accept(token, name.value, password.value)
+    toastSuccess('Invitation accepted!')
     window.location.href = '/'
   } catch (error: unknown) {
+    failed.value = true
+    window.setTimeout(() => (failed.value = false), 2000)
+    toastError('Failed to accept invitation.')
     handleHttpError(error)
   } finally {
     loading.value = false

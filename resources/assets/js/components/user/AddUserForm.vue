@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="submit" @keydown.esc="maybeClose">
+  <form :class="{ error: failed }" class=" sm:border border-transparent" @submit.prevent="submit" @keydown.esc="maybeClose">
     <header>
       <h1>Add New User</h1>
     </header>
@@ -17,6 +17,7 @@
         <template #label>Password</template>
         <TextInput
           v-model="newUser.password"
+          minlength="10"
           autocomplete="new-password"
           name="password"
           required
@@ -43,7 +44,7 @@
 
 <script lang="ts" setup>
 import { isEqual } from 'lodash'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import type { CreateUserData } from '@/stores/userStore'
 import { userStore } from '@/stores/userStore'
 import { useDialogBox } from '@/composables/useDialogBox'
@@ -58,10 +59,14 @@ import CheckBox from '@/components/ui/form/CheckBox.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
 
+import { checkPassword } from '@/utils/auth'
+
 const emit = defineEmits<{ (e: 'close'): void }>()
 const { showOverlay, hideOverlay } = useOverlay()
 const { toastSuccess } = useMessageToaster()
-const { showConfirmDialog } = useDialogBox()
+const { showConfirmDialog, showErrorDialog } = useDialogBox()
+
+const failed = ref(false)
 
 const emptyUserData: CreateUserData = {
   name: '',
@@ -78,10 +83,22 @@ const submit = async () => {
   showOverlay()
 
   try {
+    const { isValid, message } = checkPassword(newUser.password)
+    if (!isValid) {
+      showErrorDialog(message)
+      failed.value = true
+      window.setTimeout(() => (failed.value = false), 2000)
+      return
+    }
+
     await userStore.store(newUser)
+    failed.value = false
     toastSuccess(`New user "${newUser.name}" created.`)
     close()
-  } catch (error: unknown) {
+  } catch (error: any) {
+    failed.value = true
+    showErrorDialog(error.message)
+    window.setTimeout(() => (failed.value = false), 2000)
     useErrorHandler('dialog').handleHttpError(error)
   } finally {
     hideOverlay()
