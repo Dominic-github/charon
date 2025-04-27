@@ -37,8 +37,10 @@
       </FormRow>
     </form>
 
-    <p v-if="!validToken">Invalid or expired invite.</p>
-    <a href=" /home" @click.prevent="goToHomeAndReload">Go home</a>
+    <div v-if="!validToken" class="flex items-center justify-center h-screen flex-col gap-3">
+      <h1>Invalid or expired invite.</h1>
+      <a href=" /home" @click.prevent="goToHomeAndReload">Go home</a>
+    </div>
   </div>
 </template>
 

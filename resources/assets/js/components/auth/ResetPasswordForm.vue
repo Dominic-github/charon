@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-center h-screen">
     <form
-      v-if="validPayload"
+      v-if="validPayload && validLink"
       :class="{ error: failed }"
       class="flex flex-col gap-3 sm:w-[480px] sm:bg-white/10 sm:rounded-lg p-7"
       @submit.prevent="submit"
@@ -15,6 +15,10 @@
         <Btn :disabled="loading" type="submit">Save</Btn>
       </div>
     </form>
+    <div v-else class="flex items-center justify-center h-screen flex-col gap-3">
+      <p>Invalid or expired reset password link.</p>
+      <a href="/home" @click.prevent="goToHomeAndReload">Go home</a>
+    </div>
   </div>
 </template>
 
@@ -40,8 +44,13 @@ const email = ref('')
 const token = ref('')
 const password = ref('')
 const loading = ref(false)
-
+const validLink = ref(true)
 const validPayload = computed(() => email.value && token.value)
+
+const goToHomeAndReload = () => {
+  window.location.href = '#/home'
+  window.location.reload()
+}
 
 try {
   [email.value, token.value] = base64Decode(decodeURIComponent(getRouteParam('payload')!)).split('|')
@@ -67,10 +76,12 @@ const submit = async () => {
     setTimeout(() => go('/', true))
   } catch (error: any) {
     failed.value = true
-    toastError('Failed to set password. Please try again.')
     if (error.response?.status === 422) {
+      validLink.value = false
       toastError('Invalid reset password link.')
       return
+    } else {
+      toastError('Failed to set password. Please try again.')
     }
     useErrorHandler().handleHttpError(error)
     window.setTimeout(() => (failed.value = false), 2000)
