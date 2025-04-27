@@ -134,6 +134,7 @@ const update = async () => {
     toastSuccess('Profile updated.')
   } catch (error: unknown) {
     failed.value = true
+    toastError('Profile update failed. Please try again.')
     useErrorHandler('dialog').handleHttpError(error)
     window.setTimeout(() => (failed.value = false), 2000)
   }

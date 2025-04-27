@@ -65,8 +65,13 @@ const submit = async () => {
     toastSuccess('Password set.')
     await authService.login(email.value, password.value)
     setTimeout(() => go('/', true))
-  } catch (error: unknown) {
+  } catch (error: any) {
     failed.value = true
+    toastError('Failed to set password. Please try again.')
+    if (error.response?.status === 422) {
+      toastError('Invalid reset password link.')
+      return
+    }
     useErrorHandler().handleHttpError(error)
     window.setTimeout(() => (failed.value = false), 2000)
   } finally {

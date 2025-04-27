@@ -71,7 +71,7 @@ const emit = defineEmits<{ (e: 'registeredin'): void, (e: 'loggedin'): void, (e:
 
 const Agreement = defineAsyncComponentWithLoadingState(() => import('@/components/auth/Agreement.vue'))
 
-const { toastSuccess } = useMessageToaster()
+const { toastSuccess, toastError } = useMessageToaster()
 
 const DEFAULT = {
   fullName: '',
@@ -112,7 +112,7 @@ const register = async () => {
   try {
     const { isValid, message } = checkPassword(password.value, rePassword.value)
     if (!isValid) {
-      useMessageToaster().toastError(message)
+      toastError(message)
       failed.value = true
       window.setTimeout(() => (failed.value = false), 2000)
       return
@@ -128,6 +128,7 @@ const register = async () => {
   } catch (error: unknown) {
     useErrorHandler('dialog').handleHttpError(error)
     failed.value = true
+    toastError('Registration failed. Please try again.')
     logger.error(error)
     window.setTimeout(() => (failed.value = false), 2000)
   }

@@ -59,10 +59,11 @@ import GoogleLoginButton from '@/components/auth/sso/GoogleLoginButton.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
 import { checkPassword } from '@/utils/auth'
+import { t } from 'vitest/dist/global-6d79484b'
 
 const emit = defineEmits<{ (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
 
-const { toastSuccess } = useMessageToaster()
+const { toastSuccess, toastError } = useMessageToaster()
 const DEMO_ACCOUNT = {
   email: 'demo@charon.dev',
   password: 'demo',
@@ -88,7 +89,7 @@ const login = async () => {
 
     if (password.value !== 'admin') {
       if (!isValid) {
-        useMessageToaster().toastError(message)
+        toastError(message)
         failed.value = true
         window.setTimeout(() => (failed.value = false), 2000)
         return
@@ -106,6 +107,7 @@ const login = async () => {
   } catch (error: unknown) {
     useErrorHandler('dialog').handleHttpError(error)
     failed.value = true
+    toastError('Login failed. Please try again.')
     logger.error(error)
     window.setTimeout(() => (failed.value = false), 2000)
   }
