@@ -38,6 +38,7 @@
     </form>
 
     <p v-if="!validToken">Invalid or expired invite.</p>
+    <a href=" /home" @click.prevent="goToHomeAndReload">Go home</a>
   </div>
 </template>
 
@@ -62,6 +63,11 @@ const validToken = ref(true)
 const loading = ref(false)
 
 const token = String(getRouteParam('token')!)
+
+const goToHomeAndReload = () => {
+  window.location.href = '#/home'
+  window.location.reload()
+}
 
 const submit = async () => {
   try {
