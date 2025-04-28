@@ -98,7 +98,7 @@ export const uploadService = {
 
       this.proceed() // upload the next file
 
-      // window.setTimeout(() => this.remove(file), 100000)
+      window.setTimeout(() => this.remove(file), 100000)
     } catch (error: unknown) {
       logger.error(error)
       file.status = 'Errored'
