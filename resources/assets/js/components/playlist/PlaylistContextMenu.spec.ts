@@ -145,7 +145,6 @@ new class extends UnitTestCase {
     })
 
     it('opens collaboration form', async () => {
-      this.enablePlusEdition()
       const playlist = factory('playlist')
       await this.renderComponent(playlist)
       const emitMock = this.mock(eventBus, 'emit')

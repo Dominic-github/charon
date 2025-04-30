@@ -257,16 +257,12 @@ new class extends UnitTestCase {
       screen.getByText('Copy Shareable URL')
     })
 
-    it('has an option to copy shareable URL if song is public in Plus edition', async () => {
-      this.enablePlusEdition()
-
+    it('has an option to copy shareable URL if song is public', async () => {
       await this.renderComponent(factory('song', { is_public: true }))
       screen.getByText('Copy Shareable URL')
     })
 
-    it('does not have an option to share if song is private in Plus edition', async () => {
-      this.enablePlusEdition()
-
+    it('does not have an option to share if song is private', async () => {
       await this.renderComponent(factory('song', { is_public: false }))
       expect(screen.queryByText('Copy Shareable URL')).toBeNull()
     })
@@ -312,8 +308,6 @@ new class extends UnitTestCase {
     })
 
     it('makes songs private', async () => {
-      this.enablePlusEdition()
-
       const user = factory('user')
       const songs = factory('song', 5, {
         is_public: true,
@@ -329,8 +323,6 @@ new class extends UnitTestCase {
     })
 
     it('makes songs public', async () => {
-      this.enablePlusEdition()
-
       const user = factory('user')
       const songs = factory('song', 5, {
         is_public: false,
@@ -346,8 +338,6 @@ new class extends UnitTestCase {
     })
 
     it('does not have an option to make songs public or private if current user is not owner', async () => {
-      this.enablePlusEdition()
-
       const user = factory('user')
       const owner = factory('user')
       const songs = factory('song', 5, {
@@ -362,8 +352,6 @@ new class extends UnitTestCase {
     })
 
     it('has both options to make public and private if songs have mixed visibilities', async () => {
-      this.enablePlusEdition()
-
       const owner = factory('user')
       const songs = factory('song', 2, {
         is_public: false,

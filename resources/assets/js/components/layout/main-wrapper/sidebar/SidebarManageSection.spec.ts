@@ -14,13 +14,13 @@ new class extends UnitTestCase {
 
     it('shows nothing if current user is not an admin', () => {
       this.be().render(SidebarManageSection)
+      screen.getByText('Upload')
       expect(screen.queryByText('Settings')).toBeNull()
-      expect(screen.queryByText('Upload')).toBeNull()
       expect(screen.queryByText('Users')).toBeNull()
     })
 
-    it('shows only the upload menu item if current user is a Plus user', () => {
-      this.be().enablePlusEdition().render(SidebarManageSection)
+    it('shows only the upload menu item', () => {
+      this.be().render(SidebarManageSection)
       screen.getByText('Upload')
       expect(screen.queryByText('Settings')).toBeNull()
       expect(screen.queryByText('Users')).toBeNull()

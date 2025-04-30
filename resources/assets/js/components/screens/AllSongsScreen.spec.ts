@@ -39,9 +39,7 @@ new class extends UnitTestCase {
       })
     })
 
-    it('renders in Plus edition', async () => {
-      this.enablePlusEdition()
-
+    it('renders in edition', async () => {
       const [{ html }, fetchMock] = await this.renderComponent()
       await waitFor(() => expect(html()).toMatchSnapshot())
 
