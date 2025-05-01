@@ -59,7 +59,6 @@ import GoogleLoginButton from '@/components/auth/sso/GoogleLoginButton.vue'
 import TextInput from '@/components/ui/form/TextInput.vue'
 import FormRow from '@/components/ui/form/FormRow.vue'
 import { checkPassword } from '@/utils/auth'
-import { t } from 'vitest/dist/global-6d79484b'
 
 const emit = defineEmits<{ (e: 'loggedin'): void, (e: 'toggleIsLogin'): void }>()
 
