@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase @contextmenu.prevent="onContextMenu">
+  <ScreenBase id="episodeScreen" @contextmenu.prevent="onContextMenu">
     <template #header>
       <ScreenHeaderSkeleton v-if="loading && !episode" />
       <ScreenHeader v-if="episode">

@@ -2,7 +2,7 @@
   "lyrics": "Sample song lyrics",
   "album_info": {
     "url": "https://www.last.fm/music/The+Band/Sample+Album",
-    "image": "http://localhost:8080/test/images/sample.png",
+    "image": "http://localhost:8000/test/images/sample.png",
     "wiki": {
       "summary": "Album summary",
       "full": "Album full wiki"
@@ -24,11 +24,11 @@
         "url": "https://www.last.fm/music/The+Band/Album+track+3"
       }
     ],
-    "cover": "http://localhost:8080/test/images/sample.png"
+    "cover": "http://localhost:8000/test/images/sample.png"
   },
   "artist_info": {
     "url": "https://www.last.fm/music/The+Band",
-    "image": "http://localhost:8080/test/images/sample.png",
+    "image": "http://localhost:8000/test/images/sample.png",
     "bio": {
       "summary": "Artist summary",
       "full": "Artist full bio"
@@ -58,17 +58,17 @@
           "description": "Description for YouTube Video #1",
           "thumbnails": {
             "default": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 120,
               "height": 90
             },
             "medium": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 320,
               "height": 180
             },
             "high": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 480,
               "height": 360
             }
@@ -92,17 +92,17 @@
           "description": "Description for YouTube Video #2",
           "thumbnails": {
             "default": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 120,
               "height": 90
             },
             "medium": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 320,
               "height": 180
             },
             "high": {
-              "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
               "width": 480,
               "height": 360
             }

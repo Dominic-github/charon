@@ -3,7 +3,7 @@ context('YouTube', () => {
 
   it('renders a placeholder screen', () => {
     cy.$clickSidebarItem('YouTube Video')
-    cy.get('#youtubeWrapper').within(() => {
+    cy.get('#youtubeScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'YouTube Video')
       cy.findByTestId('youtube-placeholder').should('be.visible')
     })
@@ -13,11 +13,11 @@ context('YouTube', () => {
     cy.$mockPlayback()
 
     cy.intercept('/api/youtube/search/song/**', {
-      fixture: 'youtube-search.get.200.json'
+      fixture: 'youtube-search.get.200.json',
     })
 
     cy.$clickSidebarItem('All Songs')
-    cy.get('#songsWrapper .song-item:first-child').dblclick()
+    cy.get('#allSongsScreen .song-item:first-child').dblclick()
 
     cy.get('#extra').within(() => {
       cy.get('#extraTabYouTube').click()
@@ -31,15 +31,15 @@ context('YouTube', () => {
     cy.$mockPlayback()
 
     cy.$clickSidebarItem('All Songs')
-    cy.get('#songsWrapper .song-item:first-child').dblclick()
+    cy.get('#allSongScreen .song-item:first-child').dblclick()
 
     cy.get('#extra').within(() => {
       cy.get('#extraTabYouTube').click()
       cy.get('[data-testid=youtube-search-result]:nth-child(2)').click()
     })
 
-    cy.url().should('contain', '/#!/youtube')
+    cy.url().should('contain', '/#/youtube')
     cy.$assertSidebarItemActive('YouTube Video')
-    cy.get('#youtubeWrapper .screen-header').should('contain', 'YouTube Video #2')
+    cy.get('#youtubeScreen .screen-header').should('contain', 'YouTube Video #2')
   })
 })

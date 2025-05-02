@@ -11,7 +11,7 @@ context('Queuing', { scrollBehavior: false }, () => {
   it('allows shuffling all songs', () => {
     cy.$clickSidebarItem('Current Queue')
 
-    cy.get('#queueWrapper').within(() => {
+    cy.get('#queueScreen').within(() => {
       cy.findByText('Current Queue').should('be.visible')
       cy.findByTestId('shuffle-library').click()
       cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
@@ -24,7 +24,7 @@ context('Queuing', { scrollBehavior: false }, () => {
   it('clears the queue', () => {
     cy.$clickSidebarItem('Current Queue')
 
-    cy.get('#queueWrapper').within(() => {
+    cy.get('#queueScreen').within(() => {
       cy.findByText('Current Queue').should('be.visible')
       cy.findByTestId('shuffle-library').click()
       cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
@@ -38,10 +38,10 @@ context('Queuing', { scrollBehavior: false }, () => {
 
     cy.get('#songsWrapper').within(() => {
       cy.get('.screen-header [data-testid=btn-shuffle-all]').click()
-      cy.url().should('contains', '/#!/queue')
+      cy.url().should('contains', '/#/queue')
     })
 
-    cy.get('#queueWrapper').within(() => {
+    cy.get('#queueScreen').within(() => {
       cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
         .first().should('have.class', 'playing')
     })
@@ -52,7 +52,7 @@ context('Queuing', { scrollBehavior: false }, () => {
   it('creates a queue from selected songs', () => {
     cy.$shuffleSeveralSongs(3)
 
-    cy.get('#queueWrapper').within(() => {
+    cy.get('#queueScreen').within(() => {
       cy.$getSongRows().should('have.length', 3)
         .first().should('have.class', 'playing')
     })
@@ -61,7 +61,7 @@ context('Queuing', { scrollBehavior: false }, () => {
   it('deletes a song from queue', () => {
     cy.$shuffleSeveralSongs(3)
 
-    cy.get('#queueWrapper').within(() => {
+    cy.get('#queueScreen').within(() => {
       cy.$getSongRows().should('have.length', 3)
       cy.get('@rows').first().type('{backspace}')
       cy.$getSongRows().should('have.length', 2)
@@ -78,7 +78,7 @@ context('Queuing', { scrollBehavior: false }, () => {
     })
 
     cy.$clickSidebarItem('Current Queue')
-    cy.get('#queueWrapper').within(function () {
+    cy.get('#queueScreen').within(function () {
       cy.$getSongRows().should('have.length', 4)
       cy.$getSongRowAt(1).find('.title').should('have.text', this.title)
       cy.$getSongRowAt(1).should('have.class', 'playing')
@@ -89,14 +89,14 @@ context('Queuing', { scrollBehavior: false }, () => {
 
   it('navigates through the queue', () => {
     cy.$shuffleSeveralSongs()
-    cy.get('#queueWrapper .song-item:nth-child(1)').should('have.class', 'playing')
+    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
 
     cy.findByTitle('Play next song').click({ force: true })
-    cy.get('#queueWrapper .song-item:nth-child(2)').should('have.class', 'playing')
+    cy.get('#queueScreen .song-item:nth-child(2)').should('have.class', 'playing')
     cy.$assertPlaying()
 
     cy.findByTitle('Play previous song').click({ force: true })
-    cy.get('#queueWrapper .song-item:nth-child(1)').should('have.class', 'playing')
+    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
     cy.$assertPlaying()
   })
 
@@ -116,7 +116,7 @@ context('Queuing', { scrollBehavior: false }, () => {
     cy.findByTestId('play-next-btn').click({ force: true })
     cy.findByTestId('play-next-btn').click({ force: true })
 
-    cy.get('#queueWrapper .song-item:nth-child(1)').should('have.class', 'playing')
+    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
     cy.$assertPlaying()
   })
 
@@ -127,7 +127,7 @@ context('Queuing', { scrollBehavior: false }, () => {
     cy.$shuffleSeveralSongs()
     cy.findByTestId('play-next-btn').click({ force: true })
 
-    cy.get('#queueWrapper .song-item:nth-child(2)').should('have.class', 'playing')
+    cy.get('#queueScreen .song-item:nth-child(2)').should('have.class', 'playing')
     cy.$assertPlaying()
   })
 })

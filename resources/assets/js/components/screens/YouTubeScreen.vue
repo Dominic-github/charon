@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="youtubeScreen">
     <template #header>
       <ScreenHeader layout="collapsed">{{ title }}</ScreenHeader>
     </template>

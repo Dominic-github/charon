@@ -1,5 +1,5 @@
 <template>
-  <SideSheetButton v-charon-tooltip.left title="Log out" @click.prevent="logout">
+  <SideSheetButton id="btn-logout" v-charon-tooltip.left title="Log out" @click.prevent="logout">
     <Icon :icon="faArrowRightFromBracket" />
   </SideSheetButton>
 </template>

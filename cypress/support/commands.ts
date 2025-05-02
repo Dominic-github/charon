@@ -10,27 +10,27 @@ Cypress.Commands.add('$login', (options: Partial<LoginOptions> = {}) => {
     useYouTube: true,
     useLastfm: true,
     allowDownload: true,
-    supportsTranscoding: true
+    supportsTranscoding: true,
   }, options) as LoginOptions
 
-  cy.fixture(mergedOptions.asAdmin ? 'data.get.200.json' : 'data-non-admin.get.200.json').then(data => {
+  cy.fixture(mergedOptions.asAdmin ? 'data.get.200.json' : 'data-non-admin.get.200.json').then((data) => {
     delete mergedOptions.asAdmin
-
     cy.intercept('/api/data', {
       statusCode: 200,
-      body: Object.assign(data, mergedOptions)
+      body: Object.assign(data, mergedOptions),
+    })
+    cy.intercept('/api/overview', {
+      fixture: 'overview.data.get.200.json',
     })
   }).as('fetchData')
 
-  const win = cy.visit('/')
-  cy.wait('@fetchData')
-
+  const win = cy.visit('/', { failOnStatusCode: false })
+  cy.wait('@fetchData', { timeout: 10000 })
   return win
 })
 
 Cypress.Commands.add('$loginAsNonAdmin', (options: Partial<LoginOptions> = {}) => {
-  options.asAdmin = false
-  return cy.$login(options)
+  return cy.$login({ ...options, asAdmin: false })
 })
 
 Cypress.Commands.add('$each', (dataset: Array<Array<any>>, callback: (...args) => void) => {
@@ -41,34 +41,26 @@ Cypress.Commands.add('$confirm', () => cy.get('.alertify .ok').click())
 
 Cypress.Commands.add('$findInTestId', (selector: string) => {
   const [testId, ...rest] = selector.split(' ')
-
   return cy.findByTestId(testId.trim()).find(rest.join(' '))
 })
 
-Cypress.Commands.add('$clickSidebarItem', (text: string) => cy.get('#sidebar').findByText(text).click())
+Cypress.Commands.add('$clickSidebarItem', (text: string) =>
+  cy.get('[id=sidebar]').findByText(text).click())
 
 Cypress.Commands.add('$mockPlayback', () => {
-  cy.intercept('/play/**?api_token=mock-token', {
-    fixture: 'sample.mp3,null'
-  })
-
-  cy.intercept('/api/album/**/thumbnail', {
-    fixture: 'album-thumbnail.get.200.json'
-  })
-
-  cy.intercept('/api/song/**/info', {
-    fixture: 'song-info.get.200.json'
-  })
+  cy.intercept('/api/album/**/songs', { fixture: 'album-song.get.200.json' })
+  cy.intercept('/play/**?api_token=mock-token', { fixture: 'sample.mp3,null' })
+  cy.intercept('/api/album/**/thumbnail', { fixture: 'album-thumbnail.get.200.json' })
+  cy.intercept('/api/song/**/info', { fixture: 'song-info.get.200.json' })
+  cy.intercept('/api/interaction/play', { fixture: 'play.get.200.json' })
 })
 
 Cypress.Commands.add('$shuffleSeveralSongs', (count = 3) => {
   cy.$mockPlayback()
   cy.$clickSidebarItem('All Songs')
-
   cy.get('#songsWrapper').within(() => {
     cy.$getSongRowAt(0).click()
     cy.$getSongRowAt(count - 1).click({ shiftKey: true })
-
     cy.get('.screen-header [data-testid=btn-shuffle-selected]').click()
   })
 })
@@ -81,19 +73,15 @@ Cypress.Commands.add('$assertPlaylistSongCount', (name: string, count: number) =
 
 Cypress.Commands.add('$assertFavoriteSongCount', (count: number) => {
   cy.$clickSidebarItem('Favorites')
-  cy.get('#favoritesWrapper').within(() => cy.get('.song-item').should('have.length', count))
+  cy.get('#favoritesWrapper').within(() =>
+    cy.get('.song-item').should('have.length', count))
   cy.go('back')
 })
 
-Cypress.Commands.add(
-  '$selectSongRange',
-  (start: number, end: number, scrollBehavior: scrollBehaviorOptions = false) => {
-    cy.$getSongRowAt(start).click()
-    return cy.$getSongRowAt(end).click({
-      scrollBehavior,
-      shiftKey: true
-    })
-  })
+Cypress.Commands.add('$selectSongRange', (start: number, end: number, scrollBehavior: scrollBehaviorOptions = false) => {
+  cy.$getSongRowAt(start).click()
+  return cy.$getSongRowAt(end).click({ scrollBehavior, shiftKey: true })
+})
 
 Cypress.Commands.add('$assertPlaying', () => {
   cy.findByTestId('pause-btn').should('exist')
@@ -111,5 +99,5 @@ Cypress.Commands.add('$assertSidebarItemActive', (text: string) => {
   cy.get('#sidebar').findByText(text).should('have.class', 'active')
 })
 
-Cypress.Commands.add('$getSongRows', () => cy.get('.song-item').as('rows'))
+Cypress.Commands.add('$getSongRows', () => cy.get('.songs-pane .song-item'))
 Cypress.Commands.add('$getSongRowAt', (position: number) => cy.$getSongRows().eq(position))

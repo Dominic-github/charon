@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="albumListScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Albums
@@ -25,7 +25,7 @@
           <AlbumCardSkeleton v-for="i in 10" :key="i" :layout="itemLayout" />
         </template>
         <template v-else>
-          <AlbumCard v-for="album in albums" :key="album.id" :album="album" :layout="itemLayout" />
+          <AlbumCard v-for="album in albums" :key="album.id" data-testid="album-card" :album="album" :layout="itemLayout" />
           <ToTopButton />
         </template>
       </AlbumGrid>

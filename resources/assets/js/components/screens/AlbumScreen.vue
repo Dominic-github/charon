@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase v-if="albumId">
+  <ScreenBase id="albumScreen" v-if="albumId">
     <template #header>
       <ScreenHeaderSkeleton v-if="loading" />
 
@@ -52,7 +52,7 @@
           Other Albums
           <input v-model="activeTab" :disabled="loading" name="tab" type="radio" value="OtherAlbums">
         </label>
-        <label v-if="useLastfm" :class="{ active: activeTab === 'Info' }">
+        <label v-if="useLastfm" data-testid="album-infomation" :class="{ active: activeTab === 'Info' }">
           Information
           <input v-model="activeTab" :disabled="loading" name="tab" type="radio" value="Info">
         </label>
@@ -82,7 +82,7 @@
         </AlbumGrid>
       </div>
 
-      <div v-if="useLastfm && album" v-show="activeTab === 'Info'" class="info-pane">
+      <div v-if="useLastfm && album" v-show="activeTab === 'Info'" data-testid="album-info" class="info-pane">
         <AlbumInfo :album="album" mode="full" />
       </div>
     </ScreenTabs>

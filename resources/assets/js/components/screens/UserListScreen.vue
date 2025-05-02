@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="userListScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Users

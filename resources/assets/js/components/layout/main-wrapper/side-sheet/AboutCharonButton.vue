@@ -1,5 +1,6 @@
 <template>
   <SideSheetButton
+    id="btn-about"
     v-charon-tooltip.left
     :title="shouldNotifyNewVersion ? 'New version available!' : 'About Charon'"
     @click.prevent="openAboutCharonModal"

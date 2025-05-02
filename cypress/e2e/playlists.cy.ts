@@ -3,12 +3,12 @@ context('Playlists', () => {
 
   it('displays a playlist when sidebar menu item is clicked', () => {
     cy.intercept('/api/playlist/1/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.$clickSidebarItem('Simple Playlist')
 
-    cy.get('#playlistWrapper').within(() => {
+    cy.get('#playlistScreen').within(() => {
       cy.get('.heading-wrapper').should('be.visible').and('contain', 'Simple Playlist')
       cy.$getSongRows().should('have.length', 3)
       cy.findByText('Download All').should('be.visible')
@@ -18,20 +18,20 @@ context('Playlists', () => {
 
   it('deletes a playlist', () => {
     cy.intercept('/api/playlist/1/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.intercept('DELETE', '/api/playlist/1', {})
 
     cy.$clickSidebarItem('Simple Playlist').as('menuItem')
-    cy.get('#playlistWrapper .btn-delete-playlist').click().$confirm()
-    cy.url().should('contain', '/#!/home')
+    cy.get('#playlistScreen .btn-delete-playlist').click().$confirm()
+    cy.url().should('contain', '/#/home')
     cy.get('@menuItem').should('not.exist')
   })
 
   it('deletes a playlist from the sidebar', () => {
     cy.intercept('/api/playlist/2/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.intercept('DELETE', '/api/playlist/2', {})
@@ -40,7 +40,7 @@ context('Playlists', () => {
     cy.findByTestId('playlist-context-menu-delete-2').click()
     cy.$confirm()
 
-    cy.url().should('contain', '/#!/home')
+    cy.url().should('contain', '/#/home')
     cy.get('@menuItem').should('not.exist')
   })
 
@@ -48,7 +48,7 @@ context('Playlists', () => {
     cy.intercept('/api/playlist/3/songs', [])
 
     cy.intercept('POST', '/api/playlist', {
-      fixture: 'playlist.post.200.json'
+      fixture: 'playlist.post.200.json',
     })
 
     cy.findByTestId('sidebar-create-playlist-btn').click()
@@ -58,16 +58,16 @@ context('Playlists', () => {
     cy.get('@nameInput').clear().type('A New Playlist{enter}')
     cy.get('#sidebar').findByText('A New Playlist').should('exist').and('have.class', 'active')
     cy.findByText('Playlist "A New Playlist" created.').should('be.visible')
-    cy.get('#playlistWrapper .heading-wrapper').should('be.visible').and('contain', 'A New Playlist')
+    cy.get('#playlistScreen .heading-wrapper').should('be.visible').and('contain', 'A New Playlist')
 
-    cy.get('#playlistWrapper [data-testid=screen-empty-state]')
+    cy.get('#playlistScreen [data-testid=screen-empty-state]')
       .should('be.visible')
       .and('contain', 'The playlist is currently empty.')
   })
 
   it('adds songs into an existing playlist', () => {
     cy.intercept('/api/playlist/1/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.intercept('PUT', '/api/playlist/1/sync', {})
@@ -91,11 +91,11 @@ context('Playlists', () => {
 
   it('creates a playlist directly from songs', () => {
     cy.intercept('POST', '/api/playlist', {
-      fixture: 'playlist.post.200.json'
+      fixture: 'playlist.post.200.json',
     })
 
     cy.intercept('/api/playlist/3/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.$clickSidebarItem('All Songs')
@@ -115,7 +115,7 @@ context('Playlists', () => {
   it('updates a simple playlist from the sidebar', () => {
     cy.intercept('PUT', '/api/playlist/1', {})
     cy.intercept('/api/playlist/1/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.get('#sidebar').findByText('Simple Playlist').as('menuItem').dblclick()
@@ -123,16 +123,16 @@ context('Playlists', () => {
     cy.get('@nameInput').clear().type('A New Name{enter}')
     cy.get('@menuItem').should('contain', 'A New Name').and('have.class', 'active')
     cy.findByText('Playlist "A New Name" updated.').should('be.visible')
-    cy.get('#playlistWrapper .heading-wrapper').should('be.visible').and('contain', 'A New Name')
+    cy.get('#playlistScreen .heading-wrapper').should('be.visible').and('contain', 'A New Name')
   })
 
   it('creates a smart playlist', () => {
     cy.intercept('POST', '/api/playlist', {
-      fixture: 'playlist-smart.post.200.json'
+      fixture: 'playlist-smart.post.200.json',
     })
 
     cy.intercept('/api/playlist/3/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.findByTestId('sidebar-create-playlist-btn').click()
@@ -174,7 +174,7 @@ context('Playlists', () => {
       })
 
     cy.findByText('Playlist "My Smart Playlist" created.').should('be.visible')
-    cy.get('#playlistWrapper .heading-wrapper').should('be.visible').and('contain', 'My Smart Playlist')
+    cy.get('#playlistScreen .heading-wrapper').should('be.visible').and('contain', 'My Smart Playlist')
 
     cy.$assertSidebarItemActive('My Smart Playlist')
     cy.$assertPlaylistSongCount('My Smart Playlist', 3)
@@ -182,11 +182,11 @@ context('Playlists', () => {
 
   it('updates a smart playlist', () => {
     cy.intercept('/api/playlist/2/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.intercept('/api/playlist/2/songs', {
-      fixture: 'playlist-songs.get.200.json'
+      fixture: 'playlist-songs.get.200.json',
     })
 
     cy.intercept('PUT', '/api/playlist/2', {})
@@ -195,8 +195,7 @@ context('Playlists', () => {
     cy.findByTestId('playlist-context-menu-edit-2').click()
 
     cy.findByTestId('edit-smart-playlist-form').should('be.visible').within(() => {
-      cy.get('[name=name]').should('be.focused').and('contain.value', 'Smart Playlist')
-        .clear().type('A Different Name')
+      cy.get('[name=name]').should('be.focused').and('contain.value', 'Smart Playlist').clear().type('A Different Name')
 
       cy.get('[data-testid=smart-playlist-rule-group]').should('have.length', 2)
 
@@ -213,6 +212,6 @@ context('Playlists', () => {
     })
 
     cy.findByText('Playlist "A Different Name" updated.').should('be.visible')
-    cy.get('#playlistWrapper .heading-wrapper').should('be.visible').and('contain', 'A Different Name')
+    cy.get('#playlistScreen .heading-wrapper').should('be.visible').and('contain', 'A Different Name')
   })
 })

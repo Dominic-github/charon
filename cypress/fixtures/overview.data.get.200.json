@@ -1,0 +1,108 @@
+{
+  "most_played_songs": [
+    {
+      "type": "songs",
+      "id": "9ec70034-d9f2-43a2-9996-b1dca8cd938a",
+      "owner_id": 1,
+      "title": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
+      "lyrics": "",
+      "album_id": 3,
+      "album_name": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
+      "artist_id": 4,
+      "artist_name": "HIEUTHUHAI",
+      "album_artist_id": 4,
+      "album_artist_name": "HIEUTHUHAI",
+      "album_cover": "http:\/\/localhost:8000\/img\/covers\/1da1eb466d333e3c2d13bcbbc9f57a4da6aa7abc.webp",
+      "length": 138.29,
+      "liked": false,
+      "play_count": 1,
+      "track": 1,
+      "disc": 1,
+      "genre": "Rap",
+      "year": "2023",
+      "is_public": true,
+      "created_at": "2025-04-27T17:36:31.000000Z"
+    }
+  ],
+  "recently_played_songs": [
+    {
+      "type": "songs",
+      "id": "9ec70034-d9f2-43a2-9996-b1dca8cd938a",
+      "owner_id": 1,
+      "title": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
+      "lyrics": "",
+      "album_id": 3,
+      "album_name": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
+      "artist_id": 4,
+      "artist_name": "HIEUTHUHAI",
+      "album_artist_id": 4,
+      "album_artist_name": "HIEUTHUHAI",
+      "album_cover": "http:\/\/localhost:8000\/img\/covers\/1da1eb466d333e3c2d13bcbbc9f57a4da6aa7abc.webp",
+      "length": 138.29,
+      "liked": false,
+      "play_count": 1,
+      "track": 1,
+      "disc": 1,
+      "genre": "Rap",
+      "year": "2023",
+      "is_public": true,
+      "created_at": "2025-04-27T17:36:31.000000Z"
+    }
+  ],
+  "recently_added_albums": [
+    {
+      "type": "albums",
+      "id": 55,
+      "name": "Unknown Album",
+      "artist_id": 52,
+      "artist_name": "Young Captain \u961f\u957f",
+      "cover": "http:\/\/localhost:8000\/img\/covers\/5cbb3999cfe0e827fd2ae73c0c68494425ab0786.webp",
+      "created_at": "2025-04-28T05:35:41.000000Z"
+    }
+  ],
+  "recently_added_songs": [
+    {
+      "type": "songs",
+      "id": "9eccb725-2f1a-4538-990c-f64ac8c99e07",
+      "owner_id": 2,
+      "title": "Hooleeger - Official MV\u300a11\u300b (1)",
+      "lyrics": "",
+      "album_id": 1,
+      "album_name": "Unknown Album",
+      "artist_id": 1,
+      "artist_name": "Unknown Artist",
+      "album_artist_id": 1,
+      "album_artist_name": "Unknown Artist",
+      "album_cover": null,
+      "length": 234,
+      "liked": false,
+      "play_count": 0,
+      "track": 0,
+      "disc": 1,
+      "genre": "",
+      "year": null,
+      "is_public": false,
+      "created_at": "2025-04-30T13:47:11.000000Z"
+    }
+  ],
+  "most_played_artists": [
+    {
+      "type": "artists",
+      "id": 4,
+      "name": "HIEUTHUHAI",
+      "image": "http:\/\/localhost:8000\/img\/artists\/e515509017f312d93247051946408e1a84a14296.webp",
+      "created_at": "2025-04-27T17:36:30.000000Z"
+    }
+  ],
+  "most_played_albums": [
+    {
+      "type": "albums",
+      "id": 3,
+      "name": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
+      "artist_id": 4,
+      "artist_name": "HIEUTHUHAI",
+      "cover": "http:\/\/localhost:8000\/img\/covers\/1da1eb466d333e3c2d13bcbbc9f57a4da6aa7abc.webp",
+      "created_at": "2025-04-27T17:36:30.000000Z"
+    }
+  ]
+}

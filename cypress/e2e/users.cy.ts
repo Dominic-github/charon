@@ -17,13 +17,12 @@ context('User Management', () => {
 
   it('adds a user', () => {
     cy.intercept('POST', '/api/user', {
-      fixture: 'user.post.200.json'
+      fixture: 'user.post.200.json',
     })
 
     cy.findByTestId('add-user-btn').click()
     cy.findByTestId('add-user-form').within(() => {
-      cy.get('[name=name]').should('be.focused')
-        .type('Charles')
+      cy.get('[name=name]').should('be.focused').type('Charles')
       cy.get('[name=email]').type('charles@charon.test')
       cy.get('[name=password]').type('a-secure-password')
       cy.get('[name=is_admin]').check()
@@ -42,22 +41,20 @@ context('User Management', () => {
 
   it('redirects to profile for current user', () => {
     cy.get('#usersWrapper [data-testid=user-card].me [data-testid=edit-user-btn]').click({ force: true })
-    cy.url().should('contain', '/#!/profile')
+    cy.url().should('contain', '/#/profile')
   })
 
   it('edits a user', () => {
     cy.intercept('PUT', '/api/user/2', {
-      fixture: 'user.put.200.json'
+      fixture: 'user.put.200.json',
     })
 
     cy.get('#usersWrapper [data-testid=user-card]:nth-child(2) [data-testid=edit-user-btn]').click({ force: true })
 
     cy.findByTestId('edit-user-form').within(() => {
-      cy.get('[name=name]').should('be.focused').and('have.value', 'Alice')
-        .clear().type('Adriana')
+      cy.get('[name=name]').should('be.focused').and('have.value', 'Alice').clear().type('Adriana')
 
-      cy.get('[name=email]').should('have.value', 'alice@charon.test')
-        .clear().type('adriana@charon.test')
+      cy.get('[name=email]').should('have.value', 'alice@charon.test').clear().type('adriana@charon.test')
 
       cy.get('[name=password]').should('have.value', '')
       cy.get('[type=submit]').click()

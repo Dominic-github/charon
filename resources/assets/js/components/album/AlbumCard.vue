@@ -10,7 +10,7 @@
   >
     <template #name>
       <a :href="url('albums.show', { id: album.id })" class="font-medium" data-testid="name">{{ album.name }}</a>
-      <a v-if="isStandardArtist" :href="url('artists.show', { id: album.artist_id })">{{ album.artist_name }}</a>
+      <a data-testid="artist-name" v-if="isStandardArtist" :href="url('artists.show', { id: album.artist_id })">{{ album.artist_name }}</a>
       <span v-else class="text-k-text-secondary">{{ album.artist_name }}</span>
     </template>
 

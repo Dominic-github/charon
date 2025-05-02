@@ -13,15 +13,14 @@ context('Home Screen', () => {
       ['.recently-added-album-list', 6],
       ['.recently-added-song-list', 10],
       ['.top-artist-list', 1],
-      ['.top-album-list', 3]
+      ['.top-album-list', 3],
     ], (selector: string, itemCount: number) => {
-      cy.get(selector).should('exist')
-        .find('li').should('have.length', itemCount)
+      cy.get(selector).should('exist').find('li').should('have.length', itemCount)
     })
   })
 
   it('has a link to view all recently-played songs', () => {
-    cy.findByTestId('home-view-all-recently-played-btn').click().url().should('contain', '/#!/recently-played')
+    cy.findByTestId('home-view-all-recently-played-btn').click().url().should('contain', '/#/recently-played')
   })
 
   it('a song item can be played', () => {

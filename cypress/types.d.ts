@@ -4,37 +4,37 @@ interface LoginOptions {
   useYouTube: boolean
   useLastfm: boolean
   allowDownload: boolean
-  supportsTranscoding: false
+  supportsTranscoding: boolean
 }
 
 declare namespace Cypress {
   interface Chainable {
-    $login(options?: Partial<LoginOptions>): Chainable<AUTWindow>
-    $loginAsNonAdmin(options?: Partial<LoginOptions>): Chainable<AUTWindow>
-    $each(dataset: Array<Array<any>>, callback: (...args) => void): void
-    $confirm(): void
-    $clickSidebarItem(sidebarItemText: string): Chainable<JQuery>
+    $login: (options?: Partial<LoginOptions>) => Chainable<AUTWindow>
+    $loginAsNonAdmin: (options?: Partial<LoginOptions>) => Chainable<AUTWindow>
+    $each: (dataset: Array<Array<any>>, callback: (...args: any) => void) => void
+    $confirm: () => void
+    $clickSidebarItem: (sidebarItemText: string) => Chainable<JQuery<HTMLElement>>
 
     /**
      * Mock audio playback, including intercepting the media request, album thumbnail, media info etc.
      */
-    $mockPlayback(): void
+    $mockPlayback: () => void
 
     /**
      * Queue several songs from the "All Songs" screen.
      * @param count
      */
-    $shuffleSeveralSongs(count?: number): void
+    $shuffleSeveralSongs: (count?: number) => void
 
-    $getSongRows(): Chainable<JQuery>
-    $getSongRowAt(position: number): Chainable<JQuery>
+    $getSongRows: () => Chainable<JQuery<HTMLElement>>
+    $getSongRowAt: (position: number) => Chainable<JQuery<HTMLElement>>
 
-    $assertPlaylistSongCount(name: string, count: number): void
-    $assertFavoriteSongCount(count: number): void
-    $selectSongRange(start: number, end: number, scrollBehavior?: scrollBehaviorOptions): Chainable<JQuery>
-    $assertPlaying(): void
-    $assertNotPlaying(): void
-    $assertSidebarItemActive(text: string): void
+    $assertPlaylistSongCount: (name: string, count: number) => void
+    $assertFavoriteSongCount: (count: number) => void
+    $selectSongRange: (start: number, end: number, scrollBehavior?: scrollBehaviorOptions) => Chainable<JQuery<HTMLElement>>
+    $assertPlaying: () => void
+    $assertNotPlaying: () => void
+    $assertSidebarItemActive: (text: string) => void
 
     /**
      * Support finding an element within an element identified with a test ID.
@@ -47,6 +47,6 @@ declare namespace Cypress {
      * which is identical to
      *   cy.findByTestId('my-form').find('input[name=email]')
      */
-    $findInTestId<E extends Node = HTMLElement>(selector: string): Chainable<JQuery<E>>
+    $findInTestId: <E extends HTMLElement = HTMLElement>(selector: string) => Chainable<JQuery<E>>
   }
 }

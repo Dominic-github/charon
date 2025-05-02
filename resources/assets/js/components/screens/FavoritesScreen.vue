@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="favoriteScreen">
     <template #header>
       <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
         Your Favorites

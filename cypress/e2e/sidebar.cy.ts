@@ -1,23 +1,23 @@
 context('Sidebar Functionalities', () => {
   const commonMenuItems = [
-    ['Home', '/#!/home'],
-    ['Current Queue', '/#!/queue'],
-    ['All Songs', '/#!/songs'],
-    ['Albums', '/#!/albums'],
-    ['Artists', '/#!/artists'],
-    ['YouTube Video', '/#!/youtube'],
-    ['Favorites', '/#!/favorites'],
-    ['Recently Played', '/#!/recently-played'],
-    ['Simple Playlist', '/#!/playlist/1']
+    ['Home', '/#/home'],
+    ['Current Queue', '/#/queue'],
+    ['All Songs', '/#/songs'],
+    ['Albums', '/#/albums'],
+    ['Artists', '/#/artists'],
+    ['YouTube Video', '/#/youtube'],
+    ['Favorites', '/#/favorites'],
+    ['Recently Played', '/#/recently-played'],
+    ['Simple Playlist', '/#/playlist/1'],
   ]
 
   const managementMenuItems = [
-    ['Settings', '/#!/settings'],
-    ['Upload', '/#!/upload'],
-    ['Users', '/#!/users']
+    ['Settings', '/#/settings'],
+    ['Upload', '/#/upload'],
+    ['Users', '/#/users'],
   ]
 
-  function assertMenuItem (text: string, url: string) {
+  function assertMenuItem(text: string, url: string) {
     cy.$clickSidebarItem(text)
     cy.url().should('contain', url)
   }

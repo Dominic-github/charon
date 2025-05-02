@@ -3,7 +3,7 @@
     <template #header>{{ artist.name }}</template>
 
     <template #art>
-      <ArtistThumbnail :entity="artist" />
+      <ArtistThumbnail :entity="artist" data-testid="artist-thumbnail" />
     </template>
 
     <template v-if="info?.bio">

@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="podcastScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Podcasts

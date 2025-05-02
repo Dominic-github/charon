@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="artistScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Artists
@@ -25,7 +25,7 @@
           <ArtistCardSkeleton v-for="i in 10" :key="i" :layout="itemLayout" />
         </template>
         <template v-else>
-          <ArtistCard v-for="artist in artists" :key="artist.id" :artist="artist" :layout="itemLayout" />
+          <ArtistCard v-for="artist in artists" :key="artist.id" data-testid="artist-card" :artist="artist" :layout="itemLayout" />
           <ToTopButton />
         </template>
       </ArtistGrid>

@@ -6,7 +6,7 @@ context('Uploading', () => {
     cy.$clickSidebarItem('Upload')
   })
 
-  function assertResultsAddedToHomeScreen () {
+  function assertResultsAddedToHomeScreen() {
     cy.$clickSidebarItem('Home')
     cy.get('.recently-added-album-list li:first-child .name').should('contain.text', 'Spectacular')
     cy.get('.recently-added-album-list li:first-child .artist').should('contain.text', 'Hilary Hahn')
@@ -14,7 +14,7 @@ context('Uploading', () => {
       .should('contain.text', 'Mendelssohn Violin Concerto in E minor, Op. 64')
   }
 
-  function selectFixtureFile (fileName = 'sample.mp3') {
+  function selectFixtureFile(fileName = 'sample.mp3') {
     // Cypress caches fixtures and apparently has a bug where consecutive fixture files yield an empty "type"
     // which will fail our "audio type filter" (i.e. the file will not be considered an audio file).
     // As a workaround, we pad the fixture file name with slashes to invalidate the cache.
@@ -25,9 +25,9 @@ context('Uploading', () => {
     interceptCounter++
   }
 
-  function executeFailedUpload () {
+  function executeFailedUpload() {
     cy.intercept('POST', '/api/upload', {
-      statusCode: 413
+      statusCode: 413,
     }).as('failedUpload')
 
     selectFixtureFile()
@@ -39,7 +39,7 @@ context('Uploading', () => {
 
   it('uploads songs', () => {
     cy.intercept('POST', '/api/upload', {
-      fixture: 'upload.post.200.json'
+      fixture: 'upload.post.200.json',
     }).as('upload')
 
     cy.get('#uploadWrapper').within(() => {
@@ -58,7 +58,7 @@ context('Uploading', () => {
       executeFailedUpload()
 
       cy.intercept('POST', '/api/upload', {
-        fixture: 'upload.post.200.json'
+        fixture: 'upload.post.200.json',
       }).as('successfulUpload')
 
       cy.get('[data-testid=upload-item]:first-child').findByTitle('Retry').click()
@@ -74,7 +74,7 @@ context('Uploading', () => {
       executeFailedUpload()
 
       cy.intercept('POST', '/api/upload', {
-        fixture: 'upload.post.200.json'
+        fixture: 'upload.post.200.json',
       }).as('successfulUpload')
 
       cy.findByTestId('upload-retry-all-btn').click()

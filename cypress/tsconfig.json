@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "baseUrl": ".",
     "lib": ["es2021", "dom"],
+    "baseUrl": ".",
     "types": ["cypress", "@testing-library/cypress", "@types/node"]
   },
   "include": [

@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "type": "artists",
+      "id": 52,
+      "name": "Young Captain \u961f\u957f",
+      "image": null,
+      "created_at": "2025-04-28T05:35:40.000000Z"
+    },
+    {
+      "type": "artists",
+      "id": 16,
+      "name": "Yung Bae",
+      "image": null,
+      "created_at": "2025-04-27T17:36:58.000000Z"
+    },
+    {
+      "type": "artists",
+      "id": 19,
+      "name": "Yurie Kokubu",
+      "image": null,
+      "created_at": "2025-04-27T17:37:02.000000Z"
+    },
+    {
+      "type": "artists",
+      "id": 27,
+      "name": "\u30b9\u30c6\u30c3\u30d7",
+      "image": null,
+      "created_at": "2025-04-27T17:37:14.000000Z"
+    },
+    {
+      "type": "artists",
+      "id": 31,
+      "name": "\u7b20\u4e95 \u7d00\u7f8e\u5b50\/Herbie Hancock",
+      "image": "http:\/\/localhost:8000\/img\/artists\/d4d84d75bc57d35e1c88a44b835bad636c40a8e2.webp",
+      "created_at": "2025-04-27T17:37:21.000000Z"
+    },
+    {
+      "type": "artists",
+      "id": 32,
+      "name": "\u9ad8\u6a4b\u73b2\u5b50",
+      "image": null,
+      "created_at": "2025-04-27T17:37:23.000000Z"
+    }
+  ]
+}

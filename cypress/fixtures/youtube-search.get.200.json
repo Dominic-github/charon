@@ -23,17 +23,17 @@
         "description": "Description for YouTube Video #3",
         "thumbnails": {
           "default": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 120,
             "height": 90
           },
           "medium": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 320,
             "height": 180
           },
           "high": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 480,
             "height": 360
           }
@@ -57,17 +57,17 @@
         "description": "Description for YouTube Video #4",
         "thumbnails": {
           "default": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 120,
             "height": 90
           },
           "medium": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 320,
             "height": 180
           },
           "high": {
-            "url": "http://localhost:8080/test/images/youtube-thumbnail.png",
+            "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
             "width": 480,
             "height": 360
           }

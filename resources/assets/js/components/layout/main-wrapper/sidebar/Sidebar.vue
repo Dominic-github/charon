@@ -1,5 +1,6 @@
 <template>
   <nav
+    id="sidebar"
     :class="{ 'collapsed': !expanded, 'tmp-showing': tmpShowing, 'showing': mobileShowing }"
     class="group left-0 top-0 flex flex-col fixed h-full w-full md:relative md:w-k-sidebar-width z-[999] md:z-10"
     @mouseenter="onMouseEnter"
@@ -23,7 +24,6 @@
       <SidebarPlaylistsSection />
       <SidebarManageSection v-if="showManageSection" />
     </section>
-
 
     <SidebarToggleButton
       v-model="expanded"
@@ -103,42 +103,4 @@ eventBus.on('TOGGLE_SIDEBAR', () => (mobileShowing.value = !mobileShowing.value)
 </script>
 
 <style lang="postcss" scoped>
-@import '@/../css/partials/mixins.pcss';
-
-nav {
-  @apply bg-k-bg-secondary;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-
-  &.collapsed {
-    @apply w-[24px] transition-[width] duration-200;
-
-    > *:not(.btn-toggle) {
-      @apply hidden;
-    }
-
-    &.tmp-showing {
-      @apply fixed h-screen bg-k-bg-primary w-k-sidebar-width shadow-2xl z-[999];
-
-      > *:not(.btn-toggle, .btn-collapse-block) {
-        @apply block;
-      }
-
-      > .home-search-block {
-        @apply flex;
-      }
-    }
-  }
-
-  @media screen and (max-width: 768px) {
-    @mixin themed-background;
-
-    transform: translateX(-100vw);
-    transition: transform 0.2s ease-in-out;
-
-    &.showing {
-      transform: translateX(0);
-    }
-  }
-}
 </style>

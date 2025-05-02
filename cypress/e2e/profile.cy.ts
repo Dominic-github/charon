@@ -2,9 +2,9 @@ context('Profiles & Preferences', () => {
   it('shows the current user\'s profile', () => {
     cy.$login()
     cy.findByTestId('view-profile-link').click()
-    cy.url().should('contain', '/#!/profile')
+    cy.url().should('contain', '/#/profile')
 
-    cy.get('#profileWrapper').within(() => {
+    cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
       cy.findByTestId('update-profile-form').should('be.visible')
 
@@ -15,7 +15,7 @@ context('Profiles & Preferences', () => {
         'new_password',
         'notify',
         'show_album_art_overlay',
-        'confirm_closing'
+        'confirm_closing',
       ].forEach(inputName => cy.get(`[name=${inputName}]`).should('exist'))
 
       cy.findByTestId('lastfm-integrated').scrollIntoView().should('be.visible')
@@ -44,7 +44,7 @@ context('Profiles & Preferences', () => {
     cy.$login()
     cy.findByTestId('view-profile-link').click()
 
-    cy.get('#profileWrapper').within(() => {
+    cy.get('#profileScreen').within(() => {
       cy.get('[name=current_password]').clear().type('current-secrEt')
       cy.get('[name=name]').clear().type('Admin No. 2')
       cy.get('[name=email]').clear().type('admin.2@charon.test')
@@ -60,7 +60,7 @@ context('Profiles & Preferences', () => {
     cy.$login()
     cy.findByTestId('view-profile-link').click()
 
-    cy.get('#profileWrapper').within(() => {
+    cy.get('#profileScreen').within(() => {
       cy.get('[name=current_password]').clear().type('current-secrEt')
       cy.get('[name=name]').clear().type('Admin No. 2')
       cy.get('[name=email]').clear().type('admin.2@charon.test')
@@ -80,9 +80,9 @@ context('Profiles & Preferences', () => {
     cy.findByTestId('album-art-overlay').should('exist')
 
     cy.findByTestId('view-profile-link').click()
-    cy.get('#profileWrapper [name=show_album_art_overlay]').scrollIntoView().uncheck()
+    cy.get('#profileScreen [name=show_album_art_overlay]').scrollIntoView().uncheck()
     cy.findByTestId('album-art-overlay').should('not.exist')
-    cy.get('#profileWrapper [name=show_album_art_overlay]').scrollIntoView().check()
+    cy.get('#profileScreen [name=show_album_art_overlay]').scrollIntoView().check()
     cy.findByTestId('album-art-overlay').should('exist')
   })
 

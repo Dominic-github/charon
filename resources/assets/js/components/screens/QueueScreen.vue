@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="queueScreen">
     <template #header>
       <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
         Current Queue

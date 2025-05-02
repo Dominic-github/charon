@@ -4,7 +4,7 @@
       "id": 8,
       "artist_id": 3,
       "name": "Abstract",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:46",
       "is_compilation": false
     },
@@ -12,7 +12,7 @@
       "id": 2,
       "artist_id": 3,
       "name": "Bar",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:44",
       "is_compilation": false
     },
@@ -20,7 +20,7 @@
       "id": 9,
       "artist_id": 3,
       "name": "Baz",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 07:09:14",
       "is_compilation": false
     },
@@ -28,7 +28,7 @@
       "id": 3,
       "artist_id": 3,
       "name": "Foo",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:45",
       "is_compilation": false
     },
@@ -36,7 +36,7 @@
       "id": 4,
       "artist_id": 3,
       "name": "Qux",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:45",
       "is_compilation": false
     },
@@ -44,7 +44,7 @@
       "id": 6,
       "artist_id": 3,
       "name": "Random Album",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:45",
       "is_compilation": false
     },
@@ -52,7 +52,7 @@
       "id": 5,
       "artist_id": 3,
       "name": "The Wall",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 06:48:45",
       "is_compilation": false
     },
@@ -60,7 +60,7 @@
       "id": 1,
       "artist_id": 1,
       "name": "Unknown Album",
-      "cover": "http://localhost:8088/test/images/sample.png",
+      "cover": "http://localhost:8000/test/images/sample.png",
       "created_at": "2016-02-01 04:49:33",
       "is_compilation": false
     }
@@ -69,17 +69,17 @@
     {
       "id": 3,
       "name": "The Band",
-      "image": "http://localhost:8088/test/images/sample.png"
+      "image": "http://localhost:8000/test/images/sample.png"
     },
     {
       "id": 1,
       "name": "Unknown Artist",
-      "image": "http://localhost:8088/test/images/sample.png"
+      "image": "http://localhost:8000/test/images/sample.png"
     },
     {
       "id": 2,
       "name": "Various Artists",
-      "image": "http://localhost:8088/test/images/sample.png"
+      "image": "http://localhost:8000/test/images/sample.png"
     }
   ],
   "songs": [
@@ -507,7 +507,7 @@
   "useiTunes": true,
   "allowDownload": true,
   "supportsTranscoding": false,
-  "cdnUrl": "http://localhost:8088/",
+  "cdnUrl": "http://localhost:8000/",
   "currentVersion": "v5.0.0",
   "latestVersion": "v5.0.1"
 }

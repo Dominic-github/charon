@@ -13,7 +13,7 @@ context('Application Layout', () => {
       '#mainFooter',
       '#mainFooter .player-controls',
       '#mainFooter .middle-pane',
-      '#mainFooter .other-controls'
+      '#mainFooter .other-controls',
     ].forEach(selector => cy.get(selector).should('be.visible'))
   })
 })

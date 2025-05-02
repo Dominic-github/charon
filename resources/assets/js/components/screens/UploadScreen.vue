@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="uploadScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Upload Media

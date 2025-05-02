@@ -1,7 +1,7 @@
 context('Song Editing', { scrollBehavior: false }, () => {
   beforeEach(() => {
     cy.intercept('/api/song/**/info', {
-      fixture: 'song-info.get.200.json'
+      fixture: 'song-info.get.200.json',
     })
 
     cy.$login()
@@ -10,21 +10,20 @@ context('Song Editing', { scrollBehavior: false }, () => {
 
   it('edits a song', () => {
     cy.intercept('PUT', '/api/songs', {
-      fixture: 'songs.put.200.json'
+      fixture: 'songs.put.200.json',
     })
 
     cy.get('#songsWrapper .song-item:first-child').rightclick()
     cy.findByTestId('song-context-menu').within(() => cy.findByText('Edit').click())
 
     cy.findByTestId('edit-song-form').within(() => {
-      ['artist', 'album', 'is_compilation', 'track'].forEach(selector => {
+      ['artist', 'album', 'is_compilation', 'track'].forEach((selector) => {
         cy.get(`[name=${selector}]`).should('be.visible')
       })
 
       cy.get('[name=title]').clear().type('New Title')
       cy.findByTestId('edit-song-lyrics-tab').click()
-      cy.get('textarea[name=lyrics]').should('be.visible').and('contain.value', 'Sample song lyrics')
-        .clear().type('New lyrics{enter}Fake multiline.')
+      cy.get('textarea[name=lyrics]').should('be.visible').and('contain.value', 'Sample song lyrics').clear().type('New lyrics{enter}Fake multiline.')
 
       cy.get('button[type=submit]').click()
     })
@@ -44,14 +43,14 @@ context('Song Editing', { scrollBehavior: false }, () => {
 
   it('edits multiple songs', () => {
     cy.intercept('PUT', '/api/songs', {
-      fixture: 'songs-multiple.put.200.json'
+      fixture: 'songs-multiple.put.200.json',
     })
 
     cy.get('#songsWrapper').within(() => cy.$selectSongRange(0, 2).rightclick())
     cy.findByTestId('song-context-menu').within(() => cy.findByText('Edit').click())
 
     cy.findByTestId('edit-song-form').within(() => {
-      ['title', 'track'].forEach(selector => {
+      ['title', 'track'].forEach((selector) => {
         cy.get(`[name=${selector}]`).should('not.exist')
       })
 

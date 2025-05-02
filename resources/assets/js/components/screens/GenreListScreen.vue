@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="genreWrapper">
     <template #header>
       <ScreenHeader layout="collapsed">Genres</ScreenHeader>
     </template>

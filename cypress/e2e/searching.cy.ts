@@ -34,7 +34,7 @@ context('Searching', () => {
 
     cy.get('@searchInput').type('foo')
     cy.get('#searchExcerptsWrapper [data-testid=view-all-songs-btn]').click()
-    cy.url().should('contain', '/#!/search/songs/foo')
+    cy.url().should('contain', '/#/search/songs/foo')
 
     cy.get('#songResultsWrapper').within(() => {
       cy.get('.screen-header').should('contain.text', 'Showing Songs for foo')

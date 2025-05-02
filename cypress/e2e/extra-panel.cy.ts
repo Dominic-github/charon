@@ -7,12 +7,12 @@ context('Extra Information Panel', () => {
   })
 
   it('displays an option to add lyrics if blank', () => {
-    cy.fixture('song-info.get.200.json').then(data => {
+    cy.fixture('song-info.get.200.json').then((data) => {
       data.lyrics = null
 
       cy.intercept('/api/**/info', {
         statusCode: 200,
-        body: data
+        body: data,
       })
     })
 

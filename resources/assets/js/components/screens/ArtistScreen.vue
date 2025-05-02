@@ -18,6 +18,7 @@
 
           <a
             v-if="downloadable"
+            data-testid="download-all-songs"
             class="download"
             role="button"
             title="Download all songs by this artist"
@@ -49,7 +50,7 @@
           Albums
           <input v-model="activeTab" :disabled="loading" name="tab" type="radio" value="Albums">
         </label>
-        <label v-if="useLastfm" :class="{ active: activeTab === 'Info' }">
+        <label v-if="useLastfm" data-testid="artist-infomation" :class="{ active: activeTab === 'Info' }">
           Information
           <input v-model="activeTab" :disabled="loading" name="tab" type="radio" value="Info">
         </label>

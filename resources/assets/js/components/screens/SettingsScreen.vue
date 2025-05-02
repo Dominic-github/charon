@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="settingScreen">
     <template #header>
       <ScreenHeader>Settings</ScreenHeader>
     </template>

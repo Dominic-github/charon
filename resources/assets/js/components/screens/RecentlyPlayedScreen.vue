@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="recentlyPlayedScreen">
     <template #header>
       <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
         Recently Played
