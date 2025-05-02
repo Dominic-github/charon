@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - dev
+      - main
     paths-ignore:
       - resources/assets/**
   workflow_dispatch:

@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - dev
+      - main
     paths:
       - resources/assets/**
       - .github/workflows/frontend.yml
