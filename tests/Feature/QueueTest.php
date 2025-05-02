@@ -85,7 +85,7 @@ class QueueTest extends TestCase
     #[Test]
     public function fetchSongs(): void
     {
-        Song::factory(10)->create();
+        Song::factory(5)->create();
 
         $this->getAs('api/queue/fetch?order=rand&limit=5')
             ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE])

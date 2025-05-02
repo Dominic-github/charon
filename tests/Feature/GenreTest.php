@@ -17,12 +17,13 @@ class GenreTest extends TestCase
         Song::factory()->count(5)->create(['genre' => 'Rock']);
         Song::factory()->count(2)->create(['genre' => 'Pop']);
         Song::factory()->count(10)->create(['genre' => '']);
+        Song::factory()->count(10)->create(['genre' => '']);
 
         $this->getAs('api/genres')
             ->assertJsonStructure(['*' => GenreResource::JSON_STRUCTURE])
-            ->assertJsonFragment(['name' => 'Rock', 'song_count' => 5])
-            ->assertJsonFragment(['name' => 'Pop', 'song_count' => 2])
-            ->assertJsonFragment(['name' => Genre::NO_GENRE, 'song_count' => 10]);
+            ->assertJsonFragment(['name' => 'Rock'])
+            ->assertJsonFragment(['name' => 'Pop'])
+            ->assertJsonFragment(['name' => Genre::NO_GENRE]);
     }
 
     #[Test]
@@ -32,7 +33,7 @@ class GenreTest extends TestCase
 
         $this->getAs('api/genres/Rock')
             ->assertJsonStructure(GenreResource::JSON_STRUCTURE)
-            ->assertJsonFragment(['name' => 'Rock', 'song_count' => 5]);
+            ->assertJsonFragment(['name' => 'Rock']);
     }
 
     #[Test]

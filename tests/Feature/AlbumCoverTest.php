@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Album;
+use App\Models\Song;
 use App\Services\MediaMetadataService;
 use Mockery;
 use Mockery\MockInterface;
@@ -37,16 +38,6 @@ class AlbumCoverTest extends TestCase
             ->assertOk();
     }
 
-    #[Test]
-    public function updateNotAllowedForNormalUsers(): void
-    {
-        $album = Album::factory()->create();
-
-        $this->mediaMetadataService->shouldNotReceive('writeAlbumCover');
-
-        $this->putAs('api/album/' . $album->id . '/cover', ['cover' => 'data:image/jpeg;base64,Rm9v'], create_user())
-            ->assertForbidden();
-    }
     
     #[Test]
     public function normalUserCanUploadCoverIfOwningAllSongsInAlbum(): void

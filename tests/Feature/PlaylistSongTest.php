@@ -7,6 +7,8 @@ use App\Models\Playlist;
 use App\Models\Song;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
+use App\Http\Resources\CollaborativeSongResource;
+use App\Models\User;
 use Tests\TestCase;
 
 use function Tests\create_user;
@@ -138,8 +140,8 @@ class PlaylistSongTest extends TestCase
                 ],
             ],
         ]);
-
-        $songs = Song::factory(2)->create()->pluck('id')->all();
+        $user = User::factory()->create();
+        $songs = Song::factory(2)->owner($user)->create()->pluck('id')->all();
 
         $this->postAs("api/playlists/$playlist->id/songs", ['songs' => $songs], $playlist->user)
             ->assertForbidden();

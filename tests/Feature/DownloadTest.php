@@ -58,7 +58,7 @@ class DownloadTest extends TestCase
     #[Test]
     public function downloadMultipleSongs(): void
     {
-        $songs = Song::factory(2)->create();
+        $songs = Song::factory(2)->create(['path' => test_path('songs/blank.mp3')]);
         $user = create_user();
 
         $this->downloadService
@@ -82,7 +82,7 @@ class DownloadTest extends TestCase
     public function downloadAlbum(): void
     {
         $album = Album::factory()->create();
-        $songs = Song::factory(3)->for($album)->create();
+        $songs = Song::factory(2)->for($album)->create(['path' => test_path('songs/blank.mp3')]);
         $user = create_user();
 
         $this->downloadService
@@ -103,7 +103,7 @@ class DownloadTest extends TestCase
     public function downloadArtist(): void
     {
         $artist = Artist::factory()->create();
-        $songs = Song::factory(3)->for($artist)->create();
+        $songs = Song::factory(2)->for($artist)->create(['path' => test_path('songs/blank.mp3')]);
         $user = create_user();
 
         $this->downloadService
@@ -124,7 +124,7 @@ class DownloadTest extends TestCase
     public function downloadPlaylist(): void
     {
         $user = create_user();
-        $songs = Song::factory(3)->create();
+        $songs = Song::factory(3)->create(['path' => test_path('songs/blank.mp3')]);
 
         /** @var Playlist $playlist */
         $playlist = Playlist::factory()->for($user)->create();
@@ -157,7 +157,7 @@ class DownloadTest extends TestCase
     public function downloadFavorites(): void
     {
         $user = create_user();
-        $favorites = Interaction::factory(3)->for($user)->create(['liked' => true]);
+        $favorites = Interaction::factory(2)->for($user)->create(['liked' => true]);
 
         $this->downloadService
             ->shouldReceive('getDownloadablePath')

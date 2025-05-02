@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\MultipleSongsLiked;
 use App\Events\PlaybackStarted;
 use App\Events\SongLikeToggled;
+use App\Events\MultipleSongsUnliked;
 use App\Models\Interaction;
 use App\Models\Song;
 use Illuminate\Support\Facades\Event;

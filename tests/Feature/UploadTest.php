@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Exceptions\MediaPathNotSetException;
 use App\Exceptions\SongUploadFailedException;
 use App\Models\Setting;
+use App\Models\Song;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 use function Tests\create_admin;
+use function Tests\create_user;
 use function Tests\test_path;
 
 class UploadTest extends TestCase
