@@ -50,4 +50,14 @@ return new class extends Migration
             $table->dropColumn('folder_id');
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('playlist_playlist_folder', static function (Blueprint $table): void {
+            $table->dropForeign(['folder_id']);
+            $table->dropForeign(['playlist_id']);
+        });
+
+        Schema::dropIfExists('playlist_playlist_folder');
+    }
 };

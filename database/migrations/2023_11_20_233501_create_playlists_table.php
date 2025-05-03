@@ -22,6 +22,11 @@ class CreatePlaylistsTable extends Migration
 
     public function down(): void
     {
-        Schema::drop('playlists');
+         if (Schema::hasTable('playlist_collaborators')) {
+            Schema::table('playlist_collaborators', function (Blueprint $table) {
+                $table->dropForeign(['playlist_id']);
+            });
+        }
+        Schema::dropIfExists('playlists');
     }
 }

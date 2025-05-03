@@ -22,4 +22,13 @@ return new class extends Migration
             $table->foreign('current_song_id')->references('id')->on('songs')->cascadeOnUpdate()->nullOnDelete();
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('queue_states', static function (Blueprint $table): void {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['current_song_id']);
+        });
+        Schema::dropIfExists('queue_states');
+    }
 };

@@ -25,4 +25,13 @@ return new class extends Migration
                 ->nullOnDelete();
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('playlist_folders', static function (Blueprint $table): void {
+            $table->dropForeign(['user_id']);
+        });
+        
+        Schema::dropIfExists('playlist_folders');
+    }
 };
