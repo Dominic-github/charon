@@ -1,10 +1,14 @@
 import path from 'node:path'
+import process from 'node:process'
 import vue from '@vitejs/plugin-vue'
 import laravel from 'laravel-vite-plugin'
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  server: {
+    host: process.env.APP_URL,
+  },
   plugins: [
     vue(),
     laravel({
