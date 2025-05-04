@@ -31,6 +31,7 @@ env:
 
 key:
 	php artisan key:generate
+	php artisan config:cache
 
 build:
 	yarn build
