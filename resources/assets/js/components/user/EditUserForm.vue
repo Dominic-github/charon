@@ -101,13 +101,16 @@ const submit = async () => {
   showOverlay()
 
   try {
-    const { isValid, message } = checkPassword(updateData.password)
-    if (!isValid) {
-      showErrorDialog(message)
-      failed.value = true
-      window.setTimeout(() => (failed.value = false), 2000)
-      return
+    if (updateData.password) {
+      const { isValid, message } = checkPassword(updateData.password)
+      if (!isValid) {
+        showErrorDialog(message)
+        failed.value = true
+        window.setTimeout(() => (failed.value = false), 2000)
+        return
+      }
     }
+
     await userStore.update(user, updateData)
     failed.value = false
     toastSuccess('User profile updated.')
