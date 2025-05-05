@@ -6,9 +6,9 @@
 
         <template #controls>
           <BtnGroup v-if="hasUploadFailures" uppercase>
-            <Btn data-testid="upload-retry-all-btn" success @click="retryAll">
+            <Btn data-testid="upload-retry-all-btn" success @click="retryAllError">
               <Icon :icon="faRotateRight" />
-              Retry All
+              Retry All Error
             </Btn>
             <Btn data-testid="upload-remove-all-btn" highlight @click="removeFailedEntries">
               <Icon :icon="faTrashCan" />
@@ -113,7 +113,7 @@ const onDrop = async (event: DragEvent) => {
   await handleDropEvent(event)
 }
 
-const retryAll = () => uploadService.retryAll()
+const retryAllError = () => uploadService.retryAllError()
 const removeFailedEntries = () => uploadService.removeFailed()
 </script>
 

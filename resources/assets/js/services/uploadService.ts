@@ -34,12 +34,14 @@ export interface UploadFile {
 export const uploadService = {
   state: reactive({
     files: [] as UploadFile[],
+    error: [] as UploadFile[],
   }),
 
   simultaneousUploads: 5,
 
   queue (file: UploadFile | UploadFile[]) {
     this.state.files = this.state.files.concat(file)
+    this.state.error = []
     this.proceed()
   },
 
@@ -102,6 +104,7 @@ export const uploadService = {
     } catch (error: unknown) {
       logger.error(error)
       file.status = 'Errored'
+      this.state.error = this.state.error.concat(file)
 
       if (axios.isAxiosError(error) && error.response?.data?.message) {
         file.message = `Upload failed: ${error.response.data.message}`
@@ -123,8 +126,8 @@ export const uploadService = {
     this.proceed()
   },
 
-  retryAll () {
-    this.state.files.forEach(this.resetFile)
+  retryAllError () {
+    this.state.error.forEach(this.resetFile)
     this.proceed()
   },
 
