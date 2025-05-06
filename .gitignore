@@ -12,6 +12,8 @@ bower_components
 /CHANGE
 charon.db
 
+.vscode
+
 ### Node ###
 # Logs
 *.log
