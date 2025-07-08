@@ -11,7 +11,7 @@
         <span v-if="file.status === 'Errored'" v-charon-tooltip.left :title="file.message" class="info !px-3">
           <Icon :icon="faInfoCircle" :title="file.message" />
         </span>
-        <Btn v-if="canDone" class="!px-3" icon-only title="Edit" transparent unrounded @click.prevent="done">
+        <Btn v-if="canDone" class="!px-3" icon-only title="Done" transparent unrounded @click.prevent="done">
           <Icon :icon="faCheck" />
         </Btn>
         <Btn v-if="canEdit" class="!px-3" icon-only title="Edit" transparent unrounded @click.prevent="() => file.song && eventBus.emit('MODAL_SHOW_EDIT_SONG_FORM', file.song, 'details')">

@@ -16,4 +16,6 @@ export default defineConfig({
       return config
     },
   },
+  experimentalMemoryManagement: true,
+  numTestsKeptInMemory: 1
 })

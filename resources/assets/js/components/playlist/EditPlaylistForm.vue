@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="submit" @keydown.esc="maybeClose">
+  <form id="edit-playlist-form" @submit.prevent="submit" @keydown.esc="maybeClose">
     <header>
       <h1>Edit Playlist</h1>
     </header>

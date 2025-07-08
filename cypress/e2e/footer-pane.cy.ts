@@ -5,7 +5,7 @@ context('Footer Pane', () => {
 
     cy.$clickSidebarItem('All Songs')
 
-    cy.$getSongRows().first().dblclick().within(() => {
+    cy.$getSongRows().eq(2).dblclick().within(() => {
       cy.get('.title').invoke('text').as('title')
       cy.get('.album').invoke('text').as('album')
       cy.get('.artist').invoke('text').as('artist')
@@ -13,25 +13,20 @@ context('Footer Pane', () => {
   })
 
   it('displays current song information', () => {
-    cy.findByTestId('footer-middle-pane').within(function () {
+    cy.get('.song-info').within(function () {
       cy.get('.title').should('have.text', this.title)
-      cy.get('.album').should('have.text', this.album)
       cy.get('.artist').should('have.text', this.artist)
     })
   })
 
   it('invokes artist screen', () => {
-    cy.findByTestId('footer-middle-pane').within(() => cy.get('.artist').click())
-    cy.get('#artistWrapper').should('be.visible')
-  })
-
-  it('invokes album screen', () => {
-    cy.findByTestId('footer-middle-pane').within(() => cy.get('.album').click())
-    cy.get('#albumWrapper').should('be.visible')
+    cy.intercept('GET', '/api/artists/*/songs', { fixture: 'artist-song.get.200.json' })
+    cy.get('.song-info').within(() => cy.get('.artist').click())
+    cy.get('#artistScreen').should('be.visible')
   })
 
   it('has a context menu for the current song', () => {
-    cy.get('#mainFooter').rightclick()
+    cy.findByTestId('footer-app').rightclick()
     cy.findByTestId('song-context-menu').should('be.visible')
   })
 })

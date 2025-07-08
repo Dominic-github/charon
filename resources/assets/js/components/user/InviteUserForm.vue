@@ -1,5 +1,5 @@
 <template>
-  <form novalidate @submit.prevent="submit" @keydown.esc="maybeClose">
+  <form data-testid="invite-user-form" novalidate @submit.prevent="submit" @keydown.esc="maybeClose">
     <header>
       <h1>Invite Users</h1>
     </header>

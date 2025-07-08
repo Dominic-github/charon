@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex flex-1 overflow-hidden">
+  <div class="relative flex flex-1 overflow-hidden" id="mainWrapper">
     <SideBar />
     <MainContent />
     <SideSheet />

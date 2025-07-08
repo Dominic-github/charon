@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase v-if="artistId">
+  <ScreenBase id="artistScreen" v-if="artistId">
     <template #header>
       <ScreenHeaderSkeleton v-if="loading" />
 

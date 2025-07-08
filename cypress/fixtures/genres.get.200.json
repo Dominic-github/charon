@@ -1,0 +1,20 @@
+[
+    {
+        "type": "genres",
+        "name": "Pop",
+        "song_count": 22,
+        "length": 3292.9900000000007
+    },
+    {
+        "type": "genres",
+        "name": "R&B",
+        "song_count": 12,
+        "length": 2121.0299999999997
+    },
+    {
+        "type": "genres",
+        "name": "VPOP",
+        "song_count": 9,
+        "length": 3703.37
+    }
+]

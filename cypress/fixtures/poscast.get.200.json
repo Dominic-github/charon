@@ -1,0 +1,18 @@
+[
+    {
+        "type": "podcast",
+        "id": "9f3e908b-a3cc-4664-9fd5-547f143af725",
+        "url": "https:\/\/media.rss.com\/terminal\/feed.xml",
+        "title": "TERMINAL",
+        "image": "https:\/\/media.rss.com\/terminal\/20200116_163322_a82786b04f8f401dbe55cd9724b69f66.jpeg",
+        "link": "https:\/\/rss.com\/podcasts\/terminal",
+        "description": "TERMINAL ACCESS: GRANTED. Each installment is a carefully curated mixtape of house and techno music, from deep progressive grooves to dark tech house and angry, pounding techno, all mixed live by Bluescreen.",
+        "author": "Bluescreen",
+        "subscribed_at": "2025-06-26T04:03:46.000000Z",
+        "last_played_at": "2025-06-26T04:03:46.000000Z",
+        "state": {
+            "current_episode": null,
+            "progresses": []
+        }
+    }
+]

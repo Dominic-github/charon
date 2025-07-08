@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="searchScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         <span v-if="q">Searching for <span class="font-thin">{{ q }}</span></span>

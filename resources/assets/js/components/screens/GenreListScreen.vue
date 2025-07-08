@@ -21,6 +21,7 @@
           :key="genre.name"
           :class="`level-${getLevel(genre)}`"
           class="rounded-[0.5em] inline-block m-1.5 align-middle overflow-hidden"
+          data-testid="genre-item"
         >
           <a
             :href="url('genres.show', { name: encodeURIComponent(genre.name) })"

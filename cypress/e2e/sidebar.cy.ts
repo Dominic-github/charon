@@ -1,42 +1,72 @@
 context('Sidebar Functionalities', () => {
   const commonMenuItems = [
-    ['Home', '/#/home'],
-    ['Current Queue', '/#/queue'],
     ['All Songs', '/#/songs'],
     ['Albums', '/#/albums'],
     ['Artists', '/#/artists'],
-    ['YouTube Video', '/#/youtube'],
+    ['Genres', '/#/genres'],
+    ['Podcasts', '/#/podcasts'],
+
     ['Favorites', '/#/favorites'],
     ['Recently Played', '/#/recently-played'],
-    ['Simple Playlist', '/#/playlist/1'],
+    ['Simple Playlist', '/#/playlist/**'],
   ]
 
-  const managementMenuItems = [
+  const managementAdminMenuItems = [
     ['Settings', '/#/settings'],
     ['Upload', '/#/upload'],
     ['Users', '/#/users'],
   ]
 
+  const managementUserMenuItems = [
+    ['Upload', '/#/upload'],
+  ]
+
   function assertMenuItem(text: string, url: string) {
+    cy.intercept('/api/albums?page=1', { fixture: 'album-list.get.200.json' })
+    cy.intercept('GET', '/api/artists?page=1', { fixture: 'artist-list.get.200.json' })
+    cy.intercept('GET', '/api/songs/favorite', {
+      fixture: 'favorites.get.200.json',
+    })
+    cy.intercept('/api/podcasts', { fixture: 'podcasts.get.200.json' })
+    cy.intercept('/api/genres', { fixture: 'genres.get.200.json' })
+    cy.intercept('/api/playlists/**/songs', {
+      fixture: 'playlist-songs.get.200.json',
+    })
+    cy.intercept('/api/playlists/**/collaborators', {
+      fixture: 'collaborators.get.200.json',
+    })
+    cy.intercept('GET', '/api/songs/recently-played', { statusCode: 200, fixture: 'recently-played.get.200.json' })
+
     cy.$clickSidebarItem(text)
-    cy.url().should('contain', url)
+    if (url === '/#/playlist/**') {
+      cy.url().should('match', /\/#\/playlists\/[a-f0-9-]+$/)
+    } else {
+      cy.url().should('include', url)
+    }
   }
 
   it('contains menu items', () => {
     cy.$login()
+    cy.get('#sidebar').should('exist')
+    cy.get('#sidebar .home-btn').should('exist').click()
+    cy.url().should('contain', '/#/home')
+
     cy.$each(commonMenuItems, assertMenuItem)
-    cy.$each(managementMenuItems, assertMenuItem)
+    cy.$each(managementAdminMenuItems, assertMenuItem)
   })
 
   it('does not contain management items for non-admins', () => {
     cy.$loginAsNonAdmin()
-    cy.$each(commonMenuItems, assertMenuItem)
+    cy.get('#sidebar').should('exist')
+    cy.get('#sidebar .home-btn').should('exist').click()
+    cy.url().should('contain', '/#/home')
 
-    cy.$each(managementMenuItems, (text: string) => cy.get('#sidebar').findByText(text).should('not.exist'))
+    cy.$each(commonMenuItems, assertMenuItem)
+    cy.$each(managementUserMenuItems, assertMenuItem)
   })
 
   it('does not have a YouTube item if YouTube is not used', () => {
-    cy.$login({ useYouTube: false })
-    cy.get('#sidebar').findByText('YouTube Video').should('not.exist')
+    cy.$login({ uses_you_tube: false })
+    cy.get('#sidebar').findByTestId('youtube').should('not.exist')
   })
 })

@@ -1,174 +1,135 @@
 {
-  "settings": [],
-  "playlists": [
-    {
-      "type": "playlists",
-      "id": "9ecaea59-a752-4a04-b348-3087222b88d1",
-      "name": "aab",
-      "folder_id": "9ecae9ae-9e12-4964-995d-8bfb936a0050",
-      "user_id": 2,
-      "is_smart": false,
-      "is_collaborative": false,
-      "rules": null,
-      "cover": null,
-      "own_songs_only": false,
-      "created_at": "2025-04-29T16:18:43.000000Z"
+    "settings": {
+        "media_path": "/media/charon/"
     },
-    {
-      "type": "playlists",
-      "id": "9ecaea63-eef2-46fd-a11d-d18aa064ff6a",
-      "name": "abc",
-      "folder_id": null,
-      "user_id": 2,
-      "is_smart": false,
-      "is_collaborative": false,
-      "rules": null,
-      "cover": null,
-      "own_songs_only": false,
-      "created_at": "2025-04-29T16:18:50.000000Z"
+    "playlists": [
+        {
+            "type": "playlists",
+            "id": "9f3e91a4-749e-44c9-8c8e-c9c5c4c79cf6",
+            "name": "Simple Playlist",
+            "folder_id": null,
+            "user_id": 1,
+            "is_smart": false,
+            "is_collaborative": false,
+            "rules": null,
+            "cover": null,
+            "own_songs_only": false,
+            "created_at": "2025-06-26T04:06:42.000000Z"
+        },
+         {
+            "type": "playlists",
+            "id": "9f4d8cfc-5400-4543-81a2-c54d623ce16e",
+            "name": "Smart Playlist",
+            "folder_id": null,
+            "user_id": 1,
+            "is_smart": true,
+            "is_collaborative": false,
+            "rules": [
+                {
+                    "id": "51420f81-1655-49db-80a3-ddad067d88c8",
+                    "rules": [
+                        {
+                            "id": "68561cbf-d866-4fae-bd79-dad2df47a277",
+                            "model": "album.name",
+                            "operator": "is",
+                            "value": [
+                                "99%"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "cover": null,
+            "own_songs_only": false,
+            "created_at": "2025-07-03T14:51:07.000000Z"
+        },
+        {
+            "type": "playlists",
+            "id": "9f3e91c2-d099-4df5-820d-199460a7fca9",
+            "name": "Tired",
+            "folder_id": "9f3e91b3-1b56-4eb6-af07-16af1a2977ad",
+            "user_id": 1,
+            "is_smart": false,
+            "is_collaborative": false,
+            "rules": null,
+            "cover": null,
+            "own_songs_only": false,
+            "created_at": "2025-06-26T04:07:02.000000Z"
+        }
+    ],
+    "playlist_folders": [
+        {
+            "type": "playlist-folders",
+            "id": "9f3e91b3-1b56-4eb6-af07-16af1a2977ad",
+            "name": "Rap",
+            "user_id": 1,
+            "created_at": "2025-06-26T04:06:52.000000Z"
+        }
+    ],
+    "current_user": {
+        "type": "users",
+        "id": 1,
+        "name": "Charon",
+        "email": "admin@charon.dev",
+        "avatar": "http://localhost:8000/img/icon.png",
+        "is_admin": true,
+        "preferences": {
+            "theme": "classic",
+            "show_now_playing_notification": false,
+            "confirm_before_closing": false,
+            "show_album_art_overlay": true,
+            "transcode_on_mobile": true,
+            "transcode_quality": 128,
+            "make_uploads_public": false,
+            "lastfm_session_key": null,
+            "support_bar_no_bugging": false,
+            "artists_view_mode": "thumbnails",
+            "albums_view_mode": "thumbnails",
+            "repeat_mode": "NO_REPEAT",
+            "volume": 7,
+            "equalizer": {
+                "name": "Default",
+                "preamp": 0,
+                "gains": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "lyrics_zoom_level": 1,
+            "visualizer": "default",
+            "active_extra_panel_tab": "Lyrics",
+            "continuous_playback": false
+        },
+        "is_prospect": false,
+        "sso_provider": null,
+        "sso_id": null
     },
-    {
-      "type": "playlists",
-      "id": "9eccb717-8474-442a-9b46-ea45a512c5bb",
-      "name": "owner",
-      "folder_id": null,
-      "user_id": 2,
-      "is_smart": false,
-      "is_collaborative": false,
-      "rules": null,
-      "cover": null,
-      "own_songs_only": false,
-      "created_at": "2025-04-30T13:47:03.000000Z"
+    "uses_last_fm": true,
+    "uses_spotify": true,
+    "uses_you_tube": true,
+    "uses_i_tunes": true,
+    "allows_download": true,
+    "supports_batch_downloading": true,
+    "media_path_set": true,
+    "supports_transcoding": false,
+    "cdn_url": "http:\/\/localhost:8000\/",
+    "current_version": "v2.0.0",
+    "latest_version": "v2.0.1",
+    "song_count": 43,
+    "song_length": 9117.389999999998,
+    "queue_state": {
+        "type": "queue-states",
+        "songs": [],
+        "current_song": null,
+        "playback_position": 0
     },
-    {
-      "type": "playlists",
-      "id": "9eccbb2c-cc7e-43fc-9ea1-0e166a341967",
-      "name": "olnly",
-      "folder_id": null,
-      "user_id": 2,
-      "is_smart": false,
-      "is_collaborative": false,
-      "rules": null,
-      "cover": null,
-      "own_songs_only": false,
-      "created_at": "2025-04-30T13:58:27.000000Z"
-    },
-    {
-      "type": "playlists",
-      "id": "9ecab93f-b55d-4b59-b707-a07271545e82",
-      "name": "AAA",
-      "folder_id": "9ecae9a8-3588-42f9-b0b3-73a200da1868",
-      "user_id": 1,
-      "is_smart": false,
-      "is_collaborative": true,
-      "rules": null,
-      "cover": null,
-      "own_songs_only": false,
-      "created_at": "2025-04-29T14:01:25.000000Z"
-    }
-  ],
-  "playlist_folders": [
-    {
-      "type": "playlist-folders",
-      "id": "9ecae9a8-3588-42f9-b0b3-73a200da1868",
-      "name": "aaa",
-      "user_id": 2,
-      "created_at": "2025-04-29T16:16:47.000000Z"
-    },
-    {
-      "type": "playlist-folders",
-      "id": "9ecae9ae-9e12-4964-995d-8bfb936a0050",
-      "name": "aaaa",
-      "user_id": 2,
-      "created_at": "2025-04-29T16:16:51.000000Z"
-    }
-  ],
-  "current_user": {
-    "type": "users",
-    "id": 1,
-    "name": "Test",
-    "email": "admin@charon.test",
-    "avatar": "https:\/\/www.gravatar.com\/avatar\/7794d2e005585822447c473312b24906?s=192&d=robohash",
-    "is_admin": true,
-    "preferences": {
-      "theme": "classic",
-      "show_now_playing_notification": true,
-      "confirm_before_closing": true,
-      "show_album_art_overlay": true,
-      "transcode_on_mobile": true,
-      "transcode_quality": 128,
-      "make_uploads_public": false,
-      "lastfm_session_key": null,
-      "support_bar_no_bugging": false,
-      "artists_view_mode": "thumbnails",
-      "albums_view_mode": "thumbnails",
-      "repeat_mode": "NO_REPEAT",
-      "volume": 7,
-      "equalizer": {
-        "name": "Default",
-        "preamp": 0,
-        "gains": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        ]
-      },
-      "lyrics_zoom_level": 1,
-      "visualizer": "default",
-      "active_extra_panel_tab": null,
-      "continuous_playback": true
-    },
-    "is_prospect": false,
-    "sso_provider": null,
-    "sso_id": null
-  },
-  "uses_last_fm": true,
-  "uses_spotify": true,
-  "uses_you_tube": true,
-  "uses_i_tunes": true,
-  "allows_download": true,
-  "supports_batch_downloading": true,
-  "media_path_set": true,
-  "supports_transcoding": false,
-  "cdn_url": "http:\/\/localhost:8000\/",
-  "current_version": "v2.0.0",
-  "latest_version": "v2.0.0",
-  "song_count": 275,
-  "song_length": 61168.13000000002,
-  "queue_state": {
-    "type": "queue-states",
-    "songs": [],
-    "current_song": {
-      "type": "songs",
-      "id": "9ec70034-d9f2-43a2-9996-b1dca8cd938a",
-      "owner_id": 1,
-      "title": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
-      "lyrics": "",
-      "album_id": 3,
-      "album_name": "Ai C\u0169ng Ph\u1ea3i B\u1eaft \u0110\u1ea7u T\u1eeb \u0110\u00e2u \u0110\u00f3",
-      "artist_id": 4,
-      "artist_name": "HIEUTHUHAI",
-      "album_artist_id": 4,
-      "album_artist_name": "HIEUTHUHAI",
-      "album_cover": "http:\/\/localhost:8000\/img\/covers\/1da1eb466d333e3c2d13bcbbc9f57a4da6aa7abc.webp",
-      "length": 138.29,
-      "liked": false,
-      "play_count": 1,
-      "track": 1,
-      "disc": 1,
-      "genre": "Rap",
-      "year": "2023",
-      "is_public": true,
-      "created_at": "2025-04-27T17:36:31.000000Z"
-    },
-    "playback_position": 0
-  },
-  "storage_driver": "local"
+    "storage_driver": "local"
 }

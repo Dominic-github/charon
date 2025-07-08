@@ -1,32 +1,51 @@
 {
-  "artists": [
-    {
-      "id": 3,
-      "name": "The Band",
-      "image": "http://localhost:8000/test/images/sample.png"
+    "songs": [
+        {
+            "type": "songs",
+            "id": "9f3e913a-e515-487f-aaa2-a4ea5326d88f",
+            "owner_id": 1,
+            "title": "New Title",
+            "lyrics": "New lyrics\nFake multiline.",
+            "album_id": 54,
+            "album_name": "99%",
+            "artist_id": 51,
+            "artist_name": "RPT MCK",
+            "album_artist_id": 51,
+            "album_artist_name": "RPT MCK",
+            "album_cover": "http:\/\/localhost:8000\/img\/covers\/91fd8ad81a1cdf9dc5dd5f781514aec785819260.webp",
+            "length": 33.87,
+            "liked": true,
+            "play_count": 339,
+            "track": 1,
+            "disc": 1,
+            "genre": "Pop",
+            "year": null,
+            "is_public": true,
+            "created_at": "2025-06-26T04:05:33.000000Z"
+        }
+    ],
+    "albums": [
+        {
+            "type": "albums",
+            "id": 54,
+            "name": "99%",
+            "artist_id": 51,
+            "artist_name": "RPT MCK",
+            "cover": "http:\/\/localhost:8000\/img\/covers\/91fd8ad81a1cdf9dc5dd5f781514aec785819260.webp",
+            "created_at": "2025-06-26T04:05:31.000000Z"
+        }
+    ],
+    "artists": [
+        {
+            "type": "artists",
+            "id": 51,
+            "name": "RPT MCK",
+            "image": "http:\/\/localhost:8000\/img\/artists\/4ea934254ecf2aa82db8e98cd8745fa22f411e0d.webp",
+            "created_at": "2025-06-26T04:05:31.000000Z"
+        }
+    ],
+    "removed": {
+        "albums": [],
+        "artists": []
     }
-  ],
-  "albums": [
-    {
-      "id": 3,
-      "artist_id": 5,
-      "name": "The Wall",
-      "cover": "http://localhost:8000/test/images/sample.png",
-      "created_at": "2016-02-01 06:48:45",
-      "is_compilation": false
-    }
-  ],
-  "songs": [
-    {
-      "id": "03bebf17f54e2afc7c0513fb1d931009",
-      "album_id": 5,
-      "artist_id": 3,
-      "title": "New Title",
-      "length": 204.11,
-      "track": null,
-      "disc": 1,
-      "created_at": "2019-08-24 18:03:35",
-      "lyrics": "New lyrics<br />Supports multiline."
-    }
-  ]
 }

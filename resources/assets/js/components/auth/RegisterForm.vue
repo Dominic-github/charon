@@ -11,24 +11,24 @@
       </div>
 
       <FormRow>
-        <TextInput v-model="fullName" autofocus placeholder="Full Name" required type="text" />
+        <TextInput v-model="fullName" data-testid="register-fullname" autofocus placeholder="Full Name" required type="text" />
       </FormRow>
 
       <FormRow>
-        <TextInput v-model="email" autofocus placeholder="Email Address" required type="email" />
+        <TextInput v-model="email" data-testid="register-email" autofocus placeholder="Email Address" required type="email" />
       </FormRow>
 
       <FormRow>
-        <PasswordField v-model="password" placeholder="Password" required />
+        <PasswordField v-model="password" data-testid="register-password" placeholder="Password" required />
       </FormRow>
 
       <FormRow>
-        <PasswordField v-model="rePassword" placeholder="Confirm Password" required />
+        <PasswordField v-model="rePassword" data-testid="register-confirm-password" placeholder="Confirm Password" required />
         <template #help>Min. 10 characters. Should be a mix of characters, numbers, and symbols.</template>
       </FormRow>
       <FormRow>
         <div>
-          <CheckBox v-model="terms" name="terms" required />
+          <CheckBox v-model="terms" data-testid="term-btn" name="terms" required />
           <label class="text-k-text-secondary">
             I have read and agree to <a @click="toggleAgreement">the terms of service</a>.
           </label>
@@ -36,7 +36,7 @@
       </FormRow>
 
       <FormRow>
-        <Btn data-testid="submit" type="submit">Create Account</Btn>
+        <Btn data-testid="register-submit" type="submit">Create Account</Btn>
       </FormRow>
 
       <FormRow>

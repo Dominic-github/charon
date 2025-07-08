@@ -10,11 +10,12 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:gap-0 sm:content-stretch">
         <TextInput
           v-model="email"
+          data-testid="email-forget-input"
           class="flex-1 sm:rounded-l sm:rounded-r-none"
           placeholder="Your email address" required
           type="email"
         />
-        <Btn :disabled="loading" class="sm:rounded-l-none sm:rounded-r" type="submit">Reset Password</Btn>
+        <Btn data-testid="reset-password-btn" :disabled="loading" class="sm:rounded-l-none sm:rounded-r" type="submit">Reset Password</Btn>
         <Btn :disabled="loading" class="!text-k-text-secondary" transparent @click="cancel">Cancel</Btn>
       </div>
     </FormRow>

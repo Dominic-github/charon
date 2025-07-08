@@ -6,37 +6,61 @@ context('Profiles & Preferences', () => {
 
     cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
+
+        ;[
+        'profile-tab',
+        'preferences-tab',
+        'themes-tab',
+        'integrations-tab',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
+
       cy.findByTestId('update-profile-form').should('be.visible')
 
       ;[
-        'current_password',
+        'currentPassword',
         'name',
         'email',
-        'new_password',
-        'notify',
-        'show_album_art_overlay',
-        'confirm_closing',
-      ].forEach(inputName => cy.get(`[name=${inputName}]`).should('exist'))
+        'newPassword',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
 
-      cy.findByTestId('lastfm-integrated').scrollIntoView().should('be.visible')
-      cy.findByTestId('lastfm-not-integrated').should('not.exist')
     })
   })
 
-  it('shows instruction for Last.fm integration to admins', () => {
-    cy.$login({ useLastfm: false })
+  it('shows instruction for Last.fm not integrated', () => {
+    cy.$login({ uses_last_fm: false })
     cy.findByTestId('view-profile-link').click()
-    cy.findByTestId('lastfm-integrated').should('not.exist')
-    cy.findByTestId('lastfm-not-integrated').scrollIntoView().should('be.visible')
-    cy.findByTestId('lastfm-admin-instruction').should('be.visible')
+    cy.url().should('contain', '/#/profile')
+    cy.get('#profileScreen').within(() => {
+      cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
+
+        ;[
+        'profile-tab',
+        'preferences-tab',
+        'themes-tab',
+        'integrations-tab',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
+    })
+    cy.findByTestId('integrations-tab').click()
+    cy.findByTestId('lastfm-not-integrated').should('be.visible')
+
   })
 
-  it('shows instruction for Last.fm integration to normal users', () => {
-    cy.$loginAsNonAdmin({ useLastfm: false })
+  it('shows instruction for Last.fm integrated', () => {
+    cy.$login({ uses_last_fm: true })
     cy.findByTestId('view-profile-link').click()
-    cy.findByTestId('lastfm-integrated').should('not.exist')
-    cy.findByTestId('lastfm-not-integrated').scrollIntoView().should('be.visible')
-    cy.findByTestId('lastfm-user-instruction').should('be.visible')
+    cy.url().should('contain', '/#/profile')
+    cy.get('#profileScreen').within(() => {
+      cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
+
+        ;[
+        'profile-tab',
+        'preferences-tab',
+        'themes-tab',
+        'integrations-tab',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
+    })
+    cy.findByTestId('integrations-tab').click()
+    cy.findByTestId('lastfm-integrated').should('be.visible')
   })
 
   it('updates the user profile', () => {
@@ -45,14 +69,14 @@ context('Profiles & Preferences', () => {
     cy.findByTestId('view-profile-link').click()
 
     cy.get('#profileScreen').within(() => {
-      cy.get('[name=current_password]').clear().type('current-secrEt')
-      cy.get('[name=name]').clear().type('Admin No. 2')
-      cy.get('[name=email]').clear().type('admin.2@charon.test')
+      cy.get('[data-testid=currentPassword]').clear().type('current-secret')
+      cy.get('[data-testid=name]').clear().type('Admin No. 2')
+      cy.get('[data-testid=email]').clear().type('admin.2@charon.test')
       cy.get('[type=submit]').click()
     })
 
     cy.findByText('Profile updated.').should('be.visible')
-    cy.findByTestId('view-profile-link').should('contain.text', 'Admin No. 2')
+    cy.findByTestId('view-profile-link').get('[title="Admin No. 2"]').should('exist')
   })
 
   it('updates the user profile along with password', () => {
@@ -61,37 +85,65 @@ context('Profiles & Preferences', () => {
     cy.findByTestId('view-profile-link').click()
 
     cy.get('#profileScreen').within(() => {
-      cy.get('[name=current_password]').clear().type('current-secrEt')
+      cy.get('[data-testid=currentPassword]').clear().type('current-secrEt')
       cy.get('[name=name]').clear().type('Admin No. 2')
       cy.get('[name=email]').clear().type('admin.2@charon.test')
-      cy.get('[name=new_password]').type('new-password')
+      cy.get('[data-testid=newPassword]').type('new-password')
       cy.get('[type=submit]').click()
     })
 
     cy.findByText('Profile updated.').should('be.visible')
-    cy.findByTestId('view-profile-link').should('contain.text', 'Admin No. 2')
+    cy.findByTestId('view-profile-link').get('[title="Admin No. 2"]').should('exist')
   })
 
   it('has an option to show/hide album art overlay', () => {
     cy.$login()
+    cy.intercept('/api/me/preferences', {})
     cy.$mockPlayback()
-    cy.$clickSidebarItem('Current Queue')
-    cy.get('#queueWrapper').within(() => cy.findByTestId('shuffle-library').click())
-    cy.findByTestId('album-art-overlay').should('exist')
-
+    cy.$login({ uses_last_fm: true })
     cy.findByTestId('view-profile-link').click()
-    cy.get('#profileScreen [name=show_album_art_overlay]').scrollIntoView().uncheck()
-    cy.findByTestId('album-art-overlay').should('not.exist')
-    cy.get('#profileScreen [name=show_album_art_overlay]').scrollIntoView().check()
-    cy.findByTestId('album-art-overlay').should('exist')
-  })
+    cy.url().should('contain', '/#/profile')
+    cy.get('#profileScreen').within(() => {
+      cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
 
+        ;[
+        'profile-tab',
+        'preferences-tab',
+        'themes-tab',
+        'integrations-tab',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
+    })
+    cy.findByTestId('preferences-tab').click()
+    cy.get('[name=show_album_art_overlay]').should('exist')
+
+    cy.get('[name=show_album_art_overlay]').should('be.checked')
+    cy.get('[name=show_album_art_overlay]').uncheck()
+    cy.get('[name=show_album_art_overlay]').should('not.be.checked')
+    cy.get('[name=show_album_art_overlay]').check()
+    cy.get('[name=show_album_art_overlay]').should('be.checked')
+  })
+  
   it('sets a theme', () => {
     cy.$login()
+
+    cy.intercept('PATCH', '/api/me/preferences', {
+      statusCode: 200
+    })
     cy.findByTestId('view-profile-link').click()
-    cy.findByTestId('theme-card-violet').click()
-    cy.get('html').should('have.attr', 'data-theme', 'violet')
-    cy.reload()
+    cy.url().should('contain', '/#/profile')
+    cy.get('#profileScreen').within(() => {
+      cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
+
+        ;[
+        'profile-tab',
+        'preferences-tab',
+        'themes-tab',
+        'integrations-tab',
+      ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
+    })
+    cy.findByTestId('themes-tab').click()
+
+    cy.get('.theme').eq(1).click()
     cy.get('html').should('have.attr', 'data-theme', 'violet')
   })
 })

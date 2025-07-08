@@ -1,7 +1,13 @@
 {
-  "name": "A New Playlist",
-  "rules": null,
-  "id": 3,
-  "is_smart": false,
-  "songs": []
+    "type": "playlists",
+    "id": "9f3ee053-ae84-4413-ab03-97ee3dcdeec3",
+    "name": "charon",
+    "folder_id": null,
+    "user_id": 1,
+    "is_smart": false,
+    "is_collaborative": false,
+    "rules": null,
+    "cover": null,
+    "own_songs_only": false,
+    "created_at": "2025-06-26T07:46:43.000000Z"
 }

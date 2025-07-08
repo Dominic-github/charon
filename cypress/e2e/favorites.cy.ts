@@ -1,32 +1,37 @@
 context('Favorites', { scrollBehavior: false }, () => {
-  beforeEach(() => cy.$login())
+  beforeEach(() => {
+    cy.$login()
+    cy.intercept('GET', '/api/songs/favorite', {
+      fixture: 'favorites.get.200.json',
+    })
+  })
 
   it('loads the list of favorites', () => {
     cy.$clickSidebarItem('Favorites')
 
     cy.get('#favoriteScreen')
       .within(() => {
-        cy.findByText('Songs You Love').should('be.visible')
+        cy.findByText('Your Favorites').should('be.visible')
         cy.findByText('Download All').should('be.visible')
 
-        cy.$getSongRows().should('have.length', 3).each(row => cy.wrap(row).findByTestId('btn-like-liked').should('be.visible'))
+        cy.$getSongRows().should('have.length', 3).each(row => cy.wrap(row).get('[data-title="Unlike"]').should('be.visible'))
       })
   })
 
   it('adds a favorite song from Like button', () => {
     cy.intercept('POST', '/api/interaction/like', {
-      fixture: 'like.post.200.json',
+      fixture: 'like.post.201.json',
     })
+
+    cy.$clickSidebarItem('Favorites')
 
     cy.$clickSidebarItem('All Songs')
 
-    cy.get('#songsWrapper')
+    cy.get('#allSongScreen')
       .within(() => {
-        cy.$getSongRows().first().within(() => {
+        cy.$getSongRowAt(3).within(() => {
           cy.findByTestId('like-btn')
-            .within(() => cy.findByTestId('btn-like-unliked').should('be.visible'))
             .click()
-            .within(() => cy.findByTestId('btn-like-liked').should('be.visible'))
         })
       })
 
@@ -38,11 +43,13 @@ context('Favorites', { scrollBehavior: false }, () => {
       fixture: 'batch-like.post.200.json',
     })
 
+    cy.$clickSidebarItem('Favorites')
+
     cy.$clickSidebarItem('All Songs')
 
-    cy.get('#songsWrapper')
+    cy.get('#allSongScreen')
       .within(() => {
-        cy.$getSongRows().first().click()
+        cy.$getSongRowAt(3).click()
         cy.findByTestId('add-to-btn').click()
         cy.findByTestId('add-to-menu').should('be.visible').within(() => cy.findByText('Favorites').click()).should('not.be.visible')
       })
@@ -56,9 +63,9 @@ context('Favorites', { scrollBehavior: false }, () => {
 
     cy.get('#favoriteScreen')
       .within(() => {
-        cy.$getSongRows().should('have.length', 3).first().should('contain.text', 'November').within(() => cy.findByTestId('like-btn').click())
+        cy.$getSongRows().should('have.length', 3).first().should('contain.text', '00').within(() => cy.findByTestId('like-btn').click())
 
-        cy.$getSongRows().should('have.length', 2).first().should('not.contain.text', 'November')
+        cy.$getSongRows().should('have.length', 2).first().should('not.contain.text', '00')
       })
   })
 
@@ -68,9 +75,9 @@ context('Favorites', { scrollBehavior: false }, () => {
 
     cy.get('#favoriteScreen')
       .within(() => {
-        cy.$getSongRows().should('have.length', 3).first().should('contain.text', 'November').click().type('{backspace}')
+        cy.$getSongRows().should('have.length', 3).first().should('contain.text', '00').click().type('{backspace}')
 
-        cy.$getSongRows().should('have.length', 2).first().should('not.contain.text', 'November')
+        cy.$getSongRows().should('have.length', 2).first().should('not.contain.text', '00')
       })
   })
 })

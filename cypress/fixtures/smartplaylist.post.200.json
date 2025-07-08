@@ -1,0 +1,35 @@
+{
+    "type": "playlists",
+    "id": "9f4da6f9-6ebd-4995-a047-5f876e8f93dd",
+    "name": "My Smart Playlist",
+    "folder_id": null,
+    "user_id": 1,
+    "is_smart": true,
+    "is_collaborative": false,
+    "rules": [
+        {
+            "id": "da4410a7-45d1-4c5d-bcef-1ec04ad79778",
+            "rules": [
+                {
+                    "id": "8c72c240-56ce-43c1-9e36-38ca21fcb7ed",
+                    "model": "album.name",
+                    "operator": "is",
+                    "value": [
+                        "99%"
+                    ]
+                },
+                {
+                    "id": "5abea92e-2a05-45d8-94f9-c60cbb314b30",
+                    "model": "length",
+                    "operator": "isGreaterThan",
+                    "value": [
+                        180
+                    ]
+                }
+            ]
+        }
+    ],
+    "cover": null,
+    "own_songs_only": false,
+    "created_at": "2025-07-03T16:03:46.000000Z"
+}

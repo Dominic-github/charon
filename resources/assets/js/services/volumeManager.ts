@@ -26,6 +26,9 @@ export class VolumeManager {
   }
 
   public unmute () {
+    if (this.originalVolume >= 0 && this.originalVolume <= 3) {
+      this.originalVolume = 5
+    }
     this.set(this.originalVolume)
   }
 

@@ -1,34 +1,27 @@
 {
-  "name": "My Smart Playlist",
-  "rules": [
-    {
-      "id": 1609438260491,
-      "rules": [
+    "type": "playlists",
+    "id": "9f3eda3d-b04d-4b6b-b263-a30c78729d22",
+    "name": "tlinh ne",
+    "folder_id": null,
+    "user_id": 1,
+    "is_smart": true,
+    "is_collaborative": false,
+    "rules": [
         {
-          "id": 1609438270184,
-          "model": "length",
-          "operator": "isGreaterThan",
-          "value": [
-            "40"
-          ]
+            "id": "ff39e2b5-0114-422a-a082-53df9f9f8a5f",
+            "rules": [
+                {
+                    "id": "5e20d6ae-0dc3-480f-b779-95a00bf55855",
+                    "model": "album.name",
+                    "operator": "is",
+                    "value": [
+                        "\u00e1i"
+                    ]
+                }
+            ]
         }
-      ]
-    },
-    {
-      "id": 1609438286276,
-      "rules": [
-        {
-          "id": 1609438289914,
-          "model": "title",
-          "operator": "is",
-          "value": [
-            "Whatever"
-          ]
-        }
-      ]
-    }
-  ],
-  "id": 3,
-  "is_smart": true,
-  "songs": []
+    ],
+    "cover": null,
+    "own_songs_only": false,
+    "created_at": "2025-06-26T07:29:42.000000Z"
 }

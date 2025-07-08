@@ -1,5 +1,5 @@
 <template>
-  <div class="select-none w-full flex flex-col" tabindex="0" @keydown.esc="close">
+  <div id="equalizer-container" class="select-none w-full flex flex-col" tabindex="0" @keydown.esc="close">
     <header>
       <SelectBox v-model="selectedPresetName" class="!bg-black/30 !text-white" title="Select equalizer">
         <option :value="null" disabled>Preset</option>
@@ -33,7 +33,7 @@
     </main>
 
     <footer class="border-t-white/5">
-      <Btn @click.prevent="close">Close</Btn>
+      <Btn class="equalizer-close-btn" @click.prevent="close">Close</Btn>
     </footer>
   </div>
 </template>

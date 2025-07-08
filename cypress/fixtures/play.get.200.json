@@ -1,9 +1,9 @@
 {
-  "type": "interactions",
-  "id": 28,
-  "songId": "9ec70031-c8e8-4012-a1f2-f860402a1833",
-  "song_id": "9ec70031-c8e8-4012-a1f2-f860402a1833",
-  "liked": false,
-  "playCount": 3,
-  "play_count": 3
+    "type": "interactions",
+    "id": 36,
+    "songId": "9f3e913a-e515-487f-aaa2-a4ea5326d88f",
+    "song_id": "9f3e913a-e515-487f-aaa2-a4ea5326d88f",
+    "liked": true,
+    "playCount": 13,
+    "play_count": 13
 }

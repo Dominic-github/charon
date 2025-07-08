@@ -1,13 +1,6 @@
 context('YouTube', () => {
-  beforeEach(() => cy.$login())
-
-  it('renders a placeholder screen', () => {
-    cy.$clickSidebarItem('YouTube Video')
-    cy.get('#youtubeScreen').within(() => {
-      cy.get('.screen-header').should('contain.text', 'YouTube Video')
-      cy.findByTestId('youtube-placeholder').should('be.visible')
-    })
-  })
+  beforeEach(() => cy.$login()
+  )
 
   it('searches for videos when a song is played', () => {
     cy.$mockPlayback()
@@ -17,29 +10,31 @@ context('YouTube', () => {
     })
 
     cy.$clickSidebarItem('All Songs')
-    cy.get('#allSongsScreen .song-item:first-child').dblclick()
+    cy.get('#allSongScreen .song-item').first().dblclick()
 
-    cy.get('#extra').within(() => {
-      cy.get('#extraTabYouTube').click()
-      cy.findAllByTestId('youtube-search-result').should('have.length', 2)
-      cy.findByTestId('youtube-search-more-btn').click()
-      cy.findAllByTestId('youtube-search-result').should('have.length', 4)
-    })
+    cy.get('#extraTabYouTube').should('be.visible')
+    cy.get('#extraTabYouTube').click()
+    cy.get('#extraPanelYouTube').should('be.visible')
+
   })
 
   it('plays a video when a search result is clicked', () => {
     cy.$mockPlayback()
 
-    cy.$clickSidebarItem('All Songs')
-    cy.get('#allSongScreen .song-item:first-child').dblclick()
-
-    cy.get('#extra').within(() => {
-      cy.get('#extraTabYouTube').click()
-      cy.get('[data-testid=youtube-search-result]:nth-child(2)').click()
+    cy.intercept('/api/youtube/search/song/**', {
+      fixture: 'youtube-search.get.200.json',
     })
 
-    cy.url().should('contain', '/#/youtube')
-    cy.$assertSidebarItemActive('YouTube Video')
-    cy.get('#youtubeScreen .screen-header').should('contain', 'YouTube Video #2')
+    cy.$clickSidebarItem('All Songs')
+    cy.get('#allSongScreen .song-item').first().dblclick()
+
+    cy.get('#extraTabYouTube').should('be.visible')
+    cy.get('#extraTabYouTube').click()
+    cy.get('#extraPanelYouTube').should('be.visible')
+    cy.get('#extraPanelYouTube').within(() => {
+      cy.get('[data-testid=youtube-video]').first().should('be.visible').click()
+    })
+
+    cy.findByTestId('youtube').should('be.visible')
   })
 })

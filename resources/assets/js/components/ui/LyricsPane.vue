@@ -1,6 +1,6 @@
 <template>
   <article>
-    <main class="relative">
+    <main class="relative" data-testid="lyrics-panel">
       <template v-if="song">
         <div v-show="song.lyrics" class="relative">
           <pre class="font-sans whitespace-pre-wrap leading-relaxed pt-12">{{ lyrics }}</pre>
@@ -11,7 +11,7 @@
         <p v-if="song.id && !song.lyrics" class="text-k-text-secondary">
           <template v-if="canUpdateLyrics">
             No lyrics found.
-            <a role="button" @click.prevent="showEditSongForm">
+            <a role="button" data-testid="add-lyrics-btn" @click.prevent="showEditSongForm">
               Click here
             </a>
             to add lyrics.

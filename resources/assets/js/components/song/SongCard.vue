@@ -5,6 +5,7 @@
     hover:border-white/15 transition-[border-color] duration-200 ease-in-out
     focus:ring-1 focus:ring-k-accent focus-within:ring-1 focus-within:ring-k-accent"
     draggable="true"
+    data-testid="song-card"
     tabindex="0"
     @dragstart="onDragStart"
     @contextmenu.prevent="requestContextMenu"

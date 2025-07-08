@@ -18,9 +18,9 @@
       Add To
       <ul class="submenu menu-add-to context-menu">
         <template v-if="queue.length">
-          <li v-if="currentSong" @click="queueAfterCurrent">After Current</li>
-          <li @click="queueToBottom">Bottom of Queue</li>
-          <li @click="queueToTop">Top of Queue</li>
+          <li data-testid="queue-after-current" v-if="currentSong" @click="queueAfterCurrent">After Current Queue</li>
+          <li data-testid="queue-bottom" @click="queueToBottom">Bottom of Queue</li>
+          <li data-testid="queue-top" @click="queueToTop">Top of Queue</li>
         </template>
         <li v-else @click="queueToBottom">Queue</li>
         <template v-if="!isFavoritesScreen">

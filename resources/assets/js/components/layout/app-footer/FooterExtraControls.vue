@@ -24,7 +24,7 @@
 
       <VolumeSlider />
 
-      <FooterBtn v-if="isFullscreenSupported()" :title="fullscreenButtonTitle" @click.prevent="toggleFullscreen">
+      <FooterBtn v-if="isFullscreenSupported()" class="fullscreen-btn" :title="fullscreenButtonTitle" @click.prevent="toggleFullscreen">
         <Icon :icon="isFullscreen ? faCompress : faExpand" fixed-width />
       </FooterBtn>
     </div>

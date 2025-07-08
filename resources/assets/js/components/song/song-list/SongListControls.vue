@@ -59,13 +59,14 @@
         <Btn
           v-if="showAddToButton"
           ref="addToButton"
+          data-testid="add-to-btn"
           success
           @click.prevent.stop="toggleAddToMenu"
         >
           {{ showingAddToMenu ? 'Cancel' : 'Add To…' }}
         </Btn>
 
-        <Btn v-if="config.clearQueue" danger title="Clear current queue" @click.prevent="clearQueue">Clear</Btn>
+        <Btn v-if="config.clearQueue" class="clear-queue-btn" danger title="Clear current queue" @click.prevent="clearQueue">Clear</Btn>
       </BtnGroup>
 
       <BtnGroup v-if="config.refresh || config.deletePlaylist">

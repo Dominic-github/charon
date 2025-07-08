@@ -1,23 +1,15 @@
 <template>
   <div>
-    <h4
-      v-if="showDisc && item.playable.disc"
-      class="title text-k-text-primary !flex gap-2 p-2 uppercase pl-5"
-    >
+    <h4 v-if="showDisc && item.playable.disc" class="title text-k-text-primary !flex gap-2 p-2 uppercase pl-5">
       Disc {{ item.playable.disc }}
     </h4>
 
-    <article
-      :class="{ playing, external, selected: item.selected }"
-      class="song-item group pl-5 text-k-text-secondary border-b border-k-border !max-w-full h-[64px] flex
+    <article :class="{ playing, external, selected: item.selected }" class="song-item group pl-5 text-k-text-secondary border-b border-k-border !max-w-full h-[64px] flex
         items-center transition-[background-color,_box-shadow] ease-in-out duration-200
         focus:rounded-md focus focus-within:rounded-md focus:ring-inset focus:ring-1 focus:!ring-k-accent
         focus-within:ring-inset focus-within:ring-1 focus-within:!ring-k-accent
-        hover:bg-white/5 hover:ring-inset hover:ring-1 hover:ring-white/10 hover:rounded-md"
-      data-testid="song-item"
-      tabindex="0"
-      @dblclick.prevent.stop="play"
-    >
+        hover:bg-white/5 hover:ring-inset hover:ring-1 hover:ring-white/10 hover:rounded-md" data-testid="song-item"
+      tabindex="0" @dblclick.prevent.stop="play">
       <span v-if="shouldShowColumn('track')" class="track-number">
         <SoundBars v-if="playable.playback_state === 'Playing'" />
         <span v-else class="text-k-text-secondary">
@@ -30,8 +22,7 @@
       </span>
       <span class="title-artist flex flex-col gap-2 overflow-hidden">
         <span class="title text-k-text-primary !flex gap-2 items-center">
-          <ExternalMark v-if="external" class="!inline-block" />
-          {{ playable.title }}
+          <ExternalMark v-if="external" class="!inline-block" />{{ playable.title }}
         </span>
         <span class="artist">{{ artist }}</span>
       </span>
@@ -115,6 +106,7 @@ article {
   }
 
   &.playing {
+
     .title,
     .track-number,
     .favorite {

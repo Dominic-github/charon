@@ -1,5 +1,5 @@
 <template>
-  <FooterExtraControlBtn :title="title" @click.stop="toggleLike">
+  <FooterExtraControlBtn :title="title" data-testid="like-btn" @click.stop="toggleLike">
     <Icon v-if="playable.liked" :icon="faHeart" />
     <Icon v-else :icon="faEmptyHeart" />
   </FooterExtraControlBtn>

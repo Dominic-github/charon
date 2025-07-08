@@ -2,6 +2,7 @@
   <aside
     :class="{ 'showing-pane': activeTab }"
     class="fixed sm:relative top-0 w-screen md:w-auto flex flex-col md:flex-row-reverse z-[2] text-k-text-secondary"
+    id="sideSheet"
   >
     <div
       class="controls flex md:flex-col justify-between items-center md:w-[64px] md:py-6 tw:px-0
@@ -23,7 +24,7 @@
       </div>
     </div>
 
-    <div v-if="songPlaying" v-show="activeTab" class="panes py-8 px-6 overflow-auto bg-k-bg-secondary">
+    <div v-if="songPlaying" v-show="activeTab" data-testid="side-sheet-panels" class="panes py-8 px-6 overflow-auto bg-k-bg-secondary">
       <div
         v-show="activeTab === 'Lyrics'"
         id="extraPanelLyrics"

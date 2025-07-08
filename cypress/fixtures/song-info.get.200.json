@@ -1,117 +1,90 @@
 {
-  "lyrics": "Sample song lyrics",
-  "album_info": {
-    "url": "https://www.last.fm/music/The+Band/Sample+Album",
-    "image": "http://localhost:8000/test/images/sample.png",
+    "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25",
+    "cover": null,
     "wiki": {
-      "summary": "Album summary",
-      "full": "Album full wiki"
+        "summary": "",
+        "full": ""
     },
     "tracks": [
-      {
-        "title": "Album track #1",
-        "length": 156,
-        "url": "https://www.last.fm/music/The+Band/Album+track+1"
-      },
-      {
-        "title": "Album track #2",
-        "length": 247,
-        "url": "https://www.last.fm/music/The+Band/Album+track+2"
-      },
-      {
-        "title": "Album track #3",
-        "length": 237,
-        "url": "https://www.last.fm/music/The+Band/Album+track+3"
-      }
-    ],
-    "cover": "http://localhost:8000/test/images/sample.png"
-  },
-  "artist_info": {
-    "url": "https://www.last.fm/music/The+Band",
-    "image": "http://localhost:8000/test/images/sample.png",
-    "bio": {
-      "summary": "Artist summary",
-      "full": "Artist full bio"
-    }
-  },
-  "youtube": {
-    "kind": "youtube#searchListResponse",
-    "etag": "xlATxAWpLP1mZdYFUuaCReqT_5E",
-    "nextPageToken": "CAoQAA",
-    "regionCode": "DE",
-    "pageInfo": {
-      "totalResults": 1000000,
-      "resultsPerPage": 10
-    },
-    "items": [
-      {
-        "kind": "youtube#searchResult",
-        "etag": "rlsZALtflq8Sdba4Nia7uPC-l5k",
-        "id": {
-          "kind": "youtube#video",
-          "videoId": "I03Hs6dwj7E"
+        {
+            "title": "00",
+            "length": 33,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/00"
         },
-        "snippet": {
-          "publishedAt": "2009-11-24T13:38:04Z",
-          "channelId": "UCStHqF-8YWv8x6SJcTFkEXA",
-          "title": "YouTube Video #1",
-          "description": "Description for YouTube Video #1",
-          "thumbnails": {
-            "default": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 120,
-              "height": 90
-            },
-            "medium": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 320,
-              "height": 180
-            },
-            "high": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 480,
-              "height": 360
-            }
-          },
-          "channelTitle": "SampleArtistVEVO",
-          "liveBroadcastContent": "none",
-          "publishTime": "2009-11-24T13:38:04Z"
-        }
-      },
-      {
-        "kind": "youtube#searchResult",
-        "etag": "AwvO6Y5jkF0O-lDHehMYTy7Hims",
-        "id": {
-          "kind": "youtube#video",
-          "videoId": "cLgJQ8Zj3AA"
+        {
+            "title": "Ch\u00ecm S\u00e2u",
+            "length": 0,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK+%5Bfeat.+Trung+Tr%E1%BA%A7n%5D\/99%25\/Ch%C3%ACm+S%C3%A2u"
         },
-        "snippet": {
-          "publishedAt": "2017-01-26T03:19:52Z",
-          "channelId": "UCy6-RHgm74I8CCCvMu4NPJQ",
-          "title": "YouTube Video #2",
-          "description": "Description for YouTube Video #2",
-          "thumbnails": {
-            "default": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 120,
-              "height": 90
-            },
-            "medium": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 320,
-              "height": 180
-            },
-            "high": {
-              "url": "http://localhost:8000/test/images/youtube-thumbnail.png",
-              "width": 480,
-              "height": 360
-            }
-          },
-          "channelTitle": "Sample Artist - Topic",
-          "liveBroadcastContent": "none",
-          "publishTime": "2017-01-26T03:19:52Z"
+        {
+            "title": "Suit & Tie",
+            "length": 0,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK+%5Bfeat.+Ho%C3%A0ng+T%C3%B4n%5D\/99%25\/Suit+&+Tie"
+        },
+        {
+            "title": "Va V\u00e0o Giai \u0110i\u1ec7u N\u00e0y",
+            "length": 190,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Va+V%C3%A0o+Giai+%C4%90i%E1%BB%87u+N%C3%A0y"
+        },
+        {
+            "title": "T\u1ed1i Nay Ta \u0110i \u0110\u00e2u Nh\u1edd",
+            "length": 104,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/T%E1%BB%91i+Nay+Ta+%C4%90i+%C4%90%C3%A2u+Nh%E1%BB%9D"
+        },
+        {
+            "title": "Ch\u1ec9 M\u1ed9t \u0110\u00eam N\u1eefa Th\u00f4i",
+            "length": 0,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK+%5Bfeat.+Tlinh%5D\/99%25\/Ch%E1%BB%89+M%E1%BB%99t+%C4%90%C3%AAm+N%E1%BB%AFa+Th%C3%B4i"
+        },
+        {
+            "title": "Th\u00f4i Em \u0110\u1eebng \u0110i",
+            "length": 0,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK+%5Bfeat.+Trung+Tr%E1%BA%A7n%5D\/99%25\/Th%C3%B4i+Em+%C4%90%E1%BB%ABng+%C4%90i"
+        },
+        {
+            "title": "50\/50",
+            "length": 60,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/50%2F50"
+        },
+        {
+            "title": "Cu\u1ed1n Cho Anh M\u1ed9t \u0110i\u1ebfu N\u1eefa \u0110i",
+            "length": 185,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Cu%E1%BB%91n+Cho+Anh+M%E1%BB%99t+%C4%90i%E1%BA%BFu+N%E1%BB%AFa+%C4%90i"
+        },
+        {
+            "title": "Show Me Love",
+            "length": 154,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Show+Me+Love"
+        },
+        {
+            "title": "T\u1ea1i V\u00ec Sao",
+            "length": 202,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/T%E1%BA%A1i+V%C3%AC+Sao"
+        },
+        {
+            "title": "Th\u1edd Er",
+            "length": 98,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Th%E1%BB%9D+Er"
+        },
+        {
+            "title": "Ai M\u1edbi L\u00e0 K\u1ebb X\u1ea5u Xa",
+            "length": 192,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Ai+M%E1%BB%9Bi+L%C3%A0+K%E1%BA%BB+X%E1%BA%A5u+Xa"
+        },
+        {
+            "title": "Anh \u0110\u00e3 \u1ed4n H\u01a1n",
+            "length": 194,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Anh+%C4%90%C3%A3+%E1%BB%94n+H%C6%A1n"
+        },
+        {
+            "title": "Badtrip",
+            "length": 158,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/Badtrip"
+        },
+        {
+            "title": "99",
+            "length": 171,
+            "url": "https:\/\/www.last.fm\/music\/RPT+MCK\/99%25\/99"
         }
-      }
     ]
-  }
 }

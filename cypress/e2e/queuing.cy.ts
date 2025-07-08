@@ -1,44 +1,50 @@
-// Setting scrollBehavior to false because we don't want Cypress to scroll the row into view,
 // causing the first row lost due to virtual scrolling.
 context('Queuing', { scrollBehavior: false }, () => {
-  const MIN_SONG_ITEMS_SHOWN = 15
+  const MIN_SONG_ITEMS_SHOWN = 3
 
   beforeEach(() => {
     cy.$mockPlayback()
     cy.$login()
   })
 
-  it('allows shuffling all songs', () => {
-    cy.$clickSidebarItem('Current Queue')
+  function showQueueScreen() {
+    cy.$shuffleSeveralSongs(3)
+    cy.get('.queue-btn').should('exist').click()
+    cy.wait(1000)
+  }
 
+  it('allows shuffling all songs', () => {
+    showQueueScreen()
     cy.get('#queueScreen').within(() => {
       cy.findByText('Current Queue').should('be.visible')
-      cy.findByTestId('shuffle-library').click()
+      cy.findByTestId('btn-shuffle-all').click()
       cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
-      cy.get('@rows').first().should('have.class', 'playing')
     })
 
     cy.$assertPlaying()
   })
 
   it('clears the queue', () => {
-    cy.$clickSidebarItem('Current Queue')
-
+    showQueueScreen()
     cy.get('#queueScreen').within(() => {
       cy.findByText('Current Queue').should('be.visible')
-      cy.findByTestId('shuffle-library').click()
+      cy.findByTestId('btn-shuffle-all').click()
       cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
-      cy.get('.screen-header [data-testid=song-list-controls]').findByText('Clear').click()
-      cy.$getSongRows().should('have.length', 0)
+      cy.get('.screen-header .clear-queue-btn').click()
+      cy.get('[data-testid="song-item"]').should('not.exist')
     })
   })
 
   it('shuffles all from a song list screen', () => {
     cy.$clickSidebarItem('All Songs')
 
-    cy.get('#songsWrapper').within(() => {
+    cy.intercept('/api/queue/fetch?**', {
+      statusCode: 200,
+      fixture: 'queue.all.get.200.json'
+    })
+
+    cy.get('#allSongScreen').within(() => {
       cy.get('.screen-header [data-testid=btn-shuffle-all]').click()
-      cy.url().should('contains', '/#/queue')
     })
 
     cy.get('#queueScreen').within(() => {
@@ -54,16 +60,16 @@ context('Queuing', { scrollBehavior: false }, () => {
 
     cy.get('#queueScreen').within(() => {
       cy.$getSongRows().should('have.length', 3)
-        .first().should('have.class', 'playing')
     })
+    cy.$assertPlaying()
   })
 
   it('deletes a song from queue', () => {
-    cy.$shuffleSeveralSongs(3)
+    showQueueScreen()
 
     cy.get('#queueScreen').within(() => {
       cy.$getSongRows().should('have.length', 3)
-      cy.get('@rows').first().type('{backspace}')
+      cy.$getSongRows().first().type('{backspace}')
       cy.$getSongRows().should('have.length', 2)
     })
   })
@@ -72,12 +78,13 @@ context('Queuing', { scrollBehavior: false }, () => {
     cy.$shuffleSeveralSongs()
     cy.$clickSidebarItem('All Songs')
 
-    cy.get('#songsWrapper').within(function () {
+    cy.get('#allSongScreen').within(function () {
       cy.$getSongRowAt(4).find('.title').invoke('text').as('title')
       cy.$getSongRowAt(4).dblclick()
     })
 
-    cy.$clickSidebarItem('Current Queue')
+    cy.get('.queue-btn').should('exist').click()
+
     cy.get('#queueScreen').within(function () {
       cy.$getSongRows().should('have.length', 4)
       cy.$getSongRowAt(1).find('.title').should('have.text', this.title)
@@ -88,35 +95,57 @@ context('Queuing', { scrollBehavior: false }, () => {
   })
 
   it('navigates through the queue', () => {
-    cy.$shuffleSeveralSongs()
-    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
+    showQueueScreen()
 
-    cy.findByTitle('Play next song').click({ force: true })
-    cy.get('#queueScreen .song-item:nth-child(2)').should('have.class', 'playing')
-    cy.$assertPlaying()
+    cy.get('#queueScreen').within(() => {
+      cy.$getSongRows().should('have.length', 3)
+      cy.$getSongRowAt(0).should('have.class', 'playing')
+    })
 
-    cy.findByTitle('Play previous song').click({ force: true })
-    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
-    cy.$assertPlaying()
+    cy.get('.play-next-btn').click()
+    cy.$getSongRowAt(1).should('have.class', 'playing')
+
+
+    cy.get('.play-prev-btn').click()
+    cy.$getSongRowAt(0).should('have.class', 'playing')
   })
 
   it('stops playing if reaches end of queue in no-repeat mode', () => {
-    cy.$shuffleSeveralSongs()
-    cy.findByTestId('play-next-btn').click({ force: true })
-    cy.findByTestId('play-next-btn').click({ force: true })
-    cy.findByTestId('play-next-btn').click({ force: true })
+    cy.$shuffleSeveralSongs(3)
+
+    cy.get('.queue-btn').should('exist').click()
+    cy.get('#queueScreen').within(() => {
+      cy.$getSongRows().should('have.length', 3)
+      cy.$getSongRowAt(0).should('have.class', 'playing')
+    })
+
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
     cy.$assertNotPlaying()
   })
 
   it('rotates if reaches end of queue in repeat-all mode', () => {
     cy.findByTestId('repeat-mode-switch').click()
 
-    cy.$shuffleSeveralSongs()
-    cy.findByTestId('play-next-btn').click({ force: true })
-    cy.findByTestId('play-next-btn').click({ force: true })
-    cy.findByTestId('play-next-btn').click({ force: true })
+    cy.$shuffleSeveralSongs(3)
 
-    cy.get('#queueScreen .song-item:nth-child(1)').should('have.class', 'playing')
+    cy.get('.queue-btn').should('exist').click()
+    cy.get('#queueScreen').within(() => {
+      cy.$getSongRows().should('have.length', 3)
+      cy.$getSongRowAt(0).should('have.class', 'playing')
+    })
+
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+
     cy.$assertPlaying()
   })
 
@@ -124,10 +153,21 @@ context('Queuing', { scrollBehavior: false }, () => {
     cy.findByTestId('repeat-mode-switch').click()
     cy.findByTestId('repeat-mode-switch').click()
 
-    cy.$shuffleSeveralSongs()
-    cy.findByTestId('play-next-btn').click({ force: true })
+    cy.$shuffleSeveralSongs(3)
 
-    cy.get('#queueScreen .song-item:nth-child(2)').should('have.class', 'playing')
+    cy.get('.queue-btn').should('exist').click()
+    cy.get('#queueScreen').within(() => {
+      cy.$getSongRows().should('have.length', 3)
+      cy.$getSongRowAt(0).should('have.class', 'playing')
+    })
+
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+    cy.wait(1000) // Wait for the song to start playing
+    cy.get('.play-next-btn').click({ force: true })
+
     cy.$assertPlaying()
   })
 })

@@ -1,5 +1,5 @@
 <template>
-  <ContextMenu ref="base">
+  <ContextMenu id="playlist-context-menu" ref="base">
     <li @click="play">Play</li>
     <li @click="shuffle">Shuffle</li>
     <li @click="addToQueue">Add to Queue</li>

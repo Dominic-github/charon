@@ -1,5 +1,5 @@
 <template>
-  <Btn highlight rounded small @click.prevent="goToRecentlyPlayedScreen">
+  <Btn highlight rounded data-testid="home-view-all-recently-played-btn" small @click.prevent="goToRecentlyPlayedScreen">
     View All
   </Btn>
 </template>

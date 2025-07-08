@@ -1,0 +1,71 @@
+{
+    "settings": [],
+    "playlists": [],
+    "playlist_folders": [],
+    "current_user": {
+        "type": "users",
+        "id": 2,
+        "name": "T\u00e2n Ho\u00e0ng",
+        "email": "hoangkimv.tan@gmail.com",
+        "avatar": "https:\/\/lh3.googleusercontent.com\/a\/ACg8ocKal9ruivDKDnUVyokQy381Dtih5zxxvU7ujxcGPga9-m-X4g=s96-c",
+        "is_admin": false,
+        "preferences": {
+            "theme": "classic",
+            "show_now_playing_notification": true,
+            "confirm_before_closing": false,
+            "show_album_art_overlay": true,
+            "transcode_on_mobile": true,
+            "transcode_quality": 128,
+            "make_uploads_public": false,
+            "lastfm_session_key": null,
+            "support_bar_no_bugging": false,
+            "artists_view_mode": "thumbnails",
+            "albums_view_mode": "thumbnails",
+            "repeat_mode": "NO_REPEAT",
+            "volume": 7,
+            "equalizer": {
+                "name": "Default",
+                "preamp": 0,
+                "gains": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "lyrics_zoom_level": 1,
+            "visualizer": "default",
+            "active_extra_panel_tab": null,
+            "continuous_playback": false
+        },
+        "is_prospect": false,
+        "sso_provider": "Google",
+        "sso_id": "109093403951822572206"
+    },
+    "uses_last_fm": true,
+    "uses_spotify": true,
+    "uses_you_tube": true,
+    "uses_i_tunes": true,
+    "allows_download": true,
+    "supports_batch_downloading": true,
+    "media_path_set": true,
+    "supports_transcoding": false,
+    "cdn_url": "http:\/\/localhost:8000\/",
+    "current_version": "v2.0.0",
+    "latest_version": "v2.0.0",
+    "song_count": 284,
+    "song_length": 62756.54,
+    "queue_state": {
+        "type": "queue-states",
+        "songs": [],
+        "current_song": null,
+        "playback_position": 0
+    },
+    "storage_driver": "local"
+}

@@ -24,7 +24,7 @@
       </FormRow>
 
       <FormRow v-if="canResetPassword">
-        <a class="text-right text-[.95rem] text-k-text-secondary" role="button" @click.prevent="showForgotPasswordForm">
+        <a data-testid="forgot-password-link" class="text-right text-[.95rem] text-k-text-secondary" role="button" @click.prevent="showForgotPasswordForm">
           Forgot password?
         </a>
       </FormRow>
@@ -32,16 +32,15 @@
       <FormRow>
         <p class="register text-center">
           Don't have account?
-          <a class="" style="font-weight: 500;" @click="goRegister">Create Account</a>
+          <a data-testid="register-btn" class="" style="font-weight: 500;" @click="goRegister">Create Account</a>
         </p>
       </FormRow>
     </form>
 
-    <div v-if="ssoProviders.length" v-show="!showingForgotPasswordForm" class="flex gap-3 items-center">
-      <GoogleLoginButton v-if="ssoProviders.includes('Google')" @error="onSSOError" @success="onSSOSuccess" />
+    <div v-if="ssoProviders.length"  v-show="!showingForgotPasswordForm" class="flex gap-3 items-center">
+      <GoogleLoginButton data-testid="google-btn"  v-if="ssoProviders.includes('Google')" @error="onSSOError" @success="onSSOSuccess" />
     </div>
-
-    <ForgotPasswordForm v-if="showingForgotPasswordForm" @cancel="showingForgotPasswordForm = false" />
+      <ForgotPasswordForm  v-if="showingForgotPasswordForm" @cancel="showingForgotPasswordForm = false" />
   </div>
 </template>
 

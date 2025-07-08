@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase id="artistScreen">
+  <ScreenBase id="artistListScreen">
     <template #header>
       <ScreenHeader layout="collapsed">
         Artists

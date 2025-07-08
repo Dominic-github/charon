@@ -1,16 +1,16 @@
 <template>
   <span id="volume" :class="level" class="hidden md:flex relative items-center gap-2">
-    <FooterExtraControlBtn v-show="level === 'muted'" tabindex="0" title="Unmute" @click="unmute">
+    <FooterExtraControlBtn class="unmuteVolumeBtn" v-show="level === 'muted'" tabindex="0" title="Unmute" @click="unmute">
       <Icon :icon="faVolumeMute" fixed-width />
     </FooterExtraControlBtn>
 
-    <FooterExtraControlBtn v-show="level !== 'muted'" tabindex="0" title="Mute" @click="mute">
+    <FooterExtraControlBtn class="muteVolumeBtn" v-show="level !== 'muted'" tabindex="0" title="Mute" @click="mute">
       <Icon :icon="level === 'discreet' ? faVolumeLow : faVolumeHigh" fixed-width />
     </FooterExtraControlBtn>
 
     <input
       ref="inputEl"
-      class="plyr__volume !w-[120px] before:absolute before:left-0 before:right-0 before:top-[-12px] before:bottom-[-12px]"
+      class="plyr__volume !w-[120px] before:absolute before:left-6 before:right-0 before:top-[-12px] before:bottom-[-12px]"
       max="10"
       role="slider"
       step="0.1"

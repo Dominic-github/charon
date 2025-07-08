@@ -1,164 +1,45 @@
 {
-  "data": [
-    {
-      "type": "artists",
-      "id": 3,
-      "name": "Wxrdie",
-      "image": "http:\/\/localhost:8000\/img\/artists\/9c93f72513760e3503fc7959cc82654d875710b5.webp",
-      "created_at": "2025-04-27T17:36:14.000000Z"
+    "data": [
+        {
+            "type": "artists",
+            "id": 52,
+            "name": "52Hz",
+            "image": "http:\/\/localhost:8000\/img\/artists\/5f5345de8ecdabda2458af439aa36fe292b763e6.webp",
+            "created_at": "2025-06-26T04:05:34.000000Z"
+        },
+        {
+            "type": "artists",
+            "id": 50,
+            "name": "marzuz",
+            "image": "http:\/\/localhost:8000\/img\/artists\/14d7be8e05714f9b7f46200f7ad3ba04f29a028b.webp",
+            "created_at": "2025-05-30T08:06:57.000000Z"
+        },
+        {
+            "type": "artists",
+            "id": 51,
+            "name": "RPT MCK",
+            "image": "http:\/\/localhost:8000\/img\/artists\/4ea934254ecf2aa82db8e98cd8745fa22f411e0d.webp",
+            "created_at": "2025-06-26T04:05:31.000000Z"
+        },
+        {
+            "type": "artists",
+            "id": 35,
+            "name": "tlinh",
+            "image": "http:\/\/localhost:8000\/img\/artists\/922e59b404d9070bc533fc25ab5ed78749c39f0c.webp",
+            "created_at": "2025-05-30T08:05:36.000000Z"
+        }
+    ],
+    "links": {
+        "first": "http:\/\/localhost:8000\/api\/artists?page=1",
+        "last": null,
+        "prev": null,
+        "next": null
     },
-    {
-      "type": "artists",
-      "id": 40,
-      "name": "24k.Right",
-      "image": "http:\/\/localhost:8000\/img\/artists\/ae3814d5ddb5bb5afb3b16214fea927a1ff43187.webp",
-      "created_at": "2025-04-27T17:37:53.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 39,
-      "name": "52Hz",
-      "image": "http:\/\/localhost:8000\/img\/artists\/59be59c6a872ecdd6f77e90631b5dbd7d2863e1f.webp",
-      "created_at": "2025-04-27T17:37:50.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 20,
-      "name": "Anri",
-      "image": "http:\/\/localhost:8000\/img\/artists\/192d52f084a54de039af1d38c470e62276ca3000.webp",
-      "created_at": "2025-04-27T17:37:03.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 33,
-      "name": "Ariana Grande",
-      "image": "http:\/\/localhost:8000\/img\/artists\/0a5d725439ec7cb981b757c355b997d6eeddb91a.webp",
-      "created_at": "2025-04-27T17:37:26.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 36,
-      "name": "Billie Eilish",
-      "image": "http:\/\/localhost:8000\/img\/artists\/7f19dff6bebbfd02c6c8f298381045270ca0bba5.webp",
-      "created_at": "2025-04-27T17:37:36.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 10,
-      "name": "GHOST DATA",
-      "image": "http:\/\/localhost:8000\/img\/artists\/6e4e34755f845b7240fea95c6313180e4230f708.webp",
-      "created_at": "2025-04-27T17:36:49.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 4,
-      "name": "HIEUTHUHAI",
-      "image": "http:\/\/localhost:8000\/img\/artists\/e515509017f312d93247051946408e1a84a14296.webp",
-      "created_at": "2025-04-27T17:36:30.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 28,
-      "name": "Hiroshi Sato",
-      "image": "http:\/\/localhost:8000\/img\/artists\/e96186e2d82c703c23423e69011950b5c924f8bc.webp",
-      "created_at": "2025-04-27T17:37:15.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 43,
-      "name": "Jeff Bernat",
-      "image": "http:\/\/localhost:8000\/img\/artists\/22acde362eff61778ec5b4a0982bf5cb3f2dc464.webp",
-      "created_at": "2025-04-27T17:38:10.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 44,
-      "name": "Joji",
-      "image": "http:\/\/localhost:8000\/img\/artists\/5ddd01b6ca2fc87d9be314a0ecff4ad55f74db9a.webp",
-      "created_at": "2025-04-27T17:38:12.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 29,
-      "name": "Junko Ohashi",
-      "image": "http:\/\/localhost:8000\/img\/artists\/3aa18be1095e37a7b8008b8cb0df46589cc9eace.webp",
-      "created_at": "2025-04-27T17:37:17.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 14,
-      "name": "Kaoru Akimoto",
-      "image": "http:\/\/localhost:8000\/img\/artists\/f5d2508b2d752560ed994c37be4f82ea9719dbcc.webp",
-      "created_at": "2025-04-27T17:36:54.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 7,
-      "name": "Lana Del Rey",
-      "image": "http:\/\/localhost:8000\/img\/artists\/09beb1144732c021b432c59b00f6dfbae31cf681.webp",
-      "created_at": "2025-04-27T17:36:35.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 22,
-      "name": "Macross 82-99",
-      "image": "http:\/\/localhost:8000\/img\/artists\/158653995d9dae5d44dbbc675e8d0fb85ef5ddba.webp",
-      "created_at": "2025-04-27T17:37:06.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 18,
-      "name": "Macross 82-99\/Sarah Bonito",
-      "image": "http:\/\/localhost:8000\/img\/artists\/971b8327d108a92f06836cc5ce15b7c922213986.webp",
-      "created_at": "2025-04-27T17:37:01.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 15,
-      "name": "Makoto Matsushita",
-      "image": "http:\/\/localhost:8000\/img\/artists\/484652521971f5f164960178506f7123a4885f9d.webp",
-      "created_at": "2025-04-27T17:36:57.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 25,
-      "name": "Mariya Takeuchi",
-      "image": "http:\/\/localhost:8000\/img\/artists\/32d5d3c61dc901ab0367a7ad8c9e0e1d5856b2f4.webp",
-      "created_at": "2025-04-27T17:37:12.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 50,
-      "name": "marzuz",
-      "image": "http:\/\/localhost:8000\/img\/artists\/d8c4b76a3087d321cc0783003fa842cbce9c9541.webp",
-      "created_at": "2025-04-27T17:38:47.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 26,
-      "name": "Miki J",
-      "image": "http:\/\/localhost:8000\/img\/artists\/3da5e78490f1aa4142237d87936e9782b19a57df.webp",
-      "created_at": "2025-04-27T17:37:13.000000Z"
-    },
-    {
-      "type": "artists",
-      "id": 9,
-      "name": "Miki Matsubara",
-      "image": "http:\/\/localhost:8000\/img\/artists\/3400ac693bb929c1536f90bb70c3c91aa34ab7ff.webp",
-      "created_at": "2025-04-27T17:36:48.000000Z"
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "path": "http:\/\/localhost:8000\/api\/artists",
+        "per_page": 21,
+        "to": 4
     }
-  ],
-  "links": {
-    "first": "http:\/\/localhost:8000\/api\/artists?page=1",
-    "last": null,
-    "prev": null,
-    "next": "http:\/\/localhost:8000\/api\/artists?page=2"
-  },
-  "meta": {
-    "current_page": 1,
-    "from": 1,
-    "path": "http:\/\/localhost:8000\/api\/artists",
-    "per_page": 21,
-    "to": 21
-  }
 }

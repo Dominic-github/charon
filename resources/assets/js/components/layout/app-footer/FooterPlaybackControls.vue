@@ -4,13 +4,13 @@
       <LikeButton v-if="playable" :playable="playable" class="text-base" />
       <button v-else type="button" /> <!-- a placeholder to maintain the asymmetric layout -->
 
-      <FooterBtn class="text-2xl" title="Play previous in queue" @click.prevent="playPrev">
+      <FooterBtn class="play-prev-btn text-2xl" title="Play previous in queue" @click.prevent="playPrev">
         <Icon :icon="faStepBackward" />
       </FooterBtn>
 
       <PlayButton />
 
-      <FooterBtn class="text-2xl" title="Play next in queue" @click.prevent="playNext">
+      <FooterBtn class="play-next-btn text-2xl" title="Play next in queue" @click.prevent="playNext">
         <Icon :icon="faStepForward" />
       </FooterBtn>
 

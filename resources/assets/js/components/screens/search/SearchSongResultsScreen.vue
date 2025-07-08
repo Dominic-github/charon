@@ -1,8 +1,8 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="searchSongResultsScreen">
     <template #header>
       <ScreenHeader :layout="songs.length === 0 ? 'collapsed' : headerLayout">
-        Results for <span class="font-thin">{{ decodedQ }}</span>
+        <span>Results for <span class="font-thin">{{ decodedQ }}</span></span>
         <ControlsToggle v-model="showingControls" />
 
         <template #thumbnail>

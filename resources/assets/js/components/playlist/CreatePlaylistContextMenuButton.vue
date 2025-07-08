@@ -1,6 +1,7 @@
 <template>
   <button
     class="relative before:absolute before:w-[28px] before:aspect-square before:top-[-6px] before:left-[-6px] before:cursor-pointer"
+    data-testid="create-playlist-context-menu-button"
     title="Create a new playlist or folder"
     type="button"
     @click.stop.prevent="requestContextMenu"

@@ -29,7 +29,7 @@ class PlaybackService {
   private repeatModes: RepeatMode[] = ['NO_REPEAT', 'REPEAT_ALL', 'REPEAT_ONE']
   private initialized = false
 
-  public get isTranscoding () {
+  public get isTranscoding() {
     return isMobile.any && preferences.transcode_on_mobile
   }
 
@@ -37,7 +37,7 @@ class PlaybackService {
    * The next item in the queue.
    * If we're in REPEAT_ALL mode and there's no next item, just get the first item.
    */
-  public get next () {
+  public get next() {
     if (queueStore.next) {
       return queueStore.next
     }
@@ -51,7 +51,7 @@ class PlaybackService {
    * The previous item in the queue.
    * If we're in REPEAT_ALL mode and there's no prev item, get the last item.
    */
-  public get previous () {
+  public get previous() {
     if (queueStore.previous) {
       return queueStore.previous
     }
@@ -61,7 +61,7 @@ class PlaybackService {
     }
   }
 
-  public init (plyrWrapper: HTMLElement) {
+  public init(plyrWrapper: HTMLElement) {
     if (this.initialized) {
       return
     }
@@ -76,13 +76,13 @@ class PlaybackService {
     this.initialized = true
   }
 
-  public registerPlay (playable: Playable) {
+  public registerPlay(playable: Playable) {
     recentlyPlayedStore.add(playable)
     songStore.registerPlay(playable)
     playable.play_count_registered = true
   }
 
-  public preload (playable: Playable) {
+  public preload(playable: Playable) {
     const audioElement = document.createElement('audio')
     audioElement.setAttribute('src', songStore.getSourceUrl(playable))
     audioElement.setAttribute('preload', 'auto')
@@ -98,7 +98,7 @@ class PlaybackService {
    * So many dreams swinging out of the blue
    * We'll let them come true
    */
-  public async play (playable: Playable, position = 0) {
+  public async play(playable: Playable, position = 0) {
     if (isEpisode(playable)) {
       useEpisodeProgressTracking().trackEpisode(playable)
     }
@@ -140,7 +140,7 @@ class PlaybackService {
     this.setMediaSessionActionHandlers()
   }
 
-  public showNotification (playable: Playable) {
+  public showNotification(playable: Playable) {
     if (!isSong(playable) && !isEpisode(playable)) {
       throw new Error('Invalid playable type.')
     }
@@ -180,7 +180,7 @@ class PlaybackService {
     })
   }
 
-  public async restart () {
+  public async restart() {
     const playable = queueStore.current!
 
     this.recordStartTime(playable)
@@ -207,7 +207,7 @@ class PlaybackService {
     }
   }
 
-  public rotateRepeatMode () {
+  public rotateRepeatMode() {
     let index = this.repeatModes.indexOf(preferences.repeat_mode) + 1
 
     if (index >= this.repeatModes.length) {
@@ -221,7 +221,7 @@ class PlaybackService {
    * Play the prev item the queue, if one is found.
    * If there's no prev item and the current mode is NO_REPEAT, we stop completely.
    */
-  public async playPrev () {
+  public async playPrev() {
     // If the item's duration is greater than 5 seconds, and we've passed 5 seconds into it,
     // restart playing instead.
     if (this.player.media.currentTime > 5 && queueStore.current!.length > 5) {
@@ -241,7 +241,7 @@ class PlaybackService {
    * Play the next item in the queue, if one is found.
    * If there's no next item and the current mode is NO_REPEAT, we stop completely.
    */
-  public async playNext () {
+  public async playNext() {
     if (!this.next && preferences.repeat_mode === 'NO_REPEAT') {
       await this.stop() //  Nothing lasts forever, even cold November rain.
     } else {
@@ -249,7 +249,7 @@ class PlaybackService {
     }
   }
 
-  public async stop () {
+  public async stop() {
     document.title = 'Charon'
     this.player.pause()
     this.player.seek(0)
@@ -260,7 +260,7 @@ class PlaybackService {
     socketService.broadcast('SOCKET_PLAYBACK_STOPPED')
   }
 
-  public pause () {
+  public pause() {
     this.player.pause()
 
     queueStore.current!.playback_state = 'Paused'
@@ -269,7 +269,7 @@ class PlaybackService {
     socketService.broadcast('SOCKET_SONG', queueStore.current)
   }
 
-  public async resume () {
+  public async resume() {
     const playable = queueStore.current!
 
     if (!this.player.media.src) {
@@ -294,13 +294,16 @@ class PlaybackService {
     this.broadcast(playable)
   }
 
-  public async toggle () {
-    if (!queueStore.current) {
-      await this.playFirstInQueue()
+  public async toggle() {
+
+    if (queueStore.all.length == 0) {
+      let playables: Playable[]
+      playables = await queueStore.fetchRandom()
+      await playbackService.queueAndPlay(playables)
       return
     }
 
-    if (queueStore.current.playback_state !== 'Playing') {
+    if (queueStore.current && queueStore.current.playback_state !== 'Playing') {
       await this.resume()
       return
     }
@@ -308,7 +311,7 @@ class PlaybackService {
     this.pause()
   }
 
-  public seekBy (seconds: number) {
+  public seekBy(seconds: number) {
     if (this.player.media.duration) {
       this.player.media.currentTime += seconds
     }
@@ -317,7 +320,7 @@ class PlaybackService {
   /**
    * Queue up playables (replace them into the queue) and start playing right away.
    */
-  public async queueAndPlay (playables: MaybeArray<Playable>, shuffled = false) {
+  public async queueAndPlay(playables: MaybeArray<Playable>, shuffled = false) {
     playables = arrayify(playables)
 
     if (shuffled) {
@@ -329,11 +332,11 @@ class PlaybackService {
     await this.play(queueStore.first)
   }
 
-  public async playFirstInQueue () {
+  public async playFirstInQueue() {
     queueStore.all.length && await this.play(queueStore.first)
   }
 
-  private async setNowPlayingMeta (playable: Playable) {
+  private async setNowPlayingMeta(playable: Playable) {
     document.title = `${playable.title} ♫ Charon`
     this.player.media.setAttribute(
       'title',
@@ -346,7 +349,7 @@ class PlaybackService {
   }
 
   // Record the UNIX timestamp the song starts playing, for scrobbling purpose
-  private recordStartTime (song: Playable) {
+  private recordStartTime(song: Playable) {
     if (!isSong(song)) {
       return
     }
@@ -355,11 +358,11 @@ class PlaybackService {
     song.play_count_registered = false
   }
 
-  private broadcast (playable: Playable) {
+  private broadcast(playable: Playable) {
     socketService.broadcast('SOCKET_SONG', playable)
   }
 
-  private setMediaSessionActionHandlers () {
+  private setMediaSessionActionHandlers() {
     if (!navigator.mediaSession) {
       return
     }
@@ -390,7 +393,7 @@ class PlaybackService {
     })
   }
 
-  private listenToMediaEvents (media: HTMLMediaElement) {
+  private listenToMediaEvents(media: HTMLMediaElement) {
     media.addEventListener('error', () => this.playNext(), true)
 
     media.addEventListener('ended', () => {

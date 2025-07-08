@@ -1,5 +1,5 @@
 <template>
-  <form :class="{ error: failed }" class=" sm:border border-transparent" @submit.prevent="submit" @keydown.esc="maybeClose">
+  <form :class="{ error: failed }" data-testid="add-user-form" class=" sm:border border-transparent" @submit.prevent="submit" @keydown.esc="maybeClose">
     <header>
       <h1>Add New User</h1>
     </header>

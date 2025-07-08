@@ -2,6 +2,7 @@
   <button
     :style="{ backgroundImage: `url(${defaultCover})` }"
     :title="title"
+    data-testid="song-thumbnail"
     class="song-thumbnail w-[48px] aspect-square bg-cover relative rounded overflow-hidden active:scale-95"
     @click.prevent="playOrPause"
   >
@@ -18,7 +19,7 @@
         left-1/2 -translate-x-1/2 -translate-y-1/2 bg-k-highlight group-hover:opacity-100 duration-500 transition z-20"
     >
       <Icon v-if="playable.playback_state === 'Playing'" :icon="faPause" class="text-white" />
-      <Icon v-else :icon="faPlay" class="text-white ml-0.5" />
+      <Icon data-testid="play-btn" v-else :icon="faPlay" class="text-white ml-0.5" />
     </span>
   </button>
 </template>

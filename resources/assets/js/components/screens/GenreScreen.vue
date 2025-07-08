@@ -1,8 +1,8 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="genreScreen">
     <template #header>
       <ScreenHeader v-if="genre" :layout="headerLayout">
-        Genre: <span class="text-thin">{{ decodeURIComponent(name!) }}</span>
+        <span>Genre: <span class="text-thin">{{ decodeURIComponent(name!) }}</span></span>
         <ControlsToggle v-if="songs.length" v-model="showingControls" />
 
         <template #thumbnail>

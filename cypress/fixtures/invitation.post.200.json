@@ -1,0 +1,11 @@
+[
+    {
+        "type": "users",
+        "id": 6,
+        "name": "",
+        "email": "user-invite@charon.test",
+        "avatar": "https:\/\/www.gravatar.com\/avatar\/679081ddbbfe4f1334c74f475b9ababd?s=192&d=robohash",
+        "is_admin": false,
+        "is_prospect": true
+    }
+]

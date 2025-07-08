@@ -6,11 +6,11 @@
 
         <template #controls>
           <BtnGroup uppercase>
-            <Btn success @click="showAddUserForm">
+            <Btn data-testid="add-user-btn" success @click="showAddUserForm">
               <Icon :icon="faPlus" />
               Add
             </Btn>
-            <Btn v-if="canInvite" highlight @click="showInviteUserForm">Invite</Btn>
+            <Btn data-testid="invite-user-btn" v-if="canInvite" highlight @click="showInviteUserForm">Invite</Btn>
           </BtnGroup>
         </template>
       </ScreenHeader>

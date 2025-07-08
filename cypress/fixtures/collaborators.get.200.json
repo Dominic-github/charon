@@ -1,0 +1,8 @@
+[
+    {
+        "type": "playlist_collaborators",
+        "id": 1,
+        "name": "Simple Playlist",
+        "avatar": "http://localhost:8000/img/icon.png"
+    }
+]

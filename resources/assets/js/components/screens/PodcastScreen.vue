@@ -1,5 +1,5 @@
 <template>
-  <ScreenBase>
+  <ScreenBase id="podcastScreen">
     <template #header>
       <ScreenHeaderSkeleton v-if="loading && !podcast" />
       <ScreenHeader v-if="podcast" :layout="headerLayout">
@@ -30,7 +30,7 @@
 
         <template #controls>
           <div class="flex gap-2 flex-wrap">
-            <Btn v-if="episodes?.length" highlight uppercase @click.prevent="playOrPause">
+            <Btn class="playPodcastBtn" v-if="episodes?.length" highlight uppercase @click.prevent="playOrPause">
               <Icon :icon="podcastPlaying ? faPause : faPlay" fixed-width />
               {{ playButtonLabel }}
             </Btn>

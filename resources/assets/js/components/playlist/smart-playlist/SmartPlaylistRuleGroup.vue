@@ -1,5 +1,5 @@
 <template>
-  <div class="relative p-4 rounded-md border border-white/15">
+  <div class="smart-playlist-rule-group relative p-4 rounded-md border border-white/15">
     <h4 class="mb-3">
       <span>
         <template v-if="isFirstGroup">
@@ -23,11 +23,11 @@
 
     <div class="text-center absolute w-full left-0 -mt-[2px]">
       <Btn
-        class="aspect-square scale-75 hover:scale-90 active:scale-[80%]"
+        class="add-rule-btn aspect-square scale-75 hover:scale-90 active:scale-[80%]"
         rounded
         small
         success
-        title="Remove this rule"
+        title="Add more rules"
         @click.prevent="addRule"
       >
         <Icon :icon="faPlus" />

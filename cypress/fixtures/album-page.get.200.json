@@ -1,9 +1,11 @@
-{
-  "type": "albums",
-  "id": 3,
-  "name": "420ent.",
-  "artist_id": 3,
-  "artist_name": "Wxrdie",
-  "cover": "http:\/\/localhost:8000\/img\/covers\/9b3d83ccfda1375a3926cd1c6e53389f130700aa.webp",
-  "created_at": "2025-04-27T17:36:15.000000Z"
-}
+[
+    {
+        "type": "albums",
+        "id": 54,
+        "name": "99%",
+        "artist_id": 51,
+        "artist_name": "RPT MCK",
+        "cover": "http:\/\/localhost:8000\/img\/covers\/91fd8ad81a1cdf9dc5dd5f781514aec785819260.webp",
+        "created_at": "2025-06-26T04:05:31.000000Z"
+    }
+]

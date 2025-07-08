@@ -3,6 +3,7 @@
     :class="{ me: isCurrentUser }"
     class="apply p-4 flex items-center rounded-md bg-k-bg-secondary border border-k-border
     gap-3 transition-[border-color] duration-200 ease-in-out hover:border-white/15"
+    data-testid="user-card"
   >
     <UserAvatar :user="user" width="48" />
 
@@ -32,13 +33,13 @@
 
     <div class="space-x-2">
       <template v-if="user.is_prospect">
-        <Btn class="btn-revoke" danger small @click="revokeInvite">Revoke</Btn>
+        <Btn class="revoke-user-btn" danger small @click="revokeInvite">Revoke</Btn>
       </template>
       <template v-else>
-        <Btn v-if="!user.is_prospect" highlight small @click="edit">
+        <Btn class="edit-user-btn" v-if="!user.is_prospect" highlight small @click="edit">
           {{ isCurrentUser ? 'Your Profile' : 'Edit' }}
         </Btn>
-        <Btn v-if="!isCurrentUser" danger small @click="destroy">Delete</Btn>
+        <Btn class="delete-user-btn" v-if="!isCurrentUser" danger small @click="destroy">Delete</Btn>
       </template>
     </div>
   </article>

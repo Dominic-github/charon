@@ -24,7 +24,7 @@
       </span>
 
       <Btn
-        class="absolute -right-[14px] aspect-square top-1 scale-[60%] hover:scale-75 active:scale-[60%]"
+        class="remove-rule-btn absolute -right-[14px] aspect-square top-1 scale-[60%] hover:scale-75 active:scale-[60%]"
         danger
         rounded
         small

@@ -2,6 +2,7 @@
   <footer
     ref="root"
     class="flex flex-col relative z-20 bg-k-bg-secondary h-k-footer-height"
+    data-testid="footer-app"
     @mousemove="showControls"
     @contextmenu.prevent="requestContextMenu"
   >

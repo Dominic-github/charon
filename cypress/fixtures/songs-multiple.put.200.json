@@ -1,51 +1,127 @@
 {
-  "artists": [
-    {
-      "id": 3,
-      "name": "The Band",
-      "image": "http://localhost:8000/test/images/sample.png"
+    "songs": [
+        {
+            "type": "songs",
+            "id": "9f3e913a-e515-487f-aaa2-a4ea5326d88f",
+            "owner_id": 1,
+            "title": "00",
+            "lyrics": "",
+            "album_id": 57,
+            "album_name": "The Wall",
+            "artist_id": 51,
+            "artist_name": "RPT MCK",
+            "album_artist_id": 1,
+            "album_artist_name": "Unknown Artist",
+            "album_cover": null,
+            "length": 33.87,
+            "liked": true,
+            "play_count": 339,
+            "track": 0,
+            "disc": 1,
+            "genre": "",
+            "year": "0000",
+            "is_public": true,
+            "created_at": "2025-06-26T04:05:33.000000Z"
+        },
+        {
+            "type": "songs",
+            "id": "9f3e913b-07ed-417d-9d6a-02229a52af5d",
+            "owner_id": 1,
+            "title": "50\/50",
+            "lyrics": "",
+            "album_id": 57,
+            "album_name": "The Wall",
+            "artist_id": 51,
+            "artist_name": "RPT MCK",
+            "album_artist_id": 1,
+            "album_artist_name": "Unknown Artist",
+            "album_cover": null,
+            "length": 60.86,
+            "liked": true,
+            "play_count": 9,
+            "track": 0,
+            "disc": 1,
+            "genre": "",
+            "year": "0000",
+            "is_public": true,
+            "created_at": "2025-06-26T04:05:33.000000Z"
+        },
+        {
+            "type": "songs",
+            "id": "9f3e913b-28a4-4338-94e9-a32fa9417111",
+            "owner_id": 1,
+            "title": "99",
+            "lyrics": "",
+            "album_id": 57,
+            "album_name": "The Wall",
+            "artist_id": 51,
+            "artist_name": "RPT MCK",
+            "album_artist_id": 1,
+            "album_artist_name": "Unknown Artist",
+            "album_cover": null,
+            "length": 171.67,
+            "liked": true,
+            "play_count": 8,
+            "track": 0,
+            "disc": 1,
+            "genre": "",
+            "year": "0000",
+            "is_public": true,
+            "created_at": "2025-06-26T04:05:33.000000Z"
+        },
+        {
+            "type": "songs",
+            "id": "9f3e906d-075f-4275-89ba-9994274700e2",
+            "owner_id": 1,
+            "title": "\u1ea3",
+            "lyrics": "",
+            "album_id": 57,
+            "album_name": "The Wall",
+            "artist_id": 50,
+            "artist_name": "marzuz",
+            "album_artist_id": 1,
+            "album_artist_name": "Unknown Artist",
+            "album_cover": null,
+            "length": 1536.16,
+            "liked": false,
+            "play_count": 4,
+            "track": 0,
+            "disc": 1,
+            "genre": "",
+            "year": "0000",
+            "is_public": true,
+            "created_at": "2025-06-26T04:03:18.000000Z"
+        }
+    ],
+    "albums": [
+        {
+            "type": "albums",
+            "id": 57,
+            "name": "The Wall",
+            "artist_id": 1,
+            "artist_name": "Unknown Artist",
+            "cover": null,
+            "created_at": "2025-07-07T16:22:59.000000Z"
+        }
+    ],
+    "artists": [
+        {
+            "type": "artists",
+            "id": 50,
+            "name": "marzuz",
+            "image": "http:\/\/localhost:8000\/img\/artists\/14d7be8e05714f9b7f46200f7ad3ba04f29a028b.webp",
+            "created_at": "2025-05-30T08:06:57.000000Z"
+        },
+        {
+            "type": "artists",
+            "id": 51,
+            "name": "RPT MCK",
+            "image": "http:\/\/localhost:8000\/img\/artists\/4ea934254ecf2aa82db8e98cd8745fa22f411e0d.webp",
+            "created_at": "2025-06-26T04:05:31.000000Z"
+        }
+    ],
+    "removed": {
+        "albums": [],
+        "artists": []
     }
-  ],
-  "albums": [
-    {
-      "id": 5,
-      "artist_id": 3,
-      "name": "The Wall",
-      "cover": "http://localhost:8000/test/images/sample.png",
-      "created_at": "2016-02-01 06:48:45",
-      "is_compilation": false
-    }
-  ],
-  "songs": [
-    {
-      "id": "03bebf17f54e2afc7c0513fb1d931009",
-      "album_id": 5,
-      "artist_id": 3,
-      "title": "Instinct",
-      "length": 204.11,
-      "track": null,
-      "disc": 1,
-      "created_at": "2019-08-24 18:03:35"
-    },
-    {
-      "id": "1326f8a4fc90843f07ef550c54cd88f9",
-      "album_id": 5,
-      "artist_id": 3,
-      "title": "Better Days",
-      "length": 153.84,
-      "track": null,
-      "disc": 1,
-      "created_at": "2019-08-24 18:03:35"
-    },
-    {
-      "id": "14680f3ffef690f8521200e82f9ebb30",
-      "album_id": 5,
-      "artist_id": 3,
-      "title": "Acoustic Breeze",
-      "length": 157.2,
-      "track": null,
-      "disc": 1,
-      "created_at": "2019-08-24 18:03:35"
-    }
-  ]
 }

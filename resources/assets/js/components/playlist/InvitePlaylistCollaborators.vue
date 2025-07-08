@@ -2,9 +2,7 @@
   <span>
     <Btn v-if="shouldShowInviteButton" small success @click.prevent="inviteCollaborators">Invite</Btn>
     <span v-if="justCreatedInviteLink" class="text-k-text-secondary text-[0.95rem]">
-      <Icon :icon="faCheckCircle" class="text-k-success mr-1" />
-      Link copied to clipboard!
-    </span>
+      <Icon :icon="faCheckCircle" class="text-k-success mr-1" />Link copied to clipboard!</span>
     <Icon v-if="creatingInviteLink" :icon="faCircleNotch" class="text-k-success" spin />
   </span>
 </template>

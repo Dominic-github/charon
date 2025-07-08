@@ -1,10 +1,11 @@
 interface LoginOptions {
   asAdmin: boolean
-  useiTunes: boolean
-  useYouTube: boolean
-  useLastfm: boolean
-  allowDownload: boolean
-  supportsTranscoding: boolean
+  uses_i_tunes?: boolean
+  uses_you_tube?: boolean
+  uses_spotify?: boolean
+  uses_last_fm?: boolean
+  allows_download?: boolean
+  supports_transcoding?: boolean
 }
 
 declare namespace Cypress {
@@ -25,7 +26,7 @@ declare namespace Cypress {
      * @param count
      */
     $shuffleSeveralSongs: (count?: number) => void
-
+    $shuffleAllSongs: () => void
     $getSongRows: () => Chainable<JQuery<HTMLElement>>
     $getSongRowAt: (position: number) => Chainable<JQuery<HTMLElement>>
 

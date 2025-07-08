@@ -1,5 +1,68 @@
 [
-  "312efc46c3ef5a09f625870d83321f11",
-  "44b395ba4e760f149b542aafc0451534",
-  "4cf008da0ad2349a5b8aaeb037f306bf"
+    {
+        "type": "songs",
+        "id": "9f3e906d-075f-4275-89ba-9994274700e2",
+        "owner_id": 1,
+        "title": "\u1ea3",
+        "lyrics": "",
+        "album_id": 53,
+        "album_name": "\u1ea3",
+        "artist_id": 50,
+        "artist_name": "marzuz",
+        "album_artist_id": 50,
+        "album_artist_name": "marzuz",
+        "album_cover": "http:\/\/localhost:8000\/img\/covers\/b58df48c28c04b5ead632b3e0beed9ad173b1515.webp",
+        "length": 1536.16,
+        "liked": false,
+        "play_count": 0,
+        "track": 1,
+        "disc": 1,
+        "genre": "VPOP",
+        "year": "2024",
+        "is_public": true,
+        "created_at": "2025-06-26T04:03:18.000000Z",
+        "collaboration": {
+            "user": {
+                "type": "playlist-collaborators",
+                "id": 1,
+                "name": "Charon",
+                "avatar": "http://localhost:8000/img/icon.png"
+            },
+            "added_at": "2025-06-26 04:07:21",
+            "fmt_added_at": "3 hours ago"
+        }
+    },
+    {
+        "type": "songs",
+        "id": "9f3e9066-6537-4ddc-ac68-02e3886f03a8",
+        "owner_id": 1,
+        "title": "\u00e1i",
+        "lyrics": "",
+        "album_id": 49,
+        "album_name": "\u00e1i",
+        "artist_id": 35,
+        "artist_name": "tlinh",
+        "album_artist_id": 35,
+        "album_artist_name": "tlinh",
+        "album_cover": "http:\/\/localhost:8000\/img\/covers\/f01050e2e2f02cd80e4c070cee3831d5a4486f81.webp",
+        "length": 67.2,
+        "liked": true,
+        "play_count": 2,
+        "track": 5,
+        "disc": 1,
+        "genre": "R&B",
+        "year": null,
+        "is_public": true,
+        "created_at": "2025-06-26T04:03:14.000000Z",
+        "collaboration": {
+            "user": {
+                "type": "playlist-collaborators",
+                "id": 1,
+                "name": "Charon",
+                "avatar": "http://localhost:8000/img/icon.png"
+            },
+            "added_at": "2025-06-26 04:07:23",
+            "fmt_added_at": "3 hours ago"
+        }
+    }
 ]

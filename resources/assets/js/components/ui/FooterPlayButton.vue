@@ -3,10 +3,11 @@
     :title="playing ? 'Pause' : 'Play or resume'"
     class="!w-[3rem] rounded-full border-2 border-solid aspect-square !transition-transform hover:scale-125 !text-2xl
     has-[.icon-play]:indent-[0.23rem]"
+    data-testid="footer-play-button"
     @click.prevent="toggle"
   >
-    <Icon v-if="playing" :icon="faPause" />
-    <Icon v-else :icon="faPlay" class="icon-play" />
+    <Icon v-if="playing" data-testid="pause-btn" :icon="faPause" />
+    <Icon v-else data-testid="play-btn" :icon="faPlay" class="icon-play" />
   </FooterButton>
 </template>
 

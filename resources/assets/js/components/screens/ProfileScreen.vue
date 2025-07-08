@@ -8,6 +8,7 @@
       <TabList>
         <TabButton
           :selected="currentTab === 'profile'"
+          data-testid="profile-tab"
           aria-controls="profilePaneProfile"
           @click="currentTab = 'profile'"
         >
@@ -15,6 +16,7 @@
         </TabButton>
         <TabButton
           :selected="currentTab === 'preferences'"
+          data-testid="preferences-tab"
           aria-controls="profilePanePreferences"
           @click="currentTab = 'preferences'"
         >
@@ -22,6 +24,7 @@
         </TabButton>
         <TabButton
           :selected="currentTab === 'themes'"
+          data-testid="themes-tab"
           aria-controls="profilePaneThemes"
           @click="currentTab = 'themes'"
         >
@@ -29,6 +32,7 @@
         </TabButton>
         <TabButton
           :selected="currentTab === 'integrations'"
+          data-testid="integrations-tab"
           aria-controls="profilePaneIntegrations"
           @click="currentTab = 'integrations'"
         >

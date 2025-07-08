@@ -1,0 +1,20 @@
+[
+    {
+        "type": "users",
+        "id": 7,
+        "name": "",
+        "email": "user-invite-1@charon.test",
+        "avatar": "https:\/\/www.gravatar.com\/avatar\/cf260adb7ad371d7196216f6d9b6a2f2?s=192&d=robohash",
+        "is_admin": false,
+        "is_prospect": true
+    },
+    {
+        "type": "users",
+        "id": 8,
+        "name": "",
+        "email": "user-invite-2@charon.test",
+        "avatar": "https:\/\/www.gravatar.com\/avatar\/09064caa3fa0a6e5a7f93e21e5903ac6?s=192&d=robohash",
+        "is_admin": false,
+        "is_prospect": true
+    }
+]
