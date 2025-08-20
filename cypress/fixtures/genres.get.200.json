@@ -1,20 +1,23 @@
 [
     {
         "type": "genres",
+        "id": "01k0vn96520jhsrc826fq9yc5z",
         "name": "Pop",
         "song_count": 22,
-        "length": 3292.9900000000007
+        "length": 0
     },
     {
         "type": "genres",
+        "id": "01k0vn9cs5qfb95gp4m4sazads",
         "name": "R&B",
         "song_count": 12,
-        "length": 2121.0299999999997
+        "length": 0
     },
     {
         "type": "genres",
+        "id": "01k0vn9h4k05rxfm4vcqrft9fk",
         "name": "VPOP",
         "song_count": 9,
-        "length": 3703.37
+        "length": 0
     }
 ]

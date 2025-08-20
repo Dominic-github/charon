@@ -1,0 +1,12 @@
+[
+    {
+        "type": "albums",
+        "id": "01k0vn95v4evgpn4jz3ebh6e4y",
+        "name": "99%",
+        "artist_id": "01k0vn95cqrgdqr4hnkz8jvdmk",
+        "artist_name": "RPT MCK",
+        "cover": "http:\/\/localhost:8000\/img\/covers\/01k0vn9a3arctsfz865yq4tjk7.webp",
+        "created_at": "2025-07-23T12:49:07.000000Z",
+        "year": null
+    }
+]

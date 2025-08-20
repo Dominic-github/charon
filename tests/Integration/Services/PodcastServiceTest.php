@@ -2,7 +2,7 @@
 
 namespace Tests\Integration\Services;
 
-use App\Exceptions\UserAlreadySubscribedToPodcast;
+use App\Exceptions\UserAlreadySubscribedToPodcastException;
 use App\Models\Podcast;
 use App\Models\PodcastUserPivot;
 use App\Models\Song;
@@ -28,7 +28,7 @@ class PodcastServiceTest extends TestCase
         parent::setUp();
 
         $mock = new MockHandler([
-            new Response(200, [], file_get_contents(test_path('blobs/podcast.xml'))),
+            new Response(200, [], file_get_contents(test_path('fixtures/podcast.xml'))),
         ]);
 
         $handlerStack = HandlerStack::create($mock);
@@ -82,7 +82,7 @@ class PodcastServiceTest extends TestCase
     #[Test]
     public function resubscribeUserToPodcastThrows(): void
     {
-        self::expectException(UserAlreadySubscribedToPodcast::class);
+        self::expectException(UserAlreadySubscribedToPodcastException::class);
 
         /** @var Podcast $podcast */
         $podcast = Podcast::factory()->create([
@@ -98,7 +98,7 @@ class PodcastServiceTest extends TestCase
     #[Test]
     public function addingRefreshesObsoletePodcast(): void
     {
-        self::expectException(UserAlreadySubscribedToPodcast::class);
+        self::expectException(UserAlreadySubscribedToPodcastException::class);
 
         Http::fake([
             'https://example.com/feed.xml' => Http::response(headers: ['Last-Modified' => now()->toRfc1123String()]),

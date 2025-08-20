@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\SSO;
 
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -23,7 +23,7 @@ class GoogleTest extends TestCase
             'getId' => Str::random(),
         ]);
 
-        Socialite::shouldReceive('driver->user')->andReturn($googleUser);
+        Socialite::expects('driver->user')->andReturn($googleUser);
 
         $response = $this->get('auth/google/callback');
         $response->assertOk();
@@ -43,7 +43,7 @@ class GoogleTest extends TestCase
             'getId' => Str::random(),
         ]);
 
-        Socialite::shouldReceive('driver->user')->andReturn($googleUser);
+        Socialite::expects('driver->user')->andReturn($googleUser);
 
         $response = $this->get('auth/google/callback');
         $response->assertOk();
@@ -67,7 +67,7 @@ class GoogleTest extends TestCase
             'getId' => '123',
         ]);
 
-        Socialite::shouldReceive('driver->user')->andReturn($googleUser);
+        Socialite::expects('driver->user')->andReturn($googleUser);
 
         $response = $this->get('auth/google/callback');
         $response->assertOk();

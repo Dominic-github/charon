@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Repositories\UserRepository;
 use App\Services\AuthenticationService;
 use App\Services\TokenManager;
+use App\Services\UserService;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Password;
 use Mockery\MockInterface;
@@ -16,6 +17,7 @@ class AuthenticationServiceTest extends TestCase
     private UserRepository|MockInterface $userRepository;
     private TokenManager|MockInterface $tokenManager;
     private PasswordBroker|MockInterface $passwordBroker;
+    private UserService|MockInterface $userService;
     private AuthenticationService $service;
 
     public function setUp(): void
@@ -25,10 +27,12 @@ class AuthenticationServiceTest extends TestCase
         $this->userRepository = $this->mock(UserRepository::class);
         $this->tokenManager = $this->mock(TokenManager::class);
         $this->passwordBroker = $this->mock(PasswordBroker::class);
+        $this->userService = $this->mock(UserService::class);
 
         $this->service = new AuthenticationService(
             $this->userRepository,
             $this->tokenManager,
+            $this->userService,
             $this->passwordBroker
         );
     }
@@ -37,7 +41,7 @@ class AuthenticationServiceTest extends TestCase
     public function trySendResetPasswordLink(): void
     {
         $this->passwordBroker
-            ->shouldReceive('sendResetLink')
+            ->expects('sendResetLink')
             ->with(['email' => 'foo@bar.com'])
             ->andReturn(Password::RESET_LINK_SENT);
 

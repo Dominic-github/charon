@@ -72,7 +72,7 @@ class ProfileTest extends TestCase
             'name' => 'Foo',
             'email' => 'bar@baz.com',
             'current_password' => 'secret',
-            'avatar' => read_as_data_url(test_path('blobs/cover.png')),
+            'avatar' => read_as_data_url(test_path('fixtures/cover.png')),
         ], $user)
             ->assertOk();
 
@@ -103,7 +103,21 @@ class ProfileTest extends TestCase
     }
 
     #[Test]
-    public function updateSSOProfile(): void
+    public function disabledInDemo(): void
+    {
+        config(['charon.misc.demo' => true]);
+        $user = create_user(['password' => Hash::make('secret')]);
+
+        $this->putAs('api/me', [
+            'name' => 'Foo',
+            'email' => 'bar@baz.com',
+            'current_password' => 'secret',
+        ], $user)
+            ->assertNoContent();
+    }
+
+    #[Test]
+    public function updateSsoProfile(): void
     {
         $user = create_user([
             'sso_provider' => 'Google',
@@ -120,7 +134,7 @@ class ProfileTest extends TestCase
         $this->putAs('api/me', [
             'name' => 'Bruce Dickinson',
             'email' => 'bruce@iron.com',
-            'avatar' => read_as_data_url(test_path('blobs/cover.png')),
+            'avatar' => read_as_data_url(test_path('fixtures/cover.png')),
         ], $user)->assertOk();
 
         $user->refresh();

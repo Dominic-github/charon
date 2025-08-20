@@ -24,7 +24,7 @@ class UserInvitationTest extends TestCase
             'is_admin' => true,
         ], create_admin())
             ->assertSuccessful()
-            ->assertJsonStructure(['*' => UserProspectResource::JSON_STRUCTURE]);
+            ->assertJsonStructure([0 => UserProspectResource::JSON_STRUCTURE]);
 
         Mail::assertQueued(UserInvite::class, 2);
     }
@@ -58,7 +58,7 @@ class UserInvitationTest extends TestCase
         $this->deleteAs('api/invitations', ['email' => $prospect->email], create_admin())
             ->assertSuccessful();
 
-        self::assertModelMissing($prospect);
+        $this->assertModelMissing($prospect);
     }
 
     #[Test]
@@ -69,7 +69,7 @@ class UserInvitationTest extends TestCase
         $this->deleteAs('api/invitations', ['email' => $prospect->email])
             ->assertForbidden();
 
-        self::assertModelExists($prospect);
+        $this->assertModelExists($prospect);
     }
 
     #[Test]

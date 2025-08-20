@@ -21,6 +21,9 @@ class ProxyAuthTest extends TestCase
             'charon.proxy_auth.user_header' => 'remote-user',
             'charon.proxy_auth.preferred_name_header' => 'remote-preferred-name',
         ]);
+
+        // Disable Vite so that the test can run without a frontend build.
+        $this->withoutVite();
     }
 
     protected function tearDown(): void
@@ -52,7 +55,7 @@ class ProxyAuthTest extends TestCase
 
         self::assertNotNull(PersonalAccessToken::findToken($token['token']));
 
-        self::assertDatabaseHas(User::class, [
+        $this->assertDatabaseHas(User::class, [
             'email' => '123456@reverse.proxy',
             'name' => 'Bruce Dickinson',
             'sso_id' => '123456',

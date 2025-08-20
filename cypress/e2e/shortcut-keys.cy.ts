@@ -52,9 +52,10 @@ context('Shortcut Keys', () => {
     cy.wait(2000)
 
     cy.get('#queueScreen').type('l')
-    cy.get('.extra [title=Like]').should('be.visible')
+    cy.get('[data-testid="song-item"] .extra > [data-testid="like-btn"]').first().should('be.visible').and('have.attr', 'title', 'Unlike')
 
     cy.get('#queueScreen').type('l')
-    cy.get('.extra [title=Unlike]').should('be.visible')
+    cy.get('[data-testid="song-item"] .extra > [data-testid="like-btn"]').first().should('be.visible').and('have.attr', 'title', 'Like')
+
   })
 })

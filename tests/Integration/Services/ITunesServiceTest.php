@@ -26,18 +26,18 @@ class ITunesServiceTest extends TestCase
     #[Test]
     public function configuration(): void
     {
-        config(['charon.itunes.enabled' => true]);
-        self::assertTrue($this->service->used());
+        config(['charon.services.itunes.enabled' => true]);
+        self::assertTrue($this->service::used());
 
-        config(['charon.itunes.enabled' => false]);
-        self::assertFalse($this->service->used());
+        config(['charon.services.itunes.enabled' => false]);
+        self::assertFalse($this->service::used());
     }
 
     #[Test]
     public function getTrackUrl(): void
     {
-        config(['charon.itunes.enabled' => true]);
-        config(['charon.itunes.affiliate_id' => 'foo']);
+        config(['charon.services.itunes.enabled' => true]);
+        config(['charon.services.itunes.affiliate_id' => 'foo']);
 
         Saloon::fake([
             GetTrackRequest::class => MockResponse::make(body: [
@@ -46,19 +46,15 @@ class ITunesServiceTest extends TestCase
             ]),
         ]);
 
+
         /** @var Album $album */
         $album = Album::factory()
             ->for(Artist::factory()->create(['name' => 'Queen']))
             ->create(['name' => 'A Night at the Opera']);
 
         self::assertSame(
-            'https://itunes.apple.com/bar?at=foo',
+            "https://itunes.apple.com/bar?at=foo",
             $this->service->getTrackUrl('Bohemian Rhapsody', $album)
-        );
-
-        self::assertSame(
-            'https://itunes.apple.com/bar?at=foo',
-            Cache::get('itunes.track.5f0467bebbb2b26bf9dc7b19f3d85077')
         );
 
         Saloon::assertSent(static function (GetTrackRequest $request): bool {

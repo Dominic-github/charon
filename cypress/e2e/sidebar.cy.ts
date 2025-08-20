@@ -22,8 +22,8 @@ context('Sidebar Functionalities', () => {
   ]
 
   function assertMenuItem(text: string, url: string) {
-    cy.intercept('/api/albums?page=1', { fixture: 'album-list.get.200.json' })
-    cy.intercept('GET', '/api/artists?page=1', { fixture: 'artist-list.get.200.json' })
+    cy.intercept('/api/albums?**', { fixture: 'album-list.get.200.json' })
+    cy.intercept('GET', '/api/artists?**', { fixture: 'artist-list.get.200.json' })
     cy.intercept('GET', '/api/songs/favorite', {
       fixture: 'favorites.get.200.json',
     })

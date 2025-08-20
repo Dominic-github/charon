@@ -3,14 +3,12 @@
 namespace Tests\Feature;
 
 use App\Http\Resources\SongResource;
-use App\Models\Playlist;
-use App\Models\Song;
-use Illuminate\Support\Collection;
-use PHPUnit\Framework\Attributes\Test;
 use App\Http\Resources\CollaborativeSongResource;
-use App\Models\User;
+use App\Models\Song;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
+use function Tests\create_playlist;
 use function Tests\create_user;
 
 class PlaylistSongTest extends TestCase
@@ -18,12 +16,11 @@ class PlaylistSongTest extends TestCase
     #[Test]
     public function getNormalPlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         $playlist->addPlayables(Song::factory(5)->create());
 
-        $this->getAs("api/playlists/$playlist->id/songs", $playlist->user)
-            ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE]);
+        $this->getAs("api/playlists/{$playlist->id}/songs", $playlist->owner)
+            ->assertJsonStructure([0 => SongResource::JSON_STRUCTURE]);
     }
 
     #[Test]
@@ -31,8 +28,7 @@ class PlaylistSongTest extends TestCase
     {
         Song::factory()->create(['title' => 'A foo song']);
 
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create([
+        $playlist = create_playlist([
             'rules' => [
                 [
                     'id' => '45368b8f-fec8-4b72-b826-6b295af0da65',
@@ -48,45 +44,37 @@ class PlaylistSongTest extends TestCase
             ],
         ]);
 
-        $this->getAs("api/playlists/$playlist->id/songs", $playlist->user)
-            ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE]);
+        $this->getAs("api/playlists/{$playlist->id}/songs", $playlist->owner)
+            ->assertJsonStructure([0 => SongResource::JSON_STRUCTURE]);
     }
 
     #[Test]
     public function nonOwnerCannotAccessPlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->for(create_user())->create();
+        $playlist = create_playlist();
         $playlist->addPlayables(Song::factory(5)->create());
 
-        $this->getAs("api/playlists/$playlist->id/songs")
+        $this->getAs("api/playlists/{$playlist->id}/songs")
             ->assertForbidden();
     }
 
     #[Test]
     public function addSongsToPlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
-
-        /** @var Collection<array-key, Song> $songs */
+        $playlist = create_playlist();
         $songs = Song::factory(2)->create();
 
-        $this->postAs("api/playlists/$playlist->id/songs", ['songs' => $songs->pluck('id')->all()], $playlist->user)
+        $this->postAs("api/playlists/{$playlist->id}/songs", ['songs' => $songs->modelKeys()], $playlist->owner)
             ->assertSuccessful();
 
-        self::assertEqualsCanonicalizing($songs->pluck('id')->all(), $playlist->playables->pluck('id')->all());
+        self::assertEqualsCanonicalizing($songs->modelKeys(), $playlist->playables->modelKeys());
     }
 
     #[Test]
     public function removeSongsFromPlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
-
+        $playlist = create_playlist();
         $toRemainSongs = Song::factory(5)->create();
-
-        /** @var Collection<array-key, Song> $toBeRemovedSongs */
         $toBeRemovedSongs = Song::factory(2)->create();
 
         $playlist->addPlayables($toRemainSongs->merge($toBeRemovedSongs));
@@ -94,38 +82,36 @@ class PlaylistSongTest extends TestCase
         self::assertCount(7, $playlist->playables);
 
         $this->deleteAs(
-            "api/playlists/$playlist->id/songs",
-            ['songs' => $toBeRemovedSongs->pluck('id')->all()],
-            $playlist->user
+            "api/playlists/{$playlist->id}/songs",
+            ['songs' => $toBeRemovedSongs->modelKeys()],
+            $playlist->owner
         )
             ->assertNoContent();
 
         $playlist->refresh();
 
-        self::assertEqualsCanonicalizing($toRemainSongs->pluck('id')->all(), $playlist->playables->pluck('id')->all());
+        self::assertEqualsCanonicalizing($toRemainSongs->modelKeys(), $playlist->playables->modelKeys());
     }
 
     #[Test]
     public function nonOwnerCannotModifyPlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->for(create_user())->create();
+        $playlist = create_playlist();
 
         /** @var Song $song */
         $song = Song::factory()->create();
 
-        $this->postAs("api/playlists/$playlist->id/songs", ['songs' => [$song->id]])
+        $this->postAs("api/playlists/{$playlist->id}/songs", ['songs' => [$song->id]])
             ->assertForbidden();
 
-        $this->deleteAs("api/playlists/$playlist->id/songs", ['songs' => [$song->id]])
+        $this->deleteAs("api/playlists/{$playlist->id}/songs", ['songs' => [$song->id]])
             ->assertForbidden();
     }
 
     #[Test]
     public function smartPlaylistContentCannotBeModified(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create([
+        $playlist = create_playlist([
             'rules' => [
                 [
                     'id' => '45368b8f-fec8-4b72-b826-6b295af0da65',
@@ -140,38 +126,36 @@ class PlaylistSongTest extends TestCase
                 ],
             ],
         ]);
-        $user = User::factory()->create();
-        $songs = Song::factory(2)->owner($user)->create()->pluck('id')->all();
 
-        $this->postAs("api/playlists/$playlist->id/songs", ['songs' => $songs], $playlist->user)
+        $songs = Song::factory(2)->create()->modelKeys();
+
+        $this->postAs("api/playlists/{$playlist->id}/songs", ['songs' => $songs], $playlist->owner)
             ->assertForbidden();
 
-        $this->deleteAs("api/playlists/$playlist->id/songs", ['songs' => $songs], $playlist->user)
+        $this->deleteAs("api/playlists/{$playlist->id}/songs", ['songs' => $songs], $playlist->owner)
             ->assertForbidden();
     }
 
     #[Test]
     public function getSongsInCollaborativePlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
-        $playlist->addPlayables(Song::factory()->public()->count(3)->create());
+        $playlist = create_playlist();
+        $playlist->addPlayables(Song::factory()->public()->count(2)->create());
 
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
 
-        $this->getAs("api/playlists/$playlist->id/songs", $collaborator)
+        $this->getAs("api/playlists/{$playlist->id}/songs", $collaborator)
             ->assertSuccessful()
-            ->assertJsonStructure(['*' => CollaborativeSongResource::JSON_STRUCTURE])
-            ->assertJsonCount(3);
+            ->assertJsonStructure([0 => CollaborativeSongResource::JSON_STRUCTURE])
+            ->assertJsonCount(2);
     }
 
     #[Test]
     public function privateSongsDoNotShowUpInCollaborativePlaylist(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
-        $playlist->addPlayables(Song::factory()->public()->count(3)->create());
+        $playlist = create_playlist();
+        $playlist->addPlayables(Song::factory()->public()->count(2)->create());
 
         /** @var Song $privateSong */
         $privateSong = Song::factory()->private()->create();
@@ -180,43 +164,41 @@ class PlaylistSongTest extends TestCase
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
 
-        $this->getAs("api/playlists/$playlist->id/songs", $collaborator)
+        $this->getAs("api/playlists/{$playlist->id}/songs", $collaborator)
             ->assertSuccessful()
-            ->assertJsonStructure(['*' => CollaborativeSongResource::JSON_STRUCTURE])
-            ->assertJsonCount(3)
+            ->assertJsonStructure([0 => CollaborativeSongResource::JSON_STRUCTURE])
+            ->assertJsonCount(2)
             ->assertJsonMissing(['id' => $privateSong->id]);
     }
 
     #[Test]
     public function collaboratorCanAddSongs(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
-        $songs = Song::factory()->for($collaborator, 'owner')->count(3)->create();
+        $songs = Song::factory()->for($collaborator, 'owner')->count(2)->create();
 
-        $this->postAs("api/playlists/$playlist->id/songs", ['songs' => $songs->pluck('id')->all()], $collaborator)
+        $this->postAs("api/playlists/{$playlist->id}/songs", ['songs' => $songs->modelKeys()], $collaborator)
             ->assertSuccessful();
 
         $playlist->refresh();
-        $songs->each(static fn (Song $song) => self::assertTrue($playlist->playables->contains($song)));
+        $songs->each(static fn(Song $song) => self::assertTrue($playlist->playables->contains($song)));
     }
 
     #[Test]
     public function collaboratorCanRemoveSongs(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
-        $songs = Song::factory()->for($collaborator, 'owner')->count(3)->create();
+        $songs = Song::factory()->for($collaborator, 'owner')->count(2)->create();
         $playlist->addPlayables($songs);
 
-        $this->deleteAs("api/playlists/$playlist->id/songs", ['songs' => $songs->pluck('id')->all()], $collaborator)
+        $this->deleteAs("api/playlists/{$playlist->id}/songs", ['songs' => $songs->modelKeys()], $collaborator)
             ->assertSuccessful();
 
         $playlist->refresh();
-        $songs->each(static fn (Song $song) => self::assertFalse($playlist->playables->contains($song)));
+        $songs->each(static fn(Song $song) => self::assertFalse($playlist->playables->contains($song)));
     }
 }

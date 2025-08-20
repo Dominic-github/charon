@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Artist;
-use App\Services\MediaInformationService;
+use App\Services\EncyclopediaService;
 use App\Values\ArtistInformation;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
@@ -14,13 +14,13 @@ class ArtistInformationTest extends TestCase
     #[Test]
     public function getInformation(): void
     {
-        config(['charon.lastfm.key' => 'foo']);
-        config(['charon.lastfm.secret' => 'geheim']);
+        config(['charon.services.lastfm.key' => 'foo']);
+        config(['charon.services.lastfm.secret' => 'geheim']);
 
         $artist = Artist::factory()->create();
 
-        $lastfm = self::mock(MediaInformationService::class);
-        $lastfm->shouldReceive('getArtistInformation')
+        $lastfm = $this->mock(EncyclopediaService::class);
+        $lastfm->expects('getArtistInformation')
             ->with(Mockery::on(static fn (Artist $a) => $a->is($artist)))
             ->andReturn(ArtistInformation::make(
                 url: 'https://lastfm.com/artist/foo',
@@ -31,17 +31,17 @@ class ArtistInformationTest extends TestCase
                 ],
             ));
 
-        $this->getAs('api/artists/' . $artist->id . '/information')
+        $this->getAs("api/artists/{$artist->public_id}/information")
             ->assertJsonStructure(ArtistInformation::JSON_STRUCTURE);
     }
 
     #[Test]
     public function getWithoutLastfmStillReturnsValidStructure(): void
     {
-        config(['charon.lastfm.key' => null]);
-        config(['charon.lastfm.secret' => null]);
+        config(['charon.services.lastfm.key' => null]);
+        config(['charon.services.lastfm.secret' => null]);
 
-        $this->getAs('api/artists/' . Artist::factory()->create()->id . '/information')
+        $this->getAs('api/artists/' . Artist::factory()->create()->public_id . '/information')
             ->assertJsonStructure(ArtistInformation::JSON_STRUCTURE);
     }
 }

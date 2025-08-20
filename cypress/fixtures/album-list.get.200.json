@@ -2,39 +2,43 @@
     "data": [
         {
             "type": "albums",
-            "id": 54,
+            "id": "01k0vn95v4evgpn4jz3ebh6e4y",
             "name": "99%",
-            "artist_id": 51,
+            "artist_id": "01k0vn95cqrgdqr4hnkz8jvdmk",
             "artist_name": "RPT MCK",
-            "cover": "http:\/\/localhost:8000\/img\/covers\/91fd8ad81a1cdf9dc5dd5f781514aec785819260.webp",
-            "created_at": "2025-06-26T04:05:31.000000Z"
+            "cover": "http:\/\/localhost:8000\/img\/covers\/01k0vn9a3arctsfz865yq4tjk7.webp",
+            "created_at": "2025-07-23T12:49:07.000000Z",
+            "year": null
         },
         {
             "type": "albums",
-            "id": 53,
+            "id": "01k0vn9gv36fgzdaxyqfkrayna",
             "name": "\u1ea3",
-            "artist_id": 50,
+            "artist_id": "01k0vn9gsnce1ygex5bb8ftgz6",
             "artist_name": "marzuz",
-            "cover": "http:\/\/localhost:8000\/img\/covers\/b58df48c28c04b5ead632b3e0beed9ad173b1515.webp",
-            "created_at": "2025-05-30T08:06:57.000000Z"
+            "cover": "http:\/\/localhost:8000\/img\/covers\/01k0vn9kqnmnjfzg49wyfqvptw.webp",
+            "created_at": "2025-07-23T12:49:18.000000Z",
+            "year": 2024
         },
         {
             "type": "albums",
-            "id": 49,
+            "id": "01k0vn9cescbwc5vxkqtnmbcmv",
             "name": "\u00e1i",
-            "artist_id": 35,
+            "artist_id": "01k0vn9cdc39xs586j4pe63dsh",
             "artist_name": "tlinh",
-            "cover": "http:\/\/localhost:8000\/img\/covers\/f01050e2e2f02cd80e4c070cee3831d5a4486f81.webp",
-            "created_at": "2025-05-30T08:06:34.000000Z"
+            "cover": "http:\/\/localhost:8000\/img\/covers\/01k0vn9gfvjp84qj3vxdz2ac8t.webp",
+            "created_at": "2025-07-23T12:49:14.000000Z",
+            "year": null
         },
         {
             "type": "albums",
-            "id": 55,
+            "id": "01k0vn9af3b8q62e7xxhf2sc7d",
             "name": "Nh\u00e0",
-            "artist_id": 52,
+            "artist_id": "01k0vn9adhpdqz38q2reagy0bh",
             "artist_name": "52Hz",
-            "cover": "http:\/\/localhost:8000\/img\/covers\/0577e900ad0c1ba8371ea7d65310f7cef27c8717.webp",
-            "created_at": "2025-06-26T04:05:34.000000Z"
+            "cover": "http:\/\/localhost:8000\/img\/covers\/01k0vn9c1xyrab7kg3s01gpqrf.webp",
+            "created_at": "2025-07-23T12:49:12.000000Z",
+            "year": 2024
         }
     ],
     "links": {

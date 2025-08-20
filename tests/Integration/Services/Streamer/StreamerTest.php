@@ -7,14 +7,16 @@ use App\Models\Song;
 use App\Services\Streamer\Adapters\LocalStreamerAdapter;
 use App\Services\Streamer\Adapters\PhpStreamerAdapter;
 use App\Services\Streamer\Adapters\PodcastStreamerAdapter;
+use App\Services\Streamer\Adapters\DropboxStreamerAdapter;
+use App\Services\Streamer\Adapters\SftpStreamerAdapter;
 use App\Services\Streamer\Adapters\S3CompatibleStreamerAdapter;
 use App\Services\Streamer\Adapters\TranscodingStreamerAdapter;
 use App\Services\Streamer\Adapters\XAccelRedirectStreamerAdapter;
 use App\Services\Streamer\Adapters\XSendFileStreamerAdapter;
 use App\Services\Streamer\Streamer;
-use Exception;
-use Illuminate\Support\Facades\File;
+use App\Values\RequestedStreamingConfig;
 use Illuminate\Support\Facades\Http;
+use Tests\Integration\Services\TestingDropboxStorage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -23,61 +25,95 @@ use function Tests\test_path;
 
 class StreamerTest extends TestCase
 {
+    use TestingDropboxStorage;
+
     #[Test]
     public function resolveAdapters(): void
     {
-        // prevent real HTTP calls from being made e.g. from DropboxStorage
-        Http::fake();
-
         collect(SongStorageType::cases())
-            ->each(function (SongStorageType $type): void {
+            ->each(static function (SongStorageType $type): void {
                 /** @var Song $song */
-                $song = Song::factory()->make(['storage' => $type]);
+                $song = Song::factory()->create(['storage' => $type]);
+
+                if ($type === SongStorageType::DROPBOX) {
+                    self::mockDropboxRefreshAccessTokenCall();
+                }
+
+                $streamer = new Streamer($song);
 
                 switch ($type) {
                     case SongStorageType::S3:
-                    case SongStorageType::DROPBOX:
-                        new Streamer($song);
+                    case SongStorageType::S3_LAMBDA:
+                        self::assertInstanceOf(S3CompatibleStreamerAdapter::class, $streamer->getAdapter());
                         break;
 
-                    case SongStorageType::S3_LAMBDA:
-                        self::assertInstanceOf(S3CompatibleStreamerAdapter::class, (new Streamer($song))->getAdapter());
+                    case SongStorageType::DROPBOX:
+                        self::assertInstanceOf(DropboxStreamerAdapter::class, $streamer->getAdapter());
                         break;
 
                     case SongStorageType::LOCAL:
-                        self::assertInstanceOf(LocalStreamerAdapter::class, (new Streamer($song))->getAdapter());
+                        self::assertInstanceOf(LocalStreamerAdapter::class, $streamer->getAdapter());
+                        break;
+
+                    case SongStorageType::SFTP:
+                        self::assertInstanceOf(SftpStreamerAdapter::class, $streamer->getAdapter());
                         break;
 
                     default:
-                        throw new Exception('Storage type uncovered by tests.');
+                        self::fail("Storage type not covered by tests: $type->value");
                 }
             });
     }
 
     #[Test]
-    public function resolveTranscodingAdapter(): void
+    public function doNotUseTranscodingAdapterToPlayFlacIfConfiguredSo(): void
     {
-        config(['charon.streaming.transcode_flac' => true]);
-
-        File::partialMock()->shouldReceive('mimeType')->andReturn('audio/flac');
+        $backup = config('charon.streaming.transcode_flac');
+        config(['charon.streaming.transcode_flac' => false]);
 
         /** @var Song $song */
-        $song = Song::factory()->make(['path' => test_path('songs/blank.mp3')]);
-        self::assertInstanceOf(TranscodingStreamerAdapter::class, (new Streamer($song))->getAdapter());
+        $song = Song::factory()->create([
+            'storage' => SongStorageType::LOCAL,
+            'path' => '/tmp/test.flac',
+            'mime_type' => 'audio/flac',
+        ]);
 
-        config(['charon.streaming.transcode_flac' => false]);
+        $streamer = new Streamer($song, null);
+
+        self::assertInstanceOf(LocalStreamerAdapter::class, $streamer->getAdapter());
+
+        config(['charon.streaming.transcode_flac' => $backup]);
     }
 
     #[Test]
-    public function forceTranscodingAdapter(): void
+    public function useTranscodingAdapterToPlayFlacIfConfiguredSo(): void
     {
         /** @var Song $song */
-        $song = Song::factory()->make(['path' => test_path('songs/blank.mp3')]);
+        $song = Song::factory()->create(['storage' => SongStorageType::LOCAL]);
 
-        self::assertInstanceOf(
-            TranscodingStreamerAdapter::class,
-            (new Streamer($song, null, ['transcode' => true]))->getAdapter()
-        );
+        $streamer = new Streamer($song, null, RequestedStreamingConfig::make(transcode: true));
+
+        self::assertInstanceOf(TranscodingStreamerAdapter::class, $streamer->getAdapter());
+    }
+
+    #[Test]
+    public function useTranscodingAdapterIfSongMimeTypeRequiresTranscoding(): void
+    {
+        $backupConfig = config('charon.streaming.transcode_required_mime_types');
+        config(['charon.streaming.transcode_required_mime_types' => ['audio/aif']]);
+
+        /** @var Song $song */
+        $song = Song::factory()->create([
+            'storage' => SongStorageType::LOCAL,
+            'path' => '/tmp/test.aiff',
+            'mime_type' => 'audio/aif',
+        ]);
+
+        $streamer = new Streamer($song, null);
+
+        self::assertInstanceOf(TranscodingStreamerAdapter::class, $streamer->getAdapter());
+
+        config(['charon.streaming.transcode_required_mime_types' => $backupConfig]);
     }
 
     /** @return array<mixed> */

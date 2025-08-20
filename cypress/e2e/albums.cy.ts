@@ -1,7 +1,7 @@
 describe('Albums', { scrollBehavior: false }, () => {
   beforeEach(() => {
     cy.$login()
-    cy.intercept('/api/albums?page=1', { fixture: 'album-list.get.200.json' })
+    cy.intercept('/api/albums?page=1&sort=name&order=asc', { fixture: 'album-list.get.200.json' })
     cy.intercept('GET', '/api/albums/**/songs', { fixture: 'album-song.get.200.json' })
     cy.intercept('/api/interaction/play', { fixture: 'play.get.200.json' })
     cy.$clickSidebarItem('Albums')
@@ -35,6 +35,7 @@ describe('Albums', { scrollBehavior: false }, () => {
   it('invokes album screen', () => {
     cy.intercept('GET', '/api/albums/**/information', { fixture: 'album-info.get.200.json' })
     cy.intercept('GET', '/api/albums', { fixture: 'album-page.get.200.json' })
+    cy.intercept('GET', '/api/permissions/album/**/edit', { fixture: 'permissions.album.get.200.json' })
     cy.get('#albumListScreen [data-testid=album-card] [data-testid=name]').first().click()
 
     cy.get('#albumScreen [data-testid=album-infomation]').click()
@@ -44,7 +45,7 @@ describe('Albums', { scrollBehavior: false }, () => {
     cy.intercept('GET', '/api/artists/**/songs', { fixture: 'artist-song.get.200.json' })
     cy.intercept('GET', '/api/artists/**/information', { fixture: 'artist-info.get.200.json' })
     cy.get('#albumListScreen [data-testid=album-card] [data-testid=artist-name]').first().click()
-    cy.url().should('match', /\/#\/artists\/\d+$/);
+    cy.url().should('match', /\/#\/artists\//);
 
   })
 })

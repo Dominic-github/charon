@@ -17,7 +17,7 @@ class ArtistSongTest extends TestCase
 
         Song::factory(5)->for($artist)->create();
 
-        $this->getAs('api/artists/' . $artist->id . '/songs')
-            ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE]);
+        $this->getAs("api/artists/{$artist->public_id}/songs")
+            ->assertJsonStructure([0 => SongResource::JSON_STRUCTURE]);
     }
 }

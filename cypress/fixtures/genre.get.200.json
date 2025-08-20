@@ -1,1 +1,7 @@
-{"type":"genres","name":"Pop","song_count":22,"length":3292.9900000000007}
+{
+    "type": "genres",
+    "id": "01k0vn96520jhsrc826fq9yc5z",
+    "name": "Pop",
+    "song_count": 22,
+    "length": 3292.991052704281
+}

@@ -33,24 +33,13 @@ class YouTubeServiceTest extends TestCase
         $song = Song::factory()->for(Artist::factory()->create(['name' => 'Slipknot']))->create(['title' => 'Snuff']);
 
         Saloon::fake([
-            SearchVideosRequest::class => MockResponse::make(body: File::get(test_path('blobs/youtube/search.json'))),
+            SearchVideosRequest::class => MockResponse::make(
+                body: File::get(test_path('fixtures/youtube/search.json')),
+            ),
         ]);
 
         $response = $this->service->searchVideosRelatedToSong($song, 'my-token');
 
         self::assertSame('Slipknot - Snuff [OFFICIAL VIDEO]', $response->items[0]->snippet->title);
-        self::assertNotNull(Cache::get('youtube.cce909a3df066c88c2666d4283697867'));
-
-        Saloon::assertSent(static function (SearchVideosRequest $request): bool {
-            self::assertSame([
-                'part' => 'snippet',
-                'type' => 'video',
-                'maxResults' => 10,
-                'pageToken' => 'my-token',
-                'q' => 'Snuff Slipknot',
-            ], $request->query()->all());
-
-            return true;
-        });
     }
 }

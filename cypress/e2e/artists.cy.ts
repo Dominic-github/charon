@@ -5,7 +5,7 @@ context('Artists', { scrollBehavior: false }, () => {
       fixture: 'artist-info.get.200.json',
     })
     cy.intercept('GET', '/api/artists/**/information', { fixture: 'artist-info.get.200.json' })
-    cy.intercept('GET', '/api/artists?page=1', { fixture: 'artist-list.get.200.json' })
+    cy.intercept('GET', '/api/artists?**', { fixture: 'artist-list.get.200.json' })
     cy.intercept('GET', '/api/artists/**/songs', { fixture: 'artist-song.get.200.json' })
 
 
@@ -51,7 +51,7 @@ context('Artists', { scrollBehavior: false }, () => {
     cy.get('#artistListScreen').within(() => {
       cy.get('[data-testid=artist-card] .name').eq(2).click()
     })
-    cy.url().should('match', /\/#\/artists\/\d+$/);
+    cy.url().should('match', /\/#\/artists\//);
     cy.get('#artistScreen').should('be.visible')
     cy.get('[data-testid=download-all-songs]').should('be.visible')
     cy.$getSongRows().should('have.length.at.least', 0)

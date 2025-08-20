@@ -3,9 +3,9 @@
 namespace Tests\Unit\Listeners;
 
 use App\Events\MediaScanCompleted;
-use App\Listeners\WriteSyncLog;
-use App\Values\ScanResult;
-use App\Values\ScanResultCollection;
+use App\Listeners\WriteScanLog;
+use App\Values\Scanning\ScanResult;
+use App\Values\Scanning\ScanResultCollection;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\Test;
@@ -15,14 +15,14 @@ use function Tests\test_path;
 
 class WriteSyncLogTest extends TestCase
 {
-    private WriteSyncLog $listener;
+    private WriteScanLog $listener;
     private string $originalLogLevel;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->listener = new WriteSyncLog();
+        $this->listener = new WriteScanLog();
         $this->originalLogLevel = config('charon.sync_log_level');
         Carbon::setTestNow(Carbon::create(2021, 1, 2, 12, 34, 56));
     }
@@ -42,10 +42,14 @@ class WriteSyncLogTest extends TestCase
 
         $this->listener->handle(self::createSyncCompleteEvent());
 
-        self::assertStringEqualsFile(
-            storage_path('logs/sync-20210102-123456.log'),
-            File::get(test_path('blobs/sync-log-all.log'))
-        );
+        $actual = File::get(storage_path('logs/sync-20210102-123456.log'));
+        $expected = File::get(test_path('fixtures/sync-log-all.log'));
+
+        // Normalize line endings
+        $actual = str_replace("\r\n", "\n", $actual);
+        $expected = str_replace("\r\n", "\n", $expected);
+
+        self::assertEquals($expected, $actual);
     }
 
     #[Test]
@@ -55,10 +59,13 @@ class WriteSyncLogTest extends TestCase
 
         $this->listener->handle(self::createSyncCompleteEvent());
 
-        self::assertStringEqualsFile(
-            storage_path('logs/sync-20210102-123456.log'),
-            File::get(test_path('blobs/sync-log-error.log'))
-        );
+        $actual = File::get(storage_path('logs/sync-20210102-123456.log'));
+        $expected = File::get(test_path('fixtures/sync-log-error.log'));
+
+        $actual = str_replace("\r\n", "\n", $actual);
+        $expected = str_replace("\r\n", "\n", $expected);
+
+        self::assertEquals($expected, $actual);
     }
 
     private static function createSyncCompleteEvent(): MediaScanCompleted

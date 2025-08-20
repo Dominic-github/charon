@@ -6,7 +6,6 @@ use App\Exceptions\SpotifyIntegrationDisabledException;
 use App\Http\Integrations\Spotify\SpotifyClient;
 use Illuminate\Cache\Repository as Cache;
 use Mockery;
-use Mockery\LegacyMockInterface;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use SpotifyWebAPI\Session as SpotifySession;
@@ -15,9 +14,9 @@ use Tests\TestCase;
 
 class SpotifyClientTest extends TestCase
 {
-    private SpotifySession|LegacyMockInterface|MockInterface $session;
-    private SpotifyWebAPI|LegacyMockInterface|MockInterface $wrapped;
-    private Cache|LegacyMockInterface|MockInterface $cache;
+    private SpotifySession|MockInterface $session;
+    private SpotifyWebAPI|MockInterface $wrapped;
+    private Cache|MockInterface $cache;
 
     private SpotifyClient $client;
 
@@ -26,8 +25,8 @@ class SpotifyClientTest extends TestCase
         parent::setUp();
 
         config([
-            'charon.spotify.client_id' => 'fake-client-id',
-            'charon.spotify.client_secret' => 'fake-client-secret',
+            'charon.services.spotify.client_id' => 'fake-client-id',
+            'charon.services.spotify.client_secret' => 'fake-client-secret',
         ]);
 
         $this->session = Mockery::mock(SpotifySession::class);
@@ -47,12 +46,12 @@ class SpotifyClientTest extends TestCase
     #[Test]
     public function accessTokenIsRetrievedFromCacheWhenApplicable(): void
     {
-        $this->wrapped->shouldReceive('setOptions')->with(['return_assoc' => true]);
-        $this->cache->shouldReceive('get')->with('spotify.access_token')->andReturn('fake-access-token');
+        $this->wrapped->expects('setOptions')->with(['return_assoc' => true]);
+        $this->cache->expects('get')->with('spotify.access_token')->andReturn('fake-access-token');
         $this->session->shouldNotReceive('requestCredentialsToken');
         $this->session->shouldNotReceive('getAccessToken');
         $this->cache->shouldNotReceive('put');
-        $this->wrapped->shouldReceive('setAccessToken')->with('fake-access-token');
+        $this->wrapped->expects('setAccessToken')->with('fake-access-token');
 
         $this->client = new SpotifyClient($this->wrapped, $this->session, $this->cache);
     }
@@ -61,7 +60,7 @@ class SpotifyClientTest extends TestCase
     public function callForwarding(): void
     {
         $this->mockSetAccessToken();
-        $this->wrapped->shouldReceive('search')->with('foo', 'track')->andReturn('bar');
+        $this->wrapped->expects('search')->with('foo', 'track')->andReturn('bar');
 
         $this->client = new SpotifyClient($this->wrapped, $this->session, $this->cache);
 
@@ -72,8 +71,8 @@ class SpotifyClientTest extends TestCase
     public function callForwardingThrowsIfIntegrationIsDisabled(): void
     {
         config([
-            'charon.spotify.client_id' => null,
-            'charon.spotify.client_secret' => null,
+            'charon.services.spotify.client_id' => null,
+            'charon.services.spotify.client_secret' => null,
         ]);
 
         $this->expectException(SpotifyIntegrationDisabledException::class);
@@ -82,19 +81,19 @@ class SpotifyClientTest extends TestCase
 
     private function mockSetAccessToken(): void
     {
-        $this->wrapped->shouldReceive('setOptions')->with(['return_assoc' => true]);
-        $this->cache->shouldReceive('get')->with('spotify.access_token')->andReturnNull();
-        $this->session->shouldReceive('requestCredentialsToken');
-        $this->session->shouldReceive('getAccessToken')->andReturn('fake-access-token');
-        $this->cache->shouldReceive('put')->with('spotify.access_token', 'fake-access-token', 3_540);
-        $this->wrapped->shouldReceive('setAccessToken')->with('fake-access-token');
+        $this->wrapped->expects('setOptions')->with(['return_assoc' => true]);
+        $this->cache->expects('get')->with('spotify.access_token')->andReturnNull();
+        $this->session->expects('requestCredentialsToken');
+        $this->session->expects('getAccessToken')->andReturn('fake-access-token');
+        $this->cache->expects('put')->with('spotify.access_token', 'fake-access-token', 3_540);
+        $this->wrapped->expects('setAccessToken')->with('fake-access-token');
     }
 
     protected function tearDown(): void
     {
         config([
-            'charon.spotify.client_id' => null,
-            'charon.spotify.client_secret' => null,
+            'charon.services.spotify.client_id' => null,
+            'charon.services.spotify.client_secret' => null,
         ]);
 
         parent::tearDown();

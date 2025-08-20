@@ -13,20 +13,39 @@ class AlbumTest extends TestCase
     #[Test]
     public function existingAlbumCanBeRetrievedUsingArtistAndName(): void
     {
-        /** @var Album $album */
-        $album = Album::factory()->create();
+        /** @var Artist $artist */
+        $artist = Artist::factory()->create();
 
-        self::assertTrue(Album::getOrCreate($album->artist, $album->name)->is($album));
+        /** @var Album $album */
+        $album = Album::factory()->for($artist)->for($artist->user)->create();
+
+        self::assertTrue(Album::getOrCreate($artist, $album->name)->is($album));
     }
 
     #[Test]
-    public function newAlbumIsAutomaticallyCreatedWithArtistAndName(): void
+    public function getOrCreate(): void
+    {
+        /** @var Artist $artist */
+        $artist = Artist::factory()->create();
+
+        /** @var Album $album */
+        $album = Album::factory()->for($artist)->for($artist->user)->create(['name' => 'Foo']);
+
+        // The album can be retrieved by its artist and user
+        self::assertTrue(Album::getOrCreate($album->artist, 'Foo')->is($album));
+
+        // Calling getOrCreate with a different artist should return another album
+        self::assertFalse(Album::getOrCreate(Artist::factory()->create(), 'Foo')->is($album));
+    }
+
+    #[Test]
+    public function newAlbumIsAutomaticallyCreatedWithUserAndArtistAndName(): void
     {
         /** @var Artist $artist */
         $artist = Artist::factory()->create();
         $name = 'Foo';
 
-        self::assertNull(Album::query()->where('artist_id', $artist->id)->where('name', $name)->first());
+        self::assertNull(Album::query()->whereBelongsTo($artist)->where('name', $name)->first());
 
         $album = Album::getOrCreate($artist, $name);
         self::assertSame('Foo', $album->name);

@@ -8,7 +8,6 @@ use App\Models\Artist;
 use App\Services\SpotifyService;
 use Illuminate\Support\Facades\File;
 use Mockery;
-use Mockery\LegacyMockInterface;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -18,15 +17,15 @@ use function Tests\test_path;
 class SpotifyServiceTest extends TestCase
 {
     private SpotifyService $service;
-    private SpotifyClient|MockInterface|LegacyMockInterface $client;
+    private SpotifyClient|MockInterface $client;
 
     public function setUp(): void
     {
         parent::setUp();
 
         config([
-            'charon.spotify.client_id' => 'fake-client-id',
-            'charon.spotify.client_secret' => 'fake-client-secret',
+            'charon.services.spotify.client_id' => 'fake-client-id',
+            'charon.services.spotify.client_secret' => 'fake-client-secret',
         ]);
 
         $this->client = Mockery::mock(SpotifyClient::class);
@@ -40,7 +39,7 @@ class SpotifyServiceTest extends TestCase
         $artist = Artist::factory(['name' => 'Foo'])->create();
 
         $this->client
-            ->shouldReceive('search')
+            ->expects('search')
             ->with('Foo', 'artist', ['limit' => 1])
             ->andReturn(self::parseFixture('search-artist.json'));
 
@@ -50,7 +49,7 @@ class SpotifyServiceTest extends TestCase
     #[Test]
     public function tryGetArtistImageWhenServiceIsNotEnabled(): void
     {
-        config(['charon.spotify.client_id' => null]);
+        config(['charon.services.spotify.client_id' => null]);
 
         $this->client->shouldNotReceive('search');
 
@@ -64,7 +63,7 @@ class SpotifyServiceTest extends TestCase
         $album = Album::factory(['name' => 'Bar'])->for(Artist::factory(['name' => 'Foo']))->create();
 
         $this->client
-            ->shouldReceive('search')
+            ->expects('search')
             ->with('Bar artist:Foo', 'album', ['limit' => 1])
             ->andReturn(self::parseFixture('search-album.json'));
 
@@ -74,7 +73,7 @@ class SpotifyServiceTest extends TestCase
     #[Test]
     public function tryGetAlbumImageWhenServiceIsNotEnabled(): void
     {
-        config(['charon.spotify.client_id' => null]);
+        config(['charon.services.spotify.client_id' => null]);
 
         $this->client->shouldNotReceive('search');
 
@@ -84,14 +83,14 @@ class SpotifyServiceTest extends TestCase
     /** @return array<mixed> */
     private static function parseFixture(string $name): array
     {
-        return json_decode(File::get(test_path("blobs/spotify/$name")), true);
+        return File::json(test_path("fixtures/spotify/$name"));
     }
 
     protected function tearDown(): void
     {
         config([
-            'charon.spotify.client_id' => null,
-            'charon.spotify.client_secret' => null,
+            'charon.services.spotify.client_id' => null,
+            'charon.services.spotify.client_secret' => null,
         ]);
 
         parent::tearDown();

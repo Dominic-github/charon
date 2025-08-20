@@ -2,31 +2,31 @@
     "data": [
         {
             "type": "artists",
-            "id": 52,
+            "id": "01k0vn9adhpdqz38q2reagy0bh",
             "name": "52Hz",
-            "image": "http:\/\/localhost:8000\/img\/artists\/5f5345de8ecdabda2458af439aa36fe292b763e6.webp",
-            "created_at": "2025-06-26T04:05:34.000000Z"
+            "image": "http:\/\/localhost:8000\/img\/artists\/01k0vp2h39ywz1sdwxm90pk3n8.webp",
+            "created_at": "2025-07-23T12:49:12.000000Z"
         },
         {
             "type": "artists",
-            "id": 50,
+            "id": "01k0vn9gsnce1ygex5bb8ftgz6",
             "name": "marzuz",
-            "image": "http:\/\/localhost:8000\/img\/artists\/14d7be8e05714f9b7f46200f7ad3ba04f29a028b.webp",
-            "created_at": "2025-05-30T08:06:57.000000Z"
+            "image": "http:\/\/localhost:8000\/img\/artists\/01k0vp2r9jh23y0cfw9xx5g6t5.webp",
+            "created_at": "2025-07-23T12:49:18.000000Z"
         },
         {
             "type": "artists",
-            "id": 51,
+            "id": "01k0vn95cqrgdqr4hnkz8jvdmk",
             "name": "RPT MCK",
-            "image": "http:\/\/localhost:8000\/img\/artists\/4ea934254ecf2aa82db8e98cd8745fa22f411e0d.webp",
-            "created_at": "2025-06-26T04:05:31.000000Z"
+            "image": "http:\/\/localhost:8000\/img\/artists\/01k0vp39e26prwqwhcymj485rr.webp",
+            "created_at": "2025-07-23T12:49:06.000000Z"
         },
         {
             "type": "artists",
-            "id": 35,
+            "id": "01k0vn9cdc39xs586j4pe63dsh",
             "name": "tlinh",
-            "image": "http:\/\/localhost:8000\/img\/artists\/922e59b404d9070bc533fc25ab5ed78749c39f0c.webp",
-            "created_at": "2025-05-30T08:05:36.000000Z"
+            "image": "http:\/\/localhost:8000\/img\/artists\/01k0vp3jm8j0x72tgs60nrrgf7.webp",
+            "created_at": "2025-07-23T12:49:14.000000Z"
         }
     ],
     "links": {

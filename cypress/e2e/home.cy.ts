@@ -12,8 +12,8 @@ context('Home Screen', () => {
       ['recently-played-songs', 7],
       ['recently-added-albums', 4],
       ['recently-added-songs', 10],
-      ['most-played-artists', 3],
-      ['most-played-albums', 3],
+      ['most-played-artists', 4],
+      ['most-played-albums', 4],
     ], (selector: string, itemCount: number) => {
       cy.get(`[data-testid=${selector}]`).should('exist').find('li').should('have.length', itemCount)
     })

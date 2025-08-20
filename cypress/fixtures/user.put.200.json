@@ -1,6 +1,6 @@
 {
     "type": "users",
-    "id": 4,
+    "id": "3d7af90e-8c7a-401d-8901-6ecfa73d3831",
     "name": "Adriana",
     "email": "adriana@charon.test",
     "avatar": "https:\/\/www.gravatar.com\/avatar\/e2144b789faf8b6cd190967e5e2b4814?s=192&d=robohash",
@@ -17,6 +17,8 @@
         "support_bar_no_bugging": false,
         "artists_view_mode": "thumbnails",
         "albums_view_mode": "thumbnails",
+        "albums_sort_field": "name",
+        "albums_sort_order": "asc",
         "repeat_mode": "NO_REPEAT",
         "volume": 7,
         "equalizer": {

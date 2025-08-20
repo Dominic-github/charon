@@ -1,0 +1,9 @@
+{
+    "type": "resource-permissions",
+    "allowed": true,
+    "context": {
+        "type": "album",
+        "id": "01k0vn95v4evgpn4jz3ebh6e4y",
+        "action": "edit"
+    }
+}

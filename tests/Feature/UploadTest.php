@@ -22,7 +22,7 @@ class UploadTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        
+
         $this->file = UploadedFile::fromFile(test_path('songs/full.mp3'), 'song.mp3'); //@phpstan-ignore-line
     }
 
@@ -60,7 +60,7 @@ class UploadTest extends TestCase
     }
 
     #[Test]
-    public function uploads(): void
+    public function upload(): void
     {
         Setting::set('media_path', public_path('sandbox/media'));
 
@@ -68,6 +68,7 @@ class UploadTest extends TestCase
 
         $this->postAs('api/upload', ['file' => $this->file], $user)->assertSuccessful();
         self::assertDirectoryExists(public_path("sandbox/media/__CHARON_UPLOADS_\${$user->id}__"));
+        self::assertFileExists(public_path("sandbox/media/__CHARON_UPLOADS_\${$user->id}__/song.mp3"));
 
         /** @var Song $song */
         $song = Song::query()->latest()->first();

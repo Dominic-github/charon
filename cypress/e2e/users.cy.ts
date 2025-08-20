@@ -121,7 +121,7 @@ context('User Management', () => {
       fixture: 'user.put.200.json',
     })
 
-    cy.get('#userListScreen [data-testid=user-card] .edit-user-btn').eq(3).click({ force: true })
+    cy.get('#userListScreen [data-testid=user-card] .edit-user-btn').eq(2).click({ force: true })
 
     cy.findByTestId('edit-user-form').within(() => {
       cy.get('[name=name]').should('be.focused').and('have.value', 'Test').clear().type('Adriana')
@@ -145,7 +145,7 @@ context('User Management', () => {
       statusCode: 204,
     })
 
-    cy.get('#userListScreen [data-testid=user-card] .delete-user-btn').eq(2).click()
+    cy.get('#userListScreen [data-testid=user-card] .delete-user-btn').eq(1).click()
     cy.$confirm()
     cy.findByText('User "Test" deleted.').should('be.visible')
     cy.get('#userListScreen [data-testid=user-card]').should('have.length', 3)

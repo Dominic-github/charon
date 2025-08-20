@@ -18,7 +18,7 @@ class ForgotPasswordTest extends TestCase
     public function sendResetPasswordRequest(): void
     {
         $this->mock(AuthenticationService::class)
-            ->shouldReceive('trySendResetPasswordLink')
+            ->expects('trySendResetPasswordLink')
             ->with('foo@bar.com')
             ->andReturnTrue();
 
@@ -30,7 +30,7 @@ class ForgotPasswordTest extends TestCase
     public function sendResetPasswordRequestFailed(): void
     {
         $this->mock(AuthenticationService::class)
-            ->shouldReceive('trySendResetPasswordLink')
+            ->expects('trySendResetPasswordLink')
             ->with('foo@bar.com')
             ->andReturnFalse();
 
@@ -46,11 +46,11 @@ class ForgotPasswordTest extends TestCase
 
         $this->post('/api/reset-password', [
             'email' => $user->email,
-            'password' => 'new-password',
+            'password' => 'New-password-1',
             'token' =>  Password::createToken($user),
         ])->assertNoContent();
 
-        self::assertTrue(Hash::check('new-password', $user->refresh()->password));
+        self::assertTrue(Hash::check('New-password-1', $user->refresh()->password));
         Event::assertDispatched(PasswordReset::class);
     }
 
@@ -62,11 +62,32 @@ class ForgotPasswordTest extends TestCase
 
         $this->post('/api/reset-password', [
             'email' => $user->email,
-            'password' => 'new-password',
+            'password' => 'New-password-1',
             'token' => 'invalid-token',
         ])->assertUnprocessable();
 
         self::assertTrue(Hash::check('old-password', $user->refresh()->password));
         Event::assertNotDispatched(PasswordReset::class);
+    }
+
+    #[Test]
+    public function disabledInDemo(): void
+    {
+        config(['charon.misc.demo' => true]);
+
+        $user = create_user();
+
+        $this->post('/api/reset-password', [
+            'email' => $user->email,
+            'password' => 'new-password',
+            'token' =>  Password::createToken($user),
+        ])->assertForbidden();
+    }
+
+    public function tearDown(): void
+    {
+        config(['charon.misc.demo' => false]);
+
+        parent::tearDown();
     }
 }

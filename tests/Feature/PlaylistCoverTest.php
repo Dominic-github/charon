@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Playlist;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
+use function Tests\create_playlist;
 use function Tests\create_user;
 use function Tests\read_as_data_url;
 use function Tests\test_path;
@@ -15,13 +15,13 @@ class PlaylistCoverTest extends TestCase
     #[Test]
     public function uploadCover(): void
     {
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         self::assertNull($playlist->cover);
 
         $this->putAs(
-            "api/playlists/$playlist->id/cover",
-            ['cover' => read_as_data_url(test_path('blobs/cover.png'))],
-            $playlist->user
+            "api/playlists/{$playlist->id}/cover",
+            ['cover' => read_as_data_url(test_path('fixtures/cover.png'))],
+            $playlist->owner
         )
             ->assertOk();
 
@@ -31,18 +31,22 @@ class PlaylistCoverTest extends TestCase
     #[Test]
     public function uploadCoverNotAllowedForNonOwner(): void
     {
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
 
-        $this->putAs("api/playlists/$playlist->id/cover", ['cover' => 'data:image/jpeg;base64,Rm9v'], create_user())
+        $this->putAs(
+            "api/playlists/{$playlist->id}/cover",
+            ['cover' => 'data:image/jpeg;base64,Rm9v'],
+            create_user()
+        )
             ->assertForbidden();
     }
 
     #[Test]
     public function deleteCover(): void
     {
-        $playlist = Playlist::factory()->create(['cover' => 'cover.jpg']);
+        $playlist = create_playlist(['cover' => 'cover.jpg']);
 
-        $this->deleteAs("api/playlists/$playlist->id/cover", [], $playlist->user)
+        $this->deleteAs("api/playlists/{$playlist->id}/cover", [], $playlist->owner)
             ->assertNoContent();
 
         self::assertNull($playlist->refresh()->cover);
@@ -51,9 +55,9 @@ class PlaylistCoverTest extends TestCase
     #[Test]
     public function nonOwnerCannotDeleteCover(): void
     {
-        $playlist = Playlist::factory()->create(['cover' => 'cover.jpg']);
+        $playlist = create_playlist(['cover' => 'cover.jpg']);
 
-        $this->deleteAs("api/playlists/$playlist->id/cover", [], create_user())
+        $this->deleteAs("api/playlists/{$playlist->id}/cover", [], create_user())
             ->assertForbidden();
 
         self::assertSame('cover.jpg', $playlist->refresh()->getRawOriginal('cover'));
@@ -62,24 +66,26 @@ class PlaylistCoverTest extends TestCase
     #[Test]
     public function collaboratorCanNotUploadCover(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
 
-        $this->putAs("api/playlists/$playlist->id/cover", ['cover' => 'data:image/jpeg;base64,Rm9v'], $collaborator)
+        $this->putAs(
+            "api/playlists/{$playlist->id}/cover",
+            ['cover' => 'data:image/jpeg;base64,Rm9v'],
+            $collaborator
+        )
             ->assertForbidden();
     }
 
     #[Test]
     public function collaboratorCannotDeleteCover(): void
     {
-        /** @var Playlist $playlist */
-        $playlist = Playlist::factory()->create();
+        $playlist = create_playlist();
         $collaborator = create_user();
         $playlist->addCollaborator($collaborator);
 
-        $this->deleteAs("api/playlists/$playlist->id/cover", [], $collaborator)
+        $this->deleteAs("api/playlists/{$playlist->id}/cover", [], $collaborator)
             ->assertForbidden();
     }
 }

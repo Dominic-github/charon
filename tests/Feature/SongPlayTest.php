@@ -7,7 +7,6 @@ use App\Services\Streamer\Adapters\LocalStreamerAdapter;
 use App\Services\Streamer\Adapters\TranscodingStreamerAdapter;
 use App\Services\TokenManager;
 use App\Values\CompositeToken;
-use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -16,6 +15,21 @@ use function Tests\test_path;
 
 class SongPlayTest extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // Start output buffering to prevent binary data from being sent to the console during tests
+        ob_start();
+    }
+
+    protected function tearDown(): void
+    {
+        ob_end_clean();
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function play(): void
     {
@@ -30,10 +44,9 @@ class SongPlayTest extends TestCase
         ]);
 
         $this->mock(LocalStreamerAdapter::class)
-            ->shouldReceive('stream')
-            ->once();
+            ->expects('stream');
 
-        $this->get("play/$song->id?t=$token->audioToken")
+        $this->get("play/{$song->id}?t=$token->audioToken")
             ->assertOk();
     }
 
@@ -47,18 +60,15 @@ class SongPlayTest extends TestCase
         $token = app(TokenManager::class)->createCompositeToken($user);
 
         /** @var Song $song */
-        $song = Song::factory()->create(['path' => test_path('songs/blank.mp3')]);
-
-        File::partialMock()
-            ->shouldReceive('mimeType')
-            ->with($song->path)
-            ->andReturn('audio/flac');
+        $song = Song::factory()->create([
+            'path' => '/tmp/blank.flac',
+            'mime_type' => 'audio/flac',
+        ]);
 
         $this->mock(TranscodingStreamerAdapter::class)
-            ->shouldReceive('stream')
-            ->once();
+            ->expects('stream');
 
-        $this->get("play/$song->id?t=$token->audioToken")
+        $this->get("play/{$song->id}?t=$token->audioToken")
             ->assertOk();
 
         config(['charon.streaming.transcode_flac' => false]);
@@ -73,13 +83,12 @@ class SongPlayTest extends TestCase
         $token = app(TokenManager::class)->createCompositeToken($user);
 
         /** @var Song $song */
-        $song = Song::factory()->create(['path' => test_path('songs/blank.mp3')]);
+        $song = Song::factory()->create(['path' => '/var/songs/blank.mp3']);
 
         $this->mock(TranscodingStreamerAdapter::class)
-            ->shouldReceive('stream')
-            ->once();
+            ->expects('stream');
 
-        $this->get("play/$song->id/1?t=$token->audioToken")
+        $this->get("play/{$song->id}/1?t=$token->audioToken")
             ->assertOk();
     }
 
@@ -95,10 +104,9 @@ class SongPlayTest extends TestCase
         ]);
 
         $this->mock(LocalStreamerAdapter::class)
-            ->shouldReceive('stream')
-            ->once();
+            ->expects('stream');
 
-        $this->get("play/$song->id?t=$token->audioToken")
+        $this->get("play/{$song->id}?t=$token->audioToken")
             ->assertOk();
     }
 
@@ -114,10 +122,9 @@ class SongPlayTest extends TestCase
         $token = app(TokenManager::class)->createCompositeToken($song->owner);
 
         $this->mock(LocalStreamerAdapter::class)
-            ->shouldReceive('stream')
-            ->once();
+            ->expects('stream');
 
-        $this->get("play/$song->id?t=$token->audioToken")
+        $this->get("play/{$song->id}?t=$token->audioToken")
             ->assertOk();
     }
 
@@ -132,7 +139,7 @@ class SongPlayTest extends TestCase
         /** @var CompositeToken $token */
         $token = app(TokenManager::class)->createCompositeToken(create_user());
 
-        $this->get("play/$song->id?t=$token->audioToken")
+        $this->get("play/{$song->id}?t=$token->audioToken")
             ->assertForbidden();
     }
 }

@@ -43,15 +43,15 @@ class QueueTest extends TestCase
     {
         $user = create_user();
 
-        self::assertDatabaseMissing(QueueState::class, ['user_id' => $user->id]);
+        $this->assertDatabaseMissing(QueueState::class, ['user_id' => $user->id]);
 
-        $songIds = Song::factory(3)->create()->pluck('id')->toArray();
+        $songIds = Song::factory(2)->create()->modelKeys();
 
         $this->putAs('api/queue/state', ['songs' => $songIds], $user)
             ->assertNoContent();
 
         /** @var QueueState $queue */
-        $queue = QueueState::query()->where('user_id', $user->id)->firstOrFail();
+        $queue = QueueState::query()->whereBelongsTo($user)->firstOrFail();
         self::assertEqualsCanonicalizing($songIds, $queue->song_ids);
     }
 
@@ -85,14 +85,14 @@ class QueueTest extends TestCase
     #[Test]
     public function fetchSongs(): void
     {
-        Song::factory(5)->create();
+        Song::factory(10)->create();
 
         $this->getAs('api/queue/fetch?order=rand&limit=5')
-            ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE])
+            ->assertJsonStructure([0 => SongResource::JSON_STRUCTURE])
             ->assertJsonCount(5, '*');
 
         $this->getAs('api/queue/fetch?order=asc&sort=title&limit=5')
-            ->assertJsonStructure(['*' => SongResource::JSON_STRUCTURE])
+            ->assertJsonStructure([0 => SongResource::JSON_STRUCTURE])
             ->assertJsonCount(5, '*');
     }
 }

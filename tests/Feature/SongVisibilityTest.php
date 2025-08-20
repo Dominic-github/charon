@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 use function Tests\create_admin;
+use function Tests\create_user;
 
 class SongVisibilityTest extends TestCase
 {
@@ -14,12 +15,12 @@ class SongVisibilityTest extends TestCase
     public function changingVisibilityIsForbiddenInCommunityEdition(): void
     {
         $owner = create_admin();
-        Song::factory(3)->create();
+        Song::factory(2)->create();
 
-        $this->putAs('api/songs/publicize', ['songs' => Song::query()->pluck('id')->all()], $owner)
+        $this->putAs('api/songs/publicize', ['songs' => Song::query()->get()->modelKeys()], $owner)
             ->assertForbidden();
 
-        $this->putAs('api/songs/privatize', ['songs' => Song::query()->pluck('id')->all()], $owner)
+        $this->putAs('api/songs/privatize', ['songs' => Song::query()->get()->modelKeys()], $owner)
             ->assertForbidden();
     }
 
@@ -29,20 +30,19 @@ class SongVisibilityTest extends TestCase
         $currentUser = create_user();
         $anotherUser = create_user();
 
-        /** @var Collection<Song> $externalSongs */
-        $externalSongs = Song::factory(3)->for($anotherUser, 'owner')->private()->create();
+        $externalSongs = Song::factory(2)->for($anotherUser, 'owner')->private()->create();
 
         // We can't make public songs that are not ours.
-        $this->putAs('api/songs/publicize', ['songs' => $externalSongs->pluck('id')->toArray()], $currentUser)
+        $this->putAs('api/songs/publicize', ['songs' => $externalSongs->modelKeys()], $currentUser)
             ->assertForbidden();
 
         // But we can our own songs.
-        $ownSongs = Song::factory(3)->for($currentUser, 'owner')->create();
+        $ownSongs = Song::factory(2)->for($currentUser, 'owner')->create();
 
-        $this->putAs('api/songs/publicize', ['songs' => $ownSongs->pluck('id')->toArray()], $currentUser)
+        $this->putAs('api/songs/publicize', ['songs' => $ownSongs->modelKeys()], $currentUser)
             ->assertSuccessful();
 
-        $ownSongs->each(static fn (Song $song) => self::assertTrue($song->refresh()->is_public));
+        $ownSongs->each(static fn(Song $song) => self::assertTrue($song->refresh()->is_public));
     }
 
     #[Test]
@@ -51,19 +51,18 @@ class SongVisibilityTest extends TestCase
         $currentUser = create_user();
         $anotherUser = create_user();
 
-        /** @var Collection<Song> $externalSongs */
-        $externalSongs = Song::factory(3)->for($anotherUser, 'owner')->public()->create();
+        $externalSongs = Song::factory(2)->for($anotherUser, 'owner')->public()->create();
 
         // We can't Mark as Private songs that are not ours.
-        $this->putAs('api/songs/privatize', ['songs' => $externalSongs->pluck('id')->toArray()], $currentUser)
+        $this->putAs('api/songs/privatize', ['songs' => $externalSongs->modelKeys()], $currentUser)
             ->assertForbidden();
 
         // But we can our own songs.
-        $ownSongs = Song::factory(3)->for($currentUser, 'owner')->create();
+        $ownSongs = Song::factory(2)->for($currentUser, 'owner')->create();
 
-        $this->putAs('api/songs/privatize', ['songs' => $ownSongs->pluck('id')->toArray()], $currentUser)
+        $this->putAs('api/songs/privatize', ['songs' => $ownSongs->modelKeys()], $currentUser)
             ->assertSuccessful();
 
-        $ownSongs->each(static fn (Song $song) => self::assertFalse($song->refresh()->is_public));
+        $ownSongs->each(static fn(Song $song) => self::assertFalse($song->refresh()->is_public));
     }
 }

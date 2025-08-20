@@ -7,6 +7,7 @@ use App\Services\TokenManager;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -30,17 +31,18 @@ class LastfmTest extends TestCase
         $user = create_user();
         $token = $user->createToken('Charon')->plainTextToken;
 
+        /** @var NewAccessToken|MockInterface $temporaryToken */
         $temporaryToken = Mockery::mock(NewAccessToken::class);
         $temporaryToken->plainTextToken = 'tmp-token';
 
-        $tokenManager = self::mock(TokenManager::class);
+        /** @var TokenManager|MockInterface $tokenManager */
+        $tokenManager = $this->mock(TokenManager::class);
 
-        $tokenManager->shouldReceive('getUserFromPlainTextToken')
+        $tokenManager->expects('getUserFromPlainTextToken')
             ->with($token)
             ->andReturn($user);
 
-        $tokenManager->shouldReceive('createToken')
-            ->once()
+        $tokenManager->expects('createToken')
             ->with($user)
             ->andReturn($temporaryToken);
 
@@ -58,11 +60,11 @@ class LastfmTest extends TestCase
 
         self::assertNotNull(PersonalAccessToken::findToken($token));
 
+        /** @var LastfmService|MockInterface $lastfm */
         $lastfm = Mockery::mock(LastfmService::class)->makePartial();
 
-        $lastfm->shouldReceive('getSessionKey')
+        $lastfm->expects('getSessionKey')
             ->with('lastfm-token')
-            ->once()
             ->andReturn('my-session-key');
 
         app()->instance(LastfmService::class, $lastfm);
@@ -80,21 +82,22 @@ class LastfmTest extends TestCase
     {
         $user = create_user();
 
+        /** @var LastfmService|MockInterface $lastfm */
         $lastfm = Mockery::mock(LastfmService::class)->makePartial();
 
-        $lastfm->shouldReceive('getSessionKey')
-            ->once()
+        $lastfm->expects('getSessionKey')
             ->with('foo')
             ->andReturn('my-session-key');
 
         app()->instance(LastfmService::class, $lastfm);
 
-        $tokenManager = self::mock(TokenManager::class);
+        $tokenManager = $this->mock(TokenManager::class);
 
-        $tokenManager->shouldReceive('getUserFromPlainTextToken')
-            ->once()
+        $tokenManager->expects('getUserFromPlainTextToken')
             ->with('my-token')
             ->andReturn($user);
+
+        $tokenManager->expects('deleteTokenByPlainTextToken');
 
         $this->get('lastfm/callback?token=foo&api_token=my-token');
 

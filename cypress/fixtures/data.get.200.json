@@ -5,35 +5,23 @@
     "playlists": [
         {
             "type": "playlists",
-            "id": "9f3e91a4-749e-44c9-8c8e-c9c5c4c79cf6",
-            "name": "Simple Playlist",
-            "folder_id": null,
-            "user_id": 1,
-            "is_smart": false,
-            "is_collaborative": false,
-            "rules": null,
-            "cover": null,
-            "own_songs_only": false,
-            "created_at": "2025-06-26T04:06:42.000000Z"
-        },
-         {
-            "type": "playlists",
-            "id": "9f4d8cfc-5400-4543-81a2-c54d623ce16e",
+            "id": "9f75a81d-c1db-4c3f-9104-d55974eb2176",
             "name": "Smart Playlist",
             "folder_id": null,
-            "user_id": 1,
+            "user_id": "1d9280af-1c98-497a-aed9-25b669f22918",
+            "owner_id": "1d9280af-1c98-497a-aed9-25b669f22918",
             "is_smart": true,
             "is_collaborative": false,
             "rules": [
                 {
-                    "id": "51420f81-1655-49db-80a3-ddad067d88c8",
+                    "id": "74159b13-71e7-49d3-a367-b6b644cbccaa",
                     "rules": [
                         {
-                            "id": "68561cbf-d866-4fae-bd79-dad2df47a277",
-                            "model": "album.name",
+                            "id": "809291da-37e2-44f0-94e6-5e750b95215b",
+                            "model": "genre",
                             "operator": "is",
                             "value": [
-                                "99%"
+                                "pop"
                             ]
                         }
                     ]
@@ -41,41 +29,56 @@
             ],
             "cover": null,
             "own_songs_only": false,
-            "created_at": "2025-07-03T14:51:07.000000Z"
+            "created_at": "2025-07-23T13:20:05.000000Z"
         },
         {
             "type": "playlists",
-            "id": "9f3e91c2-d099-4df5-820d-199460a7fca9",
-            "name": "Tired",
-            "folder_id": "9f3e91b3-1b56-4eb6-af07-16af1a2977ad",
-            "user_id": 1,
+            "id": "9f75a831-c172-41ab-a584-40445dbe3311",
+            "name": "Vpop",
+            "folder_id": null,
+            "user_id": "1d9280af-1c98-497a-aed9-25b669f22918",
+            "owner_id": "1d9280af-1c98-497a-aed9-25b669f22918",
             "is_smart": false,
             "is_collaborative": false,
             "rules": null,
             "cover": null,
             "own_songs_only": false,
-            "created_at": "2025-06-26T04:07:02.000000Z"
+            "created_at": "2025-07-23T13:20:18.000000Z"
+        },
+        {
+            "type": "playlists",
+            "id": "9f75d912-7c64-4f0e-8e54-b31223972a6f",
+            "name": "Simple Playlist",
+            "folder_id": null,
+            "user_id": "1d9280af-1c98-497a-aed9-25b669f22918",
+            "owner_id": "1d9280af-1c98-497a-aed9-25b669f22918",
+            "is_smart": false,
+            "is_collaborative": false,
+            "rules": null,
+            "cover": null,
+            "own_songs_only": false,
+            "created_at": "2025-07-23T15:36:58.000000Z"
         }
     ],
     "playlist_folders": [
         {
             "type": "playlist-folders",
-            "id": "9f3e91b3-1b56-4eb6-af07-16af1a2977ad",
-            "name": "Rap",
+            "id": "9f75a7f0-8e34-4297-8f6e-f760361dd8d9",
+            "name": "playlist-folder",
             "user_id": 1,
-            "created_at": "2025-06-26T04:06:52.000000Z"
+            "created_at": "2025-07-23T13:19:35.000000Z"
         }
     ],
     "current_user": {
         "type": "users",
-        "id": 1,
-        "name": "Charon",
+        "id": "1d9280af-1c98-497a-aed9-25b669f22918",
+        "name": "Admin",
         "email": "admin@charon.dev",
-        "avatar": "http://localhost:8000/img/icon.png",
+        "avatar": "https:\/\/www.gravatar.com\/avatar\/7201247464e98c760e078139b6fada15?s=192&d=robohash",
         "is_admin": true,
         "preferences": {
             "theme": "classic",
-            "show_now_playing_notification": false,
+            "show_now_playing_notification": true,
             "confirm_before_closing": false,
             "show_album_art_overlay": true,
             "transcode_on_mobile": true,
@@ -85,6 +88,8 @@
             "support_bar_no_bugging": false,
             "artists_view_mode": "thumbnails",
             "albums_view_mode": "thumbnails",
+            "albums_sort_field": "name",
+            "albums_sort_order": "asc",
             "repeat_mode": "NO_REPEAT",
             "volume": 7,
             "equalizer": {
@@ -112,24 +117,27 @@
         "sso_provider": null,
         "sso_id": null
     },
+    "uses_musicbrainz": true,
     "uses_last_fm": true,
     "uses_spotify": true,
     "uses_you_tube": true,
     "uses_i_tunes": true,
     "allows_download": true,
+    "uses_media_browser": false,
     "supports_batch_downloading": true,
     "media_path_set": true,
     "supports_transcoding": false,
     "cdn_url": "http:\/\/localhost:8000\/",
-    "current_version": "v2.0.0",
-    "latest_version": "v2.0.1",
+    "current_version": "v2.1.0",
+    "latest_version": "v2.1.0",
     "song_count": 43,
-    "song_length": 9117.389999999998,
+    "song_length": 9117.375137070328,
     "queue_state": {
         "type": "queue-states",
         "songs": [],
         "current_song": null,
         "playback_position": 0
     },
-    "storage_driver": "local"
+    "storage_driver": "local",
+    "dir_separator": "\\"
 }

@@ -20,7 +20,7 @@ context('Footer Pane', () => {
   })
 
   it('invokes artist screen', () => {
-    cy.intercept('GET', '/api/artists/*/songs', { fixture: 'artist-song.get.200.json' })
+    cy.intercept('GET', '/api/artists/**/songs', { fixture: 'artist-song.get.200.json' })
     cy.get('.song-info').within(() => cy.get('.artist').click())
     cy.get('#artistScreen').should('be.visible')
   })

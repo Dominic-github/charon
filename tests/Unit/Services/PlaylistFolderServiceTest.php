@@ -5,10 +5,11 @@ namespace Tests\Unit\Services;
 use App\Models\Playlist;
 use App\Models\PlaylistFolder;
 use App\Services\PlaylistFolderService;
-use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
+use function Tests\create_playlist;
+use function Tests\create_playlists;
 use function Tests\create_user;
 
 class PlaylistFolderServiceTest extends TestCase
@@ -50,16 +51,52 @@ class PlaylistFolderServiceTest extends TestCase
     public function addPlaylistsToFolder(): void
     {
         $user = create_user();
-
-        /** @var Collection<array-key, Playlist> $playlists */
-        $playlists = Playlist::factory()->for($user)->count(3)->create();
+        $playlists = create_playlists(count: 3, owner: $user);
 
         /** @var PlaylistFolder $folder */
         $folder = PlaylistFolder::factory()->for($user)->create();
 
-        $this->service->addPlaylistsToFolder($folder, $playlists->pluck('id')->all());
+        $this->service->addPlaylistsToFolder($folder, $playlists->modelKeys());
 
         self::assertCount(3, $folder->playlists);
+    }
+
+    #[Test]
+    public function aPlaylistCannotBelongToMultipleFoldersByOneUser(): void
+    {
+        $user = create_user();
+
+        /** @var PlaylistFolder $existingFolder */
+        $existingFolder = PlaylistFolder::factory()->for($user)->create();
+
+        $playlist = create_playlist(owner: $user);
+        $existingFolder->playlists()->attach($playlist);
+
+        /** @var PlaylistFolder $newFolder */
+        $newFolder = PlaylistFolder::factory()->for($user)->create();
+
+        $this->service->addPlaylistsToFolder($newFolder, [$playlist->id]);
+
+        self::assertSame(1, $playlist->refresh()->folders->count());
+    }
+
+    #[Test]
+    public function aPlaylistCanBelongToMultipleFoldersFromDifferentUsers(): void
+    {
+        $user = create_user();
+
+        /** @var PlaylistFolder $existingFolderFromAnotherUser */
+        $existingFolderFromAnotherUser = PlaylistFolder::factory()->create();
+
+        $playlist = create_playlist(owner: $user);
+        $existingFolderFromAnotherUser->playlists()->attach($playlist);
+
+        /** @var PlaylistFolder $newFolder */
+        $newFolder = PlaylistFolder::factory()->for($user)->create();
+
+        $this->service->addPlaylistsToFolder($newFolder, [$playlist->id]);
+
+        self::assertSame(2, $playlist->refresh()->folders->count());
     }
 
     #[Test]
@@ -68,14 +105,13 @@ class PlaylistFolderServiceTest extends TestCase
         /** @var PlaylistFolder $folder */
         $folder = PlaylistFolder::factory()->create();
 
-        /** @var Collection<array-key, Playlist> $playlists */
-        $playlists = Playlist::factory()->count(3)->create();
-        $folder->playlists()->attach($playlists->pluck('id')->all());
+        $playlists = create_playlists(count: 3);
+        $folder->playlists()->attach($playlists);
 
-        $this->service->movePlaylistsToRootLevel($folder, $playlists->pluck('id')->all());
+        $this->service->movePlaylistsToRootLevel($folder, $playlists->modelKeys());
 
         self::assertCount(0, $folder->playlists);
 
-        $playlists->each(static fn (Playlist $playlist) => self::assertNull($playlist->refresh()->getFolder()));
+        $playlists->each(static fn (Playlist $playlist) => self::assertNull($playlist->refresh()->getFolder())); // @phpstan-ignore-line
     }
 }

@@ -18,16 +18,16 @@ class ApplicationInformationServiceTest extends TestCase
     #[Test]
     public function getLatestVersionNumber(): void
     {
-        $latestVersion = 'v1.1.2';
+        $latestVersion = 'v1.0.0';
 
         $mock = new MockHandler([
-            new Response(200, [], File::get(test_path('blobs/github-tags.json'))),
+            new Response(200, [], File::get(test_path('fixtures/github-tags.json'))),
         ]);
 
         $client = new Client(['handler' => HandlerStack::create($mock)]);
         $service = new ApplicationInformationService($client);
 
         self::assertSame($latestVersion, $service->getLatestVersionNumber());
-        self::assertSame($latestVersion, cache()->get('latestCharonVersion'));
+        self::assertSame($latestVersion, cache()->get(cache_key('latest version number')));
     }
 }
