@@ -16,9 +16,19 @@ use App\Listeners\MakePlaylistSongsPublic;
 use App\Listeners\PruneLibrary;
 use App\Listeners\UnloveMultipleTracksOnLastfm;
 use App\Listeners\UpdateLastfmNowPlaying;
-use App\Listeners\WriteSyncLog;
+use App\Listeners\WriteScanLog;
 use App\Models\Album;
+use App\Models\Artist;
+use App\Models\Folder;
+use App\Models\Genre;
+use App\Models\PlaylistCollaborationToken;
+use App\Models\User;
 use App\Observers\AlbumObserver;
+use App\Observers\ArtistObserver;
+use App\Observers\FolderObserver;
+use App\Observers\GenreObserver;
+use App\Observers\PlaylistCollaborationTokenObserver;
+use App\Observers\UserObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as BaseServiceProvider;
 
 class EventServiceProvider extends BaseServiceProvider
@@ -46,7 +56,8 @@ class EventServiceProvider extends BaseServiceProvider
 
         MediaScanCompleted::class => [
             DeleteNonExistingRecordsPostScan::class,
-            WriteSyncLog::class,
+            PruneLibrary::class,
+            WriteScanLog::class,
         ],
 
         NewPlaylistCollaboratorJoined::class => [
@@ -59,5 +70,10 @@ class EventServiceProvider extends BaseServiceProvider
         parent::boot();
 
         Album::observe(AlbumObserver::class);
+        Artist::observe(ArtistObserver::class);
+        Folder::observe(FolderObserver::class);
+        PlaylistCollaborationToken::observe(PlaylistCollaborationTokenObserver::class);
+        Genre::observe(GenreObserver::class);
+        User::observe(UserObserver::class);
     }
 }

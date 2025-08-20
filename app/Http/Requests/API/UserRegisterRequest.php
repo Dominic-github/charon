@@ -3,6 +3,7 @@
 namespace App\Http\Requests\API;
 
 use Illuminate\Validation\Rules\Password;
+
 /**
  * @property string $fullName
  * @property string $email

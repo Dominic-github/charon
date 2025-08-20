@@ -10,13 +10,11 @@ use Throwable;
 
 class YouTubeService
 {
-    public function __construct(private readonly YouTubeConnector $connector)
-    {
-    }
+    public function __construct(private readonly YouTubeConnector $connector) {}
 
     public static function enabled(): bool
     {
-        return (bool) config('charon.youtube.key');
+        return (bool) config('charon.services.youtube.key');
     }
 
     public function searchVideosRelatedToSong(Song $song, string $pageToken = ''): ?object
@@ -26,13 +24,12 @@ class YouTubeService
         }
 
         $request = new SearchVideosRequest($song, $pageToken);
-        $hash = md5(serialize($request->query()->all()));
 
         try {
             return Cache::remember(
-                "youtube.$hash",
+                cache_key('YouTube search query', serialize($request->query()->all())),
                 now()->addWeek(),
-                fn () => $this->connector->send($request)->object()
+                fn() => $this->connector->send($request)->object()
             );
         } catch (Throwable) {
             return null;

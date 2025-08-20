@@ -21,7 +21,6 @@ class SetupS3StorageCommand extends Command
     public function handle(): int
     {
 
-
         $this->components->info('Setting up S3 or an S3-compatible service as the storage driver for Charon.');
         $this->components->warn('Changing the storage configuration can cause irreversible data loss.');
         $this->components->warn('Consider backing up your data before proceeding.');
@@ -39,8 +38,12 @@ class SetupS3StorageCommand extends Command
 
         $this->comment('Uploading a test file to make sure everything is working...');
 
+        config('filesystems.disks.s3.bucket', $config['AWS_BUCKET']);
+
         try {
-            app(S3CompatibleStorage::class)->testSetup();
+            /** @var S3CompatibleStorage $storage */
+            $storage = app()->build(S3CompatibleStorage::class);
+            $storage->testSetup();
         } catch (Throwable $e) {
             $this->error('Failed to upload test file: ' . $e->getMessage() . '.');
             $this->comment('Please check your configuration and try again.');

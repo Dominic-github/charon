@@ -9,17 +9,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property string $id
  * @property string $name
  * @property User $user
  * @property Collection<array-key, Playlist> $playlists
  * @property int $user_id
  * @property Carbon $created_at
+ * @property ?string $id
  */
-class PlaylistFolder extends Model
+class PlaylistFolder extends Model implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
     use HasUuids;
 
@@ -38,6 +41,6 @@ class PlaylistFolder extends Model
 
     public function ownedBy(User $user): bool
     {
-        return $this->user_id === $user->id;
+        return $this->user->is($user);
     }
 }

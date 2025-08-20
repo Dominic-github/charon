@@ -3,17 +3,18 @@
 namespace App\Services\SongStorages;
 
 use App\Enums\SongStorageType;
-use App\Models\Song;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
+use App\Values\UploadReference;
 
 abstract class SongStorage
 {
     abstract public function getStorageType(): SongStorageType;
 
-    abstract public function storeUploadedFile(UploadedFile $file, User $uploader): Song;
+    abstract public function storeUploadedFile(string $uploadedFilePath, User $uploader): UploadReference;
 
-    abstract public function delete(Song $song, bool $backup = false): void;
+    abstract public function undoUpload(UploadReference $reference): void;
+
+    abstract public function delete(string $location, bool $backup = false): void;
 
     abstract public function testSetup(): void;
 

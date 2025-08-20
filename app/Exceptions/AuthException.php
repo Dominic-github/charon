@@ -10,5 +10,4 @@ class AuthException extends Exception
     {
         return new self($string);
     }
-  
 }

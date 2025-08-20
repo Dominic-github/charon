@@ -7,6 +7,7 @@ use App\Http\Resources\PlaylistFolderResource;
 use App\Http\Resources\PlaylistResource;
 use App\Http\Resources\QueueStateResource;
 use App\Http\Resources\UserResource;
+use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\PlaylistRepository;
 use App\Repositories\SettingRepository;
@@ -14,6 +15,8 @@ use App\Repositories\SongRepository;
 use App\Services\ApplicationInformationService;
 use App\Services\ITunesService;
 use App\Services\LastfmService;
+use App\Services\MediaBrowser;
+use App\Services\MusicBrainzService;
 use App\Services\QueueService;
 use App\Services\SpotifyService;
 use App\Services\YouTubeService;
@@ -29,7 +32,7 @@ class FetchInitialDataController extends Controller
         PlaylistRepository $playlistRepository,
         ApplicationInformationService $applicationInformationService,
         QueueService $queueService,
-        ?Authenticatable $user
+        Authenticatable $user
     ) {
 
         return response()->json([
@@ -37,13 +40,15 @@ class FetchInitialDataController extends Controller
             'playlists' => PlaylistResource::collection($playlistRepository->getAllAccessibleByUser($user)),
             'playlist_folders' => PlaylistFolderResource::collection($user->playlist_folders),
             'current_user' => UserResource::make($user, true),
+            'uses_musicbrainz' => MusicBrainzService::enabled(),
             'uses_last_fm' => LastfmService::used(),
             'uses_spotify' => SpotifyService::enabled(),
             'uses_you_tube' => YouTubeService::enabled(),
             'uses_i_tunes' => $iTunesService->used(),
             'allows_download' => config('charon.download.allow'),
+            'uses_media_browser' => MediaBrowser::used(),
             'supports_batch_downloading' => extension_loaded('zip'),
-            'media_path_set' => (bool) $settingRepository->getByKey('media_path'),
+            'media_path_set' => (bool) Setting::get('media_path'),
             'supports_transcoding' => config('charon.streaming.ffmpeg_path')
                 && is_executable(config('charon.streaming.ffmpeg_path')),
             'cdn_url' => static_url(),
@@ -55,6 +60,7 @@ class FetchInitialDataController extends Controller
             'song_length' => $songRepository->getTotalSongLength(),
             'queue_state' => QueueStateResource::make($queueService->getQueueState($user)),
             'storage_driver' => config('charon.storage_driver'),
+            'dir_separator' => DIRECTORY_SEPARATOR,
         ]);
     }
 }

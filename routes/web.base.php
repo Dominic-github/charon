@@ -2,6 +2,8 @@
 
 use App\Facades\ITunes;
 use App\Http\Controllers\AuthorizeDropboxController;
+use App\Http\Controllers\Demo\IndexController as DemoIndexController;
+use App\Http\Controllers\Demo\NewSessionController;
 use App\Http\Controllers\Download\DownloadAlbumController;
 use App\Http\Controllers\Download\DownloadArtistController;
 use App\Http\Controllers\Download\DownloadFavoritesController;
@@ -16,9 +18,13 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
 Route::middleware('web')->group(static function (): void {
-    Route::get('/', IndexController::class);
+    // Using a closure to determine the controller instead of static configuration to allow for testing.
+    Route::get(
+        '/',
+        static fn() => app()->call(config('charon.misc.demo') ? DemoIndexController::class : IndexController::class),
+    );
 
-    Route::get('remote', static fn () => view('remote'));
+    Route::get('remote', static fn() => view('remote'));
 
     Route::middleware('auth')->group(static function (): void {
         Route::prefix('lastfm')->group(static function (): void {
@@ -31,7 +37,7 @@ Route::middleware('web')->group(static function (): void {
         }
     });
 
-    Route::get('auth/google/redirect', static fn () => Socialite::driver('google')->redirect());
+    Route::get('auth/google/redirect', static fn() => Socialite::driver('google')->redirect());
     Route::get('auth/google/callback', GoogleCallbackController::class);
 
     Route::get('dropbox/authorize', AuthorizeDropboxController::class)->name('dropbox.authorize');
@@ -49,4 +55,10 @@ Route::middleware('web')->group(static function (): void {
             });
         }
     });
+});
+
+Route::middleware('web')->prefix('demo')->group(static function (): void {
+    Route::get('/new-session', NewSessionController::class)
+        ->name('demo.new-session')
+        ->middleware('throttle:10,1');
 });

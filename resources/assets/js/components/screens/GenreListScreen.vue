@@ -24,7 +24,7 @@
           data-testid="genre-item"
         >
           <a
-            :href="url('genres.show', { name: encodeURIComponent(genre.name) })"
+            :href="url('genres.show', { id: genre.id })"
             :title="`${genre.name}: ${pluralize(genre.song_count, 'song')}`"
             class="bg-white/15 inline-flex items-center justify-center !text-k-text-secondary
           transition-colors duration-200 ease-in-out hover:!text-k-text-primary hover:bg-k-highlight"

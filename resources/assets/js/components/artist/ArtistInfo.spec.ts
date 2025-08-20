@@ -10,7 +10,7 @@ let artist: Artist
 
 new class extends UnitTestCase {
   protected test () {
-    it.each<[MediaInfoDisplayMode]>([['aside'], ['full']])('renders in %s mode', async mode => {
+    it.each<[EncyclopediaDisplayMode]>([['aside'], ['full']])('renders in %s mode', async mode => {
       await this.renderComponent(mode)
 
       if (mode === 'aside') {
@@ -23,7 +23,7 @@ new class extends UnitTestCase {
     })
   }
 
-  private async renderComponent (mode: MediaInfoDisplayMode = 'aside', info?: ArtistInfo) {
+  private async renderComponent (mode: EncyclopediaDisplayMode = 'aside', info?: ArtistInfo) {
     commonStore.state.uses_last_fm = true
     info = info ?? factory('artist-info')
     artist = factory('artist', { name: 'Led Zeppelin' })

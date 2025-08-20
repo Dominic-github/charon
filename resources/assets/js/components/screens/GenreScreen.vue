@@ -2,8 +2,8 @@
   <ScreenBase id="genreScreen">
     <template #header>
       <ScreenHeader v-if="genre" :layout="headerLayout">
-        <span>Genre: <span class="text-thin">{{ decodeURIComponent(name!) }}</span></span>
-        <ControlsToggle v-if="songs.length" v-model="showingControls" />
+        Genre: <span class="text-thin">{{ genre.name }}</span>
+        <ControlsToggle v-if="displayedSongs.length" v-model="showingControls" />
 
         <template #thumbnail>
           <ThumbnailStack :thumbnails="thumbnails" />
@@ -66,12 +66,14 @@ import SongListSkeleton from '@/components/ui/skeletons/SongListSkeleton.vue'
 import ScreenHeaderSkeleton from '@/components/ui/skeletons/ScreenHeaderSkeleton.vue'
 import ScreenBase from '@/components/screens/ScreenBase.vue'
 
+const songs = ref<Song[]>([])
+
 const {
   SongList,
   ControlsToggle,
   ThumbnailStack,
   headerLayout,
-  songs,
+  songs: displayedSongs,
   songList,
   thumbnails,
   showingControls,
@@ -79,24 +81,24 @@ const {
   onPressEnter,
   playSelected,
   onScrollBreakpoint,
-} = useSongList(ref<Song[]>([]), { type: 'Genre' }, { sortable: true, filterable: false })
+} = useSongList(songs, { type: 'Genre' }, { sortable: true, filterable: false })
 
 const { SongListControls, config } = useSongListControls('Genre')
 
-const { getRouteParam, go, onRouteChanged, url } = useRouter()
+const { getRouteParam, isCurrentScreen, go, onRouteChanged, url } = useRouter()
 
 let sortField: MaybeArray<PlayableListSortField> = 'title'
 let sortOrder: SortOrder = 'asc'
 
 const randomSongCount = 500
-const name = ref<string | null>(null)
+const id = ref<string | null>(null)
 const genre = ref<Genre | null>(null)
 const loading = ref(false)
 const page = ref<number | null>(1)
 
 const moreSongsAvailable = computed(() => page.value !== null)
 const showSkeletons = computed(() => loading.value && songs.value.length === 0)
-const duration = computed(() => secondsToHumanReadable(genre.value?.length ?? 0))
+const duration = computed(() => genre.value ? secondsToHumanReadable(genre.value.length) : '')
 
 const fetch = async () => {
   if (!moreSongsAvailable.value || loading.value) {
@@ -106,11 +108,11 @@ const fetch = async () => {
   loading.value = true
 
   try {
-    let fetched: { songs: Playable[], nextPage: number | null }
+    let fetched: { songs: Song[], nextPage: number | null }
 
     [genre.value, fetched] = await Promise.all([
-      genreStore.fetchOne(name.value!),
-      songStore.paginateForGenre(name.value!, {
+      genreStore.fetchOne(id.value!),
+      songStore.paginateForGenre(id.value!, {
         sort: sortField,
         order: sortOrder,
         page: page.value!,
@@ -143,13 +145,12 @@ const fetchWithSort = async (field: MaybeArray<PlayableListSortField>, order: So
   await fetch()
 }
 
-const getNameFromRoute = () => getRouteParam('name') ?? null
+const getIdFromRoute = () => getRouteParam('id') ?? null
 
 onRouteChanged(route => {
-  if (route.screen !== 'Genre') {
-    return
+  if (route.screen === 'Genre') {
+    id.value = getIdFromRoute()
   }
-  name.value = getNameFromRoute()
 })
 
 const playAll = async () => {
@@ -167,9 +168,13 @@ const playAll = async () => {
   go(url('queue'))
 }
 
-onMounted(() => (name.value = getNameFromRoute()))
+onMounted(() => {
+  if (isCurrentScreen('Genre')) {
+    id.value = getIdFromRoute()
+  }
+})
 
-watch(name, async () => name.value && await refresh())
+watch(id, async () => id.value && await refresh())
 
 // We can't really tell how/if the genres have been updated, so we just refresh the list
 eventBus.on('SONGS_UPDATED', async () => genre.value && await refresh())

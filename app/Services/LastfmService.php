@@ -13,25 +13,22 @@ use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Song;
 use App\Models\User;
-use App\Services\Contracts\MusicEncyclopedia;
+use App\Services\Contracts\Encyclopedia;
 use App\Values\AlbumInformation;
 use App\Values\ArtistInformation;
 use Generator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
-class LastfmService implements MusicEncyclopedia
+class LastfmService implements Encyclopedia
 {
-    public function __construct(private readonly LastfmConnector $connector)
-    {
-    }
+    public function __construct(private readonly LastfmConnector $connector) {}
 
     /**
      * Determine if our application is using Last.fm.
      */
     public static function used(): bool
     {
-        return (bool) config('charon.lastfm.key');
+        return (bool) config('charon.services.lastfm.key');
     }
 
     /**
@@ -39,7 +36,7 @@ class LastfmService implements MusicEncyclopedia
      */
     public static function enabled(): bool
     {
-        return config('charon.lastfm.key') && config('charon.lastfm.secret');
+        return config('charon.services.lastfm.key') && config('charon.services.lastfm.secret');
     }
 
     public function getArtistInformation(Artist $artist): ?ArtistInformation
@@ -49,11 +46,7 @@ class LastfmService implements MusicEncyclopedia
         }
 
         return rescue_if(static::enabled(), function () use ($artist): ?ArtistInformation {
-            return Cache::remember(
-                "lastfm.artist.$artist->id",
-                now()->addWeek(),
-                fn () => $this->connector->send(new GetArtistInfoRequest($artist))->dto()
-            );
+            return $this->connector->send(new GetArtistInfoRequest($artist))->dto();
         });
     }
 
@@ -64,22 +57,18 @@ class LastfmService implements MusicEncyclopedia
         }
 
         return rescue_if(static::enabled(), function () use ($album): ?AlbumInformation {
-            return Cache::remember(
-                "lastfm.album.$album->id",
-                now()->addWeek(),
-                fn () => $this->connector->send(new GetAlbumInfoRequest($album))->dto()
-            );
+            return $this->connector->send(new GetAlbumInfoRequest($album))->dto();
         });
     }
 
     public function scrobble(Song $song, User $user, int $timestamp): void
     {
-        rescue(fn () => $this->connector->send(new ScrobbleRequest($song, $user, $timestamp)));
+        rescue(fn() => $this->connector->send(new ScrobbleRequest($song, $user, $timestamp)));
     }
 
     public function toggleLoveTrack(Song $song, User $user, bool $love): void
     {
-        rescue(fn () => $this->connector->send(new ToggleLoveTrackRequest($song, $user, $love)));
+        rescue(fn() => $this->connector->send(new ToggleLoveTrackRequest($song, $user, $love)));
     }
 
     /**
@@ -101,7 +90,7 @@ class LastfmService implements MusicEncyclopedia
 
     public function updateNowPlaying(Song $song, User $user): void
     {
-        rescue(fn () => $this->connector->send(new UpdateNowPlayingRequest($song, $user)));
+        rescue(fn() => $this->connector->send(new UpdateNowPlayingRequest($song, $user)));
     }
 
     public function getSessionKey(string $token): ?string

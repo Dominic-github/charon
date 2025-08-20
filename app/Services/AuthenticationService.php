@@ -3,15 +3,18 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Exceptions\InvalidCredentialsException;
 use App\Models\User;
-use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
+use App\Http\Resources\UserResource;
 use App\Values\CompositeToken;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use InvalidArgumentException;
+use Throwable;
 
 class AuthenticationService
 {
@@ -20,8 +23,7 @@ class AuthenticationService
         private readonly TokenManager $tokenManager,
         private UserService $userService,
         private readonly PasswordBroker $passwordBroker
-    ) {
-    }
+    ) {}
 
     public function login(string $email, string $password): CompositeToken
     {
@@ -43,11 +45,10 @@ class AuthenticationService
     {
         $user = $this->userRepository->findFirstWhere('email', $email);
 
-        if($user){
+        if ($user) {
             throw new AuthException("User already exists");
-
         }
-        if($password != $rePassword){
+        if ($password != $rePassword) {
             throw new AuthException("Passwords are not the same");
         }
 
@@ -95,13 +96,28 @@ class AuthenticationService
     public function generateOneTimeToken(User $user): string
     {
         $token = bin2hex(random_bytes(12));
-        Cache::set("one-time-token.$token", encrypt($user->id), 60 * 10);
+        Cache::set(cache_key('one-time token', $token), encrypt($user->id), 60 * 10);
 
         return $token;
     }
 
     public function loginViaOneTimeToken(string $token): CompositeToken
     {
-        return $this->logUserIn($this->userRepository->getOne(decrypt(Cache::get("one-time-token.$token"))));
+        $cacheKey = cache_key('one-time token', $token);
+        $encryptedUserId = Cache::get($cacheKey);
+
+        if (!$encryptedUserId) {
+            throw new InvalidArgumentException(message: 'One-time token not found or expired.');
+        }
+
+        try {
+            $userId = decrypt($encryptedUserId);
+        } catch (Throwable $e) {
+            throw new InvalidArgumentException(message: 'Invalid one-time token.', previous: $e);
+        } finally {
+            Cache::forget($cacheKey);
+        }
+
+        return $this->logUserIn($this->userRepository->getOne($userId));
     }
 }

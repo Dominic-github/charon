@@ -19,47 +19,59 @@ use App\Values\SongStorageMetadata\SongStorageMetadata;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\File;
 use Laravel\Scout\Searchable;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use PhanAn\Poddle\Values\EpisodeMetadata;
 use Throwable;
+use Webmozart\Assert\Assert;
 
 /**
- * @property string $path
- * @property string $title
  * @property ?Album $album
- * @property User $uploader
- * @property ?Artist $artist
  * @property ?Artist $album_artist
- * @property float $length
- * @property string $lyrics
- * @property int $track
- * @property int $disc
- * @property int $album_id
- * @property int|null $year
- * @property string $genre
- * @property string $id
- * @property int $artist_id
- * @property int $mtime
+ * @property ?Artist $artist
+ * @property ?Folder $folder
  * @property ?bool $liked Whether the song is liked by the current user (dynamically calculated)
  * @property ?int $play_count The number of times the song has been played by the current user (dynamically calculated)
+ * @property ?string $album_name
+ * @property ?string $artist_name
+ * @property ?string $basename
+ * @property ?string $folder_id
+ * @property ?string $mime_type The MIME type of the song file, if available
  * @property Carbon $created_at
- * @property int $owner_id
- * @property bool $is_public
- * @property User $owner
- * @property-read SongStorageMetadata $storage_metadata
+ * @property Collection<Genre>|array<array-key, Genre> $genres
  * @property SongStorageType $storage
+ * @property User $owner
+ * @property bool $is_public
+ * @property float $length
+ * @property int $album_id
+ * @property int $artist_id
+ * @property int $disc
+ * @property int $mtime
+ * @property int $owner_id
+ * @property int $track
+ * @property int|null $year
+ * @property string $id
+ * @property string $lyrics
+ * @property string $path
+ * @property string $title
+ * @property-read SongStorageMetadata $storage_metadata
+ * @property-read ?string $genre The string representation of the genres associated with the song. Readonly.
+ *                               To set the genres, use the `syncGenres` method.
  *
  * // The following are only available for collaborative playlists
  * @property-read ?string $collaborator_email The email of the user who added the song to the playlist
  * @property-read ?string $collaborator_name The name of the user who added the song to the playlist
  * @property-read ?string $collaborator_avatar The avatar of the user who added the song to the playlist
- * @property-read ?int $collaborator_id The ID of the user who added the song to the playlist
+ * @property-read ?string $collaborator_public_id The public ID of the user who added the song to the playlist
  * @property-read ?string $added_at The date the song was added to the playlist
  * @property-read PlayableType $type
  *
@@ -69,14 +81,13 @@ use Throwable;
  * @property ?string $podcast_id
  * @property ?Podcast $podcast
  */
-class Song extends Model
+class Song extends Model implements AuditableContract
 {
+    use Auditable;
     use HasFactory;
+    use HasUuids;
     use Searchable;
     use SupportsDeleteWhereValueNotIn;
-    use HasUuids;
-
-    public const ID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
     protected $guarded = [];
     protected $hidden = ['updated_at', 'path', 'mtime'];
@@ -93,17 +104,17 @@ class Song extends Model
         'episode_metadata' => EpisodeMetadataCast::class,
     ];
 
-    protected $with = ['album', 'artist', 'podcast'];
+    protected $with = ['album', 'artist', 'podcast', 'genres', 'owner'];
 
     public static function query(?PlayableType $type = null, ?User $user = null): SongBuilder
     {
         return parent::query()
+            ->when($user, static fn (SongBuilder $query) => $query->forUser($user)) // @phpstan-ignore-line
             ->when($type, static fn (Builder $query) => match ($type) { // @phpstan-ignore-line phpcs:ignore
                 PlayableType::SONG => $query->whereNull('songs.podcast_id'),
                 PlayableType::PODCAST_EPISODE => $query->whereNotNull('songs.podcast_id'),
                 default => $query,
-            })
-            ->when($user, static fn (SongBuilder $query) => $query->forUser($user)); // @phpstan-ignore-line
+            });
     }
 
     public function owner(): BelongsTo
@@ -131,6 +142,11 @@ class Song extends Model
         return $this->belongsTo(Podcast::class);
     }
 
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(Folder::class);
+    }
+
     public function playlists(): BelongsToMany
     {
         return $this->belongsToMany(Playlist::class);
@@ -139,6 +155,11 @@ class Song extends Model
     public function interactions(): HasMany
     {
         return $this->hasMany(Interaction::class);
+    }
+
+    public function genres(): BelongsToMany
+    {
+        return $this->belongsToMany(Genre::class);
     }
 
     protected function albumArtist(): Attribute
@@ -162,7 +183,7 @@ class Song extends Model
 
     public function ownedBy(User $user): bool
     {
-        return $this->owner_id === $user->id;
+        return $this->owner->id === $user->id;
     }
 
     protected function storageMetadata(): Attribute
@@ -197,6 +218,33 @@ class Song extends Model
         ))->shouldCache();
     }
 
+    protected function basename(): Attribute
+    {
+        return Attribute::get(function () {
+            Assert::eq($this->type, PlayableType::SONG);
+
+            return File::basename($this->path);
+        });
+    }
+
+    protected function genre(): Attribute
+    {
+        return Attribute::get(fn () => $this->genres->pluck('name')->implode(', '))->shouldCache();
+    }
+
+    public function syncGenres(string|array $genres): void
+    {
+        $genreNames = is_array($genres) ? $genres : explode(',', $genres);
+
+        $genreIds = collect($genreNames)
+            ->map(static fn (string $name) => trim($name))
+            ->filter()
+            ->unique()
+            ->map(static fn (string $name) => Genre::get($name)->id);
+
+        $this->genres()->sync($genreIds);
+    }
+
     public static function getPathFromS3BucketAndKey(string $bucket, string $key): string
     {
         return "s3://$bucket/$key";
@@ -207,6 +255,7 @@ class Song extends Model
     {
         $array = [
             'id' => $this->id,
+            'owner_id' => $this->owner_id,
             'title' => $this->title,
             'type' => $this->type->value,
         ];
@@ -215,8 +264,12 @@ class Song extends Model
             $array['episode_description'] = $this->episode_metadata->description;
         }
 
-        if ($this->artist && !$this->artist->is_unknown && !$this->artist->is_various) {
-            $array['artist'] = $this->artist->name;
+        if (
+            $this->artist_name
+            && $this->artist_name !== Artist::UNKNOWN_NAME
+            && $this->artist_name !== Artist::VARIOUS_NAME
+        ) {
+            $array['artist'] = $this->artist_name;
         }
 
         return $array;
@@ -225,6 +278,31 @@ class Song extends Model
     public function isEpisode(): bool
     {
         return $this->type === PlayableType::PODCAST_EPISODE;
+    }
+
+    public function genreEqualsTo(string|array $genres): bool
+    {
+        $genreNames = collect(is_string($genres) ? explode(',', $genres) : $genres)
+            ->map(static fn (string $name) => trim($name))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->join(', ');
+
+        if (!$this->genre && !$genreNames) {
+            return true;
+        }
+
+        return $this->genre === $genreNames;
+    }
+
+    public function isStoredOnCloud(): bool
+    {
+        return in_array($this->storage, [
+            SongStorageType::S3,
+            SongStorageType::S3_LAMBDA,
+            SongStorageType::DROPBOX,
+        ], true);
     }
 
     public function __toString(): string

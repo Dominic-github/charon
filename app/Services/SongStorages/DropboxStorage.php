@@ -4,49 +4,43 @@ namespace App\Services\SongStorages;
 
 use App\Enums\SongStorageType;
 use App\Filesystems\DropboxFilesystem;
-use App\Models\Song;
 use App\Models\User;
-use App\Services\FileScanner;
 use App\Services\SongStorages\Concerns\DeletesUsingFilesystem;
-use Illuminate\Http\UploadedFile;
+use App\Values\UploadReference;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
-final class DropboxStorage extends CloudStorage
+class DropboxStorage extends CloudStorage
 {
     use DeletesUsingFilesystem;
 
     public function __construct(
-        protected FileScanner $scanner,
         private readonly DropboxFilesystem $filesystem,
         private readonly array $config
     ) {
-        parent::__construct($scanner);
-
         $this->filesystem->getAdapter()->getClient()->setAccessToken($this->maybeRefreshAccessToken());
     }
 
-    public function storeUploadedFile(UploadedFile $file, User $uploader): Song
+    public function storeUploadedFile(string $uploadedFilePath, User $uploader): UploadReference
     {
+        $key = $this->generateStorageKey(basename($uploadedFilePath), $uploader);
+        $this->uploadToStorage($key, $uploadedFilePath);
 
-        return DB::transaction(function () use ($file, $uploader): Song {
-            $result = $this->scanUploadedFile($this->scanner, $file, $uploader);
-            $song = $this->scanner->getSong();
-            $key = $this->generateStorageKey($file->getClientOriginalName(), $uploader);
+        return UploadReference::make(
+            location: "dropbox://$key",
+            localPath: $uploadedFilePath,
+        );
+    }
 
-            $this->filesystem->write($key, File::get($result->path));
+    public function undoUpload(UploadReference $reference): void
+    {
+        // Delete the temporary file
+        File::delete($reference->localPath);
 
-            $song->update([
-                'path' => "dropbox://$key",
-                'storage' => SongStorageType::DROPBOX,
-            ]);
-
-            File::delete($result->path);
-
-            return $song;
-        });
+        // Delete the file from Dropbox
+        $this->delete(Str::after($reference->location, 'dropbox://'));
     }
 
     private function maybeRefreshAccessToken(): string
@@ -56,7 +50,7 @@ final class DropboxStorage extends CloudStorage
         if ($accessToken) {
             return $accessToken;
         }
-        
+
         $response = Http::asForm()
             ->withBasicAuth($this->config['app_key'], $this->config['app_secret'])
             ->post('https://api.dropboxapi.com/oauth2/token', [
@@ -73,15 +67,14 @@ final class DropboxStorage extends CloudStorage
         return $response->json('access_token');
     }
 
-    public function getSongPresignedUrl(Song $song): string
+    public function getPresignedUrl(string $key): string
     {
-
-        return $this->filesystem->temporaryUrl($song->storage_metadata->getPath());
+        return $this->filesystem->temporaryUrl($key);
     }
 
-    public function delete(Song $song, bool $backup = false): void
+    public function delete(string $location, bool $backup = false): void
     {
-        $this->deleteUsingFileSystem($this->filesystem, $song, $backup);
+        $this->deleteFileWithKey($location, $backup);
     }
 
     public function testSetup(): void
@@ -93,5 +86,15 @@ final class DropboxStorage extends CloudStorage
     public function getStorageType(): SongStorageType
     {
         return SongStorageType::DROPBOX;
+    }
+
+    public function uploadToStorage(string $key, string $path): void
+    {
+        $this->filesystem->write($key, File::get($path));
+    }
+
+    public function deleteFileWithKey(string $key, bool $backup): void
+    {
+        $this->deleteUsingFilesystem($this->filesystem, $key, $backup);
     }
 }

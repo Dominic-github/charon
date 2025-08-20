@@ -19,12 +19,4 @@ return new class extends Migration
             $table->foreign('playlist_id')->references('id')->on('playlists')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
-
-    public function down(): void
-    {
-        Schema::table('playlist_collaboration_tokens', static function (Blueprint $table): void {
-            $table->dropForeign(['playlist_id']);
-        });
-        Schema::dropIfExists('playlist_collaboration_tokens');
-    }
 };

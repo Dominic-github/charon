@@ -3,17 +3,22 @@
 namespace App\Services;
 
 use App\Exceptions\UserProspectUpdateDeniedException;
+use App\Helpers\Ulid;
+use App\Models\Organization;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use App\Values\SSOUser;
+use App\Values\SsoUser;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class UserService
 {
-    public function __construct(private readonly UserRepository $repository, private readonly ImageWriter $imageWriter)
-    {
+    public function __construct(
+        private readonly UserRepository $repository,
+        private readonly ImageWriter $imageWriter,
+        private readonly OrganizationService $organizationService,
+    ) {
     }
 
     public function createUser(
@@ -24,12 +29,15 @@ class UserService
         ?string $avatar = null,
         ?string $ssoId = null,
         ?string $ssoProvider = null,
+        ?Organization $organization = null,
     ): User {
         if ($ssoProvider) {
-            SSOUser::assertValidProvider($ssoProvider);
+            SsoUser::assertValidProvider($ssoProvider);
         }
 
-        return User::query()->create([
+        $organization ??= $this->organizationService->getCurrentOrganization();
+
+        return $organization->users()->create([
             'name' => $name,
             'email' => $email,
             'password' => $plainTextPassword ? Hash::make($plainTextPassword) : '',
@@ -40,9 +48,9 @@ class UserService
         ]);
     }
 
-    public function createOrUpdateUserFromSSO(SSOUser $ssoUser): User
+    public function createOrUpdateUserFromSso(SsoUser $ssoUser): User
     {
-        $existingUser = $this->repository->findOneBySSO($ssoUser);
+        $existingUser = $this->repository->findOneBySso($ssoUser);
 
         if ($existingUser) {
             $existingUser->update([
@@ -62,6 +70,7 @@ class UserService
             avatar: $ssoUser->avatar,
             ssoId: $ssoUser->id,
             ssoProvider: $ssoUser->provider,
+            organization: $this->organizationService->getCurrentOrganization(),
         );
     }
 
@@ -126,6 +135,6 @@ class UserService
 
     private static function generateUserAvatarPath(): string
     {
-        return user_avatar_path(sprintf('%s.webp', sha1(Str::uuid())));
+        return user_avatar_path(sprintf('%s.webp', Ulid::generate()));
     }
 }

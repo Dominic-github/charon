@@ -9,6 +9,7 @@ use App\Services\AuthenticationService;
 use App\Values\CompositeToken;
 use Closure;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Throwable;
@@ -17,14 +18,12 @@ class AuthController extends Controller
 {
     use ThrottlesLogins;
 
-    public function __construct(private readonly AuthenticationService $auth)
-    {
-    }
+    public function __construct(private readonly AuthenticationService $auth) {}
 
-    public function login(UserLoginRequest $request)
+    public function login(UserLoginRequest $request): JsonResponse
     {
         $compositeToken = $this->throttleLoginRequest(
-            fn () => $this->auth->login($request->email, $request->password),
+            fn() => $this->auth->login($request->email, $request->password),
             $request
         );
 
@@ -33,13 +32,13 @@ class AuthController extends Controller
 
     public function register(UserRegisterRequest $request)
     {
-             return $this->auth->register($request->fullName, $request->email, $request->password, $request->rePassword);
+        return $this->auth->register($request->fullName, $request->email, $request->password, $request->rePassword);
     }
 
-    public function loginUsingOneTimeToken(Request $request)
+    public function loginUsingOneTimeToken(Request $request): JsonResponse
     {
         $compositeToken = $this->throttleLoginRequest(
-            fn () => $this->auth->loginViaOneTimeToken($request->input('token')),
+            fn() => $this->auth->loginViaOneTimeToken($request->input('token')),
             $request
         );
 
@@ -63,7 +62,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): Response
     {
-        rescue(fn () => $this->auth->logoutViaBearerToken($request->bearerToken()));
+        rescue(fn() => $this->auth->logoutViaBearerToken($request->bearerToken()));
 
         return response()->noContent();
     }

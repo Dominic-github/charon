@@ -2,16 +2,20 @@
 
 namespace App\Repositories;
 
-use App\Builders\ArtistBuilder;
 use App\Models\Artist;
 use App\Models\User;
+use App\Repositories\Contracts\ScoutableRepository;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Support\Facades\DB;
+use Laravel\Scout\Builder as ScoutBuilder;
 
-/** @extends Repository<Artist> */
-class ArtistRepository extends Repository
+/**
+ * @extends Repository<Artist>
+ * @implements ScoutableRepository<Artist>
+ */
+class ArtistRepository extends Repository implements ScoutableRepository
 {
     /** @return Collection|array<array-key, Artist> */
     public function getMostPlayed(int $count = 6, ?User $user = null): Collection
@@ -21,50 +25,55 @@ class ArtistRepository extends Repository
         return Artist::query()
             ->isStandard()
             ->accessibleBy($user)
-            ->unless(
-                true, // accessibleBy() would have already joined with `songs`
-                static fn (ArtistBuilder $query) => $query->leftJoin('songs', 'artists.id', 'songs.artist_id')
-            )
+            ->leftJoin('songs', 'artists.id', 'songs.artist_id')
             ->join('interactions', static function (JoinClause $join) use ($user): void {
                 $join->on('interactions.song_id', '=', 'songs.id')->where('interactions.user_id', $user->id);
             })
-            ->groupBy([
-                'artists.id',
-                'play_count',
-                'artists.name',
-                'artists.image',
-                'artists.created_at',
-                'artists.updated_at',
-            ])
-            ->distinct()
+            ->select('artists.*', DB::raw('SUM(interactions.play_count) as play_count'))
+            ->groupBy('artists.id')
             ->orderByDesc('play_count')
             ->limit($count)
-            ->get(['artists.*', 'play_count']);
+            ->get();
     }
 
     /** @return Collection|array<array-key, Artist> */
-    public function getMany(array $ids, bool $preserveOrder = false, ?User $user = null): Collection|BaseCollection
+    public function getMany(array $ids, bool $preserveOrder = false, ?User $user = null): Collection
     {
         $artists = Artist::query()
             ->isStandard()
             ->accessibleBy($user ?? auth()->user())
             ->whereIn('artists.id', $ids)
-            ->groupBy('artists.id')
             ->distinct()
             ->get('artists.*');
 
         return $preserveOrder ? $artists->orderByArray($ids) : $artists;
     }
 
-    public function paginate(?User $user = null): Paginator
+    public function getForListing(string $sortColumn, string $sortDirection, ?User $user = null): Paginator
     {
         return Artist::query()
             ->isStandard()
             ->accessibleBy($user ?? auth()->user())
-            ->groupBy('artists.id')
+            ->sort($sortColumn, $sortDirection)
             ->distinct()
             ->orderBy('artists.name')
             ->select('artists.*')
             ->simplePaginate(21);
+    }
+
+    /** @return Collection<Artist>|array<array-key, Artist> */
+    public function search(string $keywords, int $limit, ?User $scopedUser = null): Collection
+    {
+        $scopedUser ??= auth()->user();
+
+        return $this->getMany(
+            ids: Artist::search($keywords)
+                ->when(true, static fn(ScoutBuilder $query) => $query->where('user_id', $scopedUser?->id))
+                ->get()
+                ->take($limit)
+                ->modelKeys(),
+            preserveOrder: true,
+            user: $scopedUser,
+        );
     }
 }

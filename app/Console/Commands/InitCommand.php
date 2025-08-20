@@ -11,9 +11,9 @@ use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Jackiedo\DotenvEditor\DotenvEditor;
 use Throwable;
@@ -22,13 +22,10 @@ class InitCommand extends Command
 {
     use AskForPassword;
 
-    private const DEFAULT_ADMIN_NAME = 'Charon';
-    private const DEFAULT_ADMIN_EMAIL = 'admin@charon.dev';
-    private const DEFAULT_ADMIN_PASSWORD = 'admin';
     private const NON_INTERACTION_MAX_DATABASE_ATTEMPT_COUNT = 10;
 
     protected $signature =
-        'charon:init {--no-assets : Do not compile front-end assets} {--no-scheduler : Do not install scheduler}';
+    'charon:init {--no-assets : Do not compile front-end assets} {--no-scheduler : Do not install scheduler}';
     protected $description = 'Install or upgrade Charon';
 
     private bool $adminSeeded = false;
@@ -40,11 +37,11 @@ class InitCommand extends Command
 
     public function handle(): int
     {
-        $this->alert('CHARON INSTALLATION WIZARD');
-        $this->info(
-            'As a reminder, you can always install/upgrade manually following the guide at '
-            . config('charon.misc.docs_url')
-            . PHP_EOL
+        $this->components->alert('CHARON INSTALLATION WIZARD');
+
+        $this->components->info(
+            'Remember, you can always install/upgrade manually using the guide at '
+                . config('charon.misc.docs_url')
         );
 
         if ($this->inNoInteractionMode()) {
@@ -60,6 +57,7 @@ class InitCommand extends Command
             $this->maybeSeedDatabase();
             $this->maybeSetMediaPath();
             $this->maybeCompileFrontEndAssets();
+            $this->maybeCopyManifests();
             $this->dotenvEditor->save();
             $this->tryInstallingScheduler();
         } catch (Throwable $e) {
@@ -67,34 +65,34 @@ class InitCommand extends Command
 
             $this->components->error("Oops! Charon installation or upgrade didn't finish successfully.");
             $this->components->error('Please check the error log at storage/logs/laravel.log and try again.');
+            $this->components->error('For further troubleshooting, visit https://docs.charon.dev/troubleshooting.');
             $this->components->error('😥 Sorry for this. You deserve better.');
 
             return self::FAILURE;
         }
 
         $this->newLine();
-        $this->output->success('All done!');
-        $this->info('Charon can now be run from localhost with `php artisan serve`.');
+        $this->components->success('All done!');
+
+        if (app()->environment('local')) {
+            $this->components->info('🏗️ Charon can now be run from localhost with `php artisan serve`');
+        } else {
+            $this->components->info('🌟 A shiny Charon is now available at ' . config('app.url'));
+        }
 
         if ($this->adminSeeded) {
-            $this->info(
-                sprintf('Log in with email %s and password %s', self::DEFAULT_ADMIN_EMAIL, self::DEFAULT_ADMIN_PASSWORD)
+            $this->components->info(
+                sprintf('🧑‍💻 Log in with email %s and password %s', User::FIRST_ADMIN_EMAIL, User::FIRST_ADMIN_PASSWORD)
             );
         }
 
         if (!Setting::get('media_path')) {
-            $this->info('You can set up the storage with `php artisan charon:storage`.');
+            $this->components->info('📀 You can set up the storage with `php artisan charon:storage`');
         }
 
-        $this->info('Again, visit 📙 ' . config('charon.misc.docs_url') . ' for more tips and tweaks.');
-
-        $this->info(
-            "Feeling generous and want to support Charon’s development? Check out "
-            . config('charon.misc.sponsor_github_url')
-            . ' 🤗'
-        );
-
-        $this->info('Thanks for using Charon. You rock! 🤘');
+        $this->components->info('🛟 Documentation can be found at ' . config('charon.misc.docs_url'));
+        $this->components->info('🤗 Consider supporting Charon’s development: ' . config('charon.misc.sponsor_github_url'));
+        $this->components->info('🤘 Finally, thanks for using Charon. You rock!');
 
         return self::SUCCESS;
     }
@@ -196,13 +194,7 @@ class InitCommand extends Command
     private function setUpAdminAccount(): void
     {
         $this->components->task('Creating default admin account', function (): void {
-            User::query()->create([
-                'name' => self::DEFAULT_ADMIN_NAME,
-                'email' => self::DEFAULT_ADMIN_EMAIL,
-                'password' => Hash::make(self::DEFAULT_ADMIN_PASSWORD),
-                'is_admin' => true,
-            ]);
-
+            User::firstAdmin();
             $this->adminSeeded = true;
         });
     }
@@ -228,7 +220,7 @@ class InitCommand extends Command
             // In non-interactive mode, we must not endlessly attempt to connect.
             // Doing so will just end up with a huge amount of "failed to connect" logs.
             // We do retry a little, though, just in case there's some kind of temporary failure.
-            if ($this->inNoInteractionMode() && $attempt >= self::NON_INTERACTION_MAX_DATABASE_ATTEMPT_COUNT) {
+            if ($attempt >= self::NON_INTERACTION_MAX_DATABASE_ATTEMPT_COUNT && $this->inNoInteractionMode()) {
                 $this->components->error('Maximum database connection attempts reached. Giving up.');
                 break;
             }
@@ -239,7 +231,7 @@ class InitCommand extends Command
                 // Make sure the config cache is cleared before another attempt.
                 Artisan::call('config:clear', ['--quiet' => true]);
                 DB::reconnect();
-                DB::getDoctrineSchemaManager()->listTables();
+                Schema::getTables();
 
                 break;
             } catch (Throwable $e) {
@@ -310,18 +302,22 @@ class InitCommand extends Command
             return;
         }
 
-        $this->newLine();
-        $this->components->info('Now to front-end stuff');
-        $this->components->info('Installing npm dependencies');
-        $this->newLine();
-        self::runOkOrThrow('yarn install --colors');
-        $this->components->info('Compiling assets');
-        self::runOkOrThrow('yarn run --colors build');
+        $this->components->task('Installing npm dependencies', function (): void {
+            $this->runOkOrThrow('yarn install --color');
+        });
+
+        $this->components->task('Compiling frontend assets', function (): void {
+            $this->runOkOrThrow('yarn run --color build');
+        });
     }
 
-    private static function runOkOrThrow(string $command): void
+    private function runOkOrThrow(string $command): void
     {
-        throw_unless(Process::forever()->run($command)->successful(), InstallationFailedException::class);
+        $printer = $this->option('verbose')
+            ? static fn(string $type, string $output) => print $output
+            : null;
+
+        throw_unless(Process::forever()->run($command, $printer)->successful(), InstallationFailedException::class);
     }
 
     private function setMediaPathFromEnvFile(): void
@@ -359,15 +355,34 @@ class InitCommand extends Command
             return;
         }
 
-        $this->components->info('Trying to install Charon scheduler…');
+        $result = 0;
 
-        if (Artisan::call('charon:scheduler:install') !== self::SUCCESS) {
+        $this->components->task('Installing Charon scheduler', static function () use (&$result): void {
+            $result = Artisan::call('charon:scheduler:install', ['--quiet' => true]);
+        });
+
+        if ($result !== self::SUCCESS) {
             $this->components->warn(
                 'Failed to install scheduler. ' .
-                'Please install manually: https://docs.charon.dev/cli-commands#command-scheduling'
+                    'Please install manually: https://docs.charon.dev/cli-commands#command-scheduling'
             );
-        } else {
-            $this->components->info('Charon scheduler installed successfully.');
+        }
+    }
+
+    private function maybeCopyManifests(): void
+    {
+        foreach (['manifest.json', 'manifest-remote.json'] as $file) {
+            $destination = public_path($file);
+            $source = public_path("$file.example");
+
+            if (File::exists($destination)) {
+                $this->components->task("$file already exists -- skipping");
+                continue;
+            }
+
+            $this->components->task("Copying $file", static function () use ($source, $destination): void {
+                File::copy($source, $destination);
+            });
         }
     }
 }

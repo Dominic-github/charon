@@ -1,9 +1,7 @@
 <template>
-  <dialog
-    ref="dialog"
+  <dialog ref="dialog"
     class="text-k-text-primary min-w-full md:min-w-[480px] border-0 p-0 rounded-md bg-k-bg-primary overflow-visible backdrop:bg-black/70"
-    @cancel.prevent
-  >
+    @cancel.prevent>
     <Component :is="modalNameToComponentMap[activeModalName]" v-if="activeModalName" @close="close" />
   </dialog>
 </template>
@@ -26,6 +24,7 @@ const modalNameToComponentMap = {
   'edit-smart-playlist-form': defineAsyncComponent(() => import('@/components/playlist/smart-playlist/EditSmartPlaylistForm.vue')),
   'edit-song-form': defineAsyncComponent(() => import('@/components/song/EditSongForm.vue')),
   'edit-user-form': defineAsyncComponent(() => import('@/components/user/EditUserForm.vue')),
+  'edit-album-form': defineAsyncComponent(() => import('@/components/album/EditAlbumForm.vue')),
   'equalizer': defineAsyncComponent(() => import('@/components/ui/equalizer/Equalizer.vue')),
   'invite-user-form': defineAsyncComponent(() => import('@/components/user/InviteUserForm.vue')),
   'playlist-collaboration': defineAsyncComponent(() => import('@/components/playlist/PlaylistCollaborationModal.vue')),
@@ -66,6 +65,10 @@ eventBus.on('MODAL_SHOW_ABOUT_CHARON', () => (activeModalName.value = 'about-cha
     context.value = { playlist }
     activeModalName.value = playlist.is_smart ? 'edit-smart-playlist-form' : 'edit-playlist-form'
   })
+  .on('MODAL_SHOW_EDIT_ALBUM_FORM', album => {
+    context.value = { album }
+    activeModalName.value = 'edit-album-form'
+  })
   .on('MODAL_SHOW_EDIT_USER_FORM', user => {
     context.value = { user }
     activeModalName.value = 'edit-user-form'
@@ -94,21 +97,22 @@ eventBus.on('MODAL_SHOW_ABOUT_CHARON', () => (activeModalName.value = 'about-cha
 
 <style lang="postcss" scoped>
 dialog {
+
   :deep(form),
   :deep(> div) {
     @apply relative;
 
-    > header,
-    > main,
-    > footer {
+    >header,
+    >main,
+    >footer {
       @apply px-6 py-5;
     }
 
-    > footer {
+    >footer {
       @apply mt-0 bg-black/10 border-t border-white/5 space-x-2;
     }
 
-    > header {
+    >header {
       @apply flex bg-k-bg-secondary;
 
       h1 {

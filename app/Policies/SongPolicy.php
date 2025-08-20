@@ -9,22 +9,23 @@ class SongPolicy
 {
     public function own(User $user, Song $song): bool
     {
+        // Do not use $song->owner->is($user) here, as it may trigger an extra query.
         return $song->owner_id === $user->id;
     }
 
     public function access(User $user, Song $song): bool
     {
-        return   $song->accessibleBy($user);
+        return  $song->accessibleBy($user);
     }
 
     public function delete(User $user, Song $song): bool
     {
-        return ( $song->ownedBy($user)) || $user->is_admin;
+        return  $song->ownedBy($user) || $user->is_admin;
     }
 
     public function edit(User $user, Song $song): bool
     {
-        return ( $song->accessibleBy($user)) || $user->is_admin;
+        return $song->accessibleBy($user) || $user->is_admin;
     }
 
     public function download(User $user, Song $song): bool

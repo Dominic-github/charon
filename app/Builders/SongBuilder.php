@@ -2,13 +2,17 @@
 
 namespace App\Builders;
 
+use App\Models\Song;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Str;
 use Webmozart\Assert\Assert;
 
 /**
  * @method self logSql()
+ *
+ * @extends Builder<Song>
  */
 class SongBuilder extends Builder
 {
@@ -18,21 +22,25 @@ class SongBuilder extends Builder
         'length' => 'songs.length',
         'created_at' => 'songs.created_at',
         'disc' => 'songs.disc',
-        'artist_name' => 'artists.name',
-        'album_name' => 'albums.name',
+        'year' => 'songs.year',
+        'artist_name' => 'songs.artist_name',
+        'album_name' => 'songs.album_name',
         'podcast_title' => 'podcasts.title',
         'podcast_author' => 'podcasts.author',
+        'genre' => 'genres.name',
     ];
 
     private const VALID_SORT_COLUMNS = [
         'songs.title',
         'songs.track',
         'songs.length',
+        'songs.year',
         'songs.created_at',
-        'artists.name',
-        'albums.name',
+        'songs.artist_name',
+        'songs.album_name',
         'podcasts.title',
         'podcasts.author',
+        'genres.name',
     ];
 
     private User $user;
@@ -40,48 +48,39 @@ class SongBuilder extends Builder
     public function inDirectory(string $path): self
     {
         // Make sure the path ends with a directory separator.
-        $path = rtrim(trim($path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $path = Str::finish(trim($path), DIRECTORY_SEPARATOR);
 
         return $this->where('path', 'LIKE', "$path%");
     }
 
-    public function withMeta(bool $requiresInteractions = false): self
+    public function withMetaData(): self
     {
-        $joinClosure = function (JoinClause $join): void {
-            $join->on('interactions.song_id', 'songs.id')->where('interactions.user_id', $this->user->id);
-        };
-
         return $this
             ->with('artist', 'album', 'album.artist')
-            ->when(
-                $requiresInteractions,
-                static fn (self $query) => $query->join('interactions', $joinClosure),
-                static fn (self $query) => $query->leftJoin('interactions', $joinClosure)
-            )
-            ->leftJoin('albums', 'songs.album_id', 'albums.id')
-            ->leftJoin('artists', 'songs.artist_id', 'artists.id')
+            ->leftJoin('interactions', function (JoinClause $join): void {
+                $join->on('interactions.song_id', 'songs.id')->where('interactions.user_id', $this->user->id);
+            })
             ->select(
                 'songs.*',
-                'albums.name',
-                'artists.name',
                 'interactions.liked',
-                'interactions.play_count'
+                'interactions.play_count',
             );
     }
 
-    public function accessible(): self
+    public function accessible(?User $user = null): self
     {
+        $user ??= $this->user;
 
         // We want to alias both podcasts and podcast_user tables to avoid possible conflicts with other joins.
         return $this->leftJoin('podcasts as podcasts_a11y', 'songs.podcast_id', 'podcasts_a11y.id')
-            ->leftJoin('podcast_user as podcast_user_a11y', function (JoinClause $join): void {
+            ->leftJoin('podcast_user as podcast_user_a11y', static function (JoinClause $join) use ($user): void {
                 $join->on('podcasts_a11y.id', 'podcast_user_a11y.podcast_id')
-                    ->where('podcast_user_a11y.user_id', $this->user->id);
+                    ->where('podcast_user_a11y.user_id', $user->id);
             })
-            ->where(function (Builder $query): void {
+            ->where(static function (Builder $query) use ($user): void {
                 // Songs must be public or owned by the user.
                 $query->where('songs.is_public', true)
-                    ->orWhere('songs.owner_id', $this->user->id);
+                    ->orWhere('songs.owner_id', $user->id);
             })->whereNot(static function (Builder $query): void {
                 // Episodes must belong to a podcast that the user is not subscribed to.
                 $query->whereNotNull('songs.podcast_id')
@@ -98,21 +97,30 @@ class SongBuilder extends Builder
 
         return $this
             ->orderBy($column, $direction)
-            ->when($column === 'artists.name', static fn (self $query) => $query->orderBy('albums.name')
+            // Depending on the column, we might need to order by other columns as well.
+            ->when($column === 'songs.artist_name', static fn(self $query) => $query->orderBy('songs.album_name')
                 ->orderBy('songs.disc')
                 ->orderBy('songs.track')
                 ->orderBy('songs.title'))
-            ->when($column === 'albums.name', static fn (self $query) => $query->orderBy('artists.name')
+            ->when($column === 'songs.album_name', static fn(self $query) => $query->orderBy('songs.artist_name')
                 ->orderBy('songs.disc')
                 ->orderBy('songs.track')
                 ->orderBy('songs.title'))
-            ->when($column === 'track', static fn (self $query) => $query->orderBy('songs.disc')
+            ->when($column === 'track', static fn(self $query) => $query->orderBy('songs.disc')
                 ->orderBy('songs.track'));
     }
 
     public function sort(array $columns, string $direction): self
     {
-        $this->leftJoin('podcasts', 'songs.podcast_id', 'podcasts.id');
+        $this->when(
+            in_array('podcast_title', $columns, true) || in_array('podcast_author', $columns, true),
+            static fn(self $query) => $query->leftJoin('podcasts', 'songs.podcast_id', 'podcasts.id')
+        )->when(
+            in_array('genre', $columns, true),
+            static fn(self $query) => $query
+                ->leftJoin('genre_song', 'songs.id', 'genre_song.song_id')
+                ->leftJoin('genres', 'genre_song.genre_id', 'genres.id')
+        );
 
         foreach ($columns as $column) {
             $this->sortByOneColumn($column, $direction);
@@ -123,7 +131,7 @@ class SongBuilder extends Builder
 
     private static function normalizeSortColumn(string $column): string
     {
-        return key_exists($column, self::SORT_COLUMNS_NORMALIZE_MAP)
+        return array_key_exists($column, self::SORT_COLUMNS_NORMALIZE_MAP)
             ? self::SORT_COLUMNS_NORMALIZE_MAP[$column]
             : $column;
     }
@@ -131,7 +139,14 @@ class SongBuilder extends Builder
     public function storedOnCloud(): self
     {
         return $this->whereNotNull('storage')
-            ->where('storage', '!=', '');
+            ->where('storage', '!=', '')
+            ->whereNull('podcast_id');
+    }
+
+    public function storedLocally(): self
+    {
+        return $this->where(static fn(self $query) => $query->whereNull('songs.storage')->orWhere('songs.storage', ''))
+            ->whereNull('songs.podcast_id');
     }
 
     public function forUser(User $user): self

@@ -5,24 +5,52 @@ namespace App\Builders;
 use App\Models\Album;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\JoinClause;
+use Webmozart\Assert\Assert;
 
 class AlbumBuilder extends Builder
 {
+    public const SORT_COLUMNS_NORMALIZE_MAP = [
+        'name' => 'albums.name',
+        'year' => 'albums.year',
+        'created_at' => 'albums.created_at',
+        'artist_name' => 'albums.artist_name',
+    ];
+
+    private const VALID_SORT_COLUMNS = [
+        'albums.name',
+        'albums.year',
+        'albums.created_at',
+        'albums.artist_name',
+    ];
+
     public function isStandard(): self
     {
-        return $this->whereNot('albums.id', Album::UNKNOWN_ID);
+        return $this->whereNot('albums.name', Album::UNKNOWN_NAME);
     }
 
     public function accessibleBy(User $user): self
     {
+        return $this->whereBelongsTo($user);
+    }
 
-        return $this->join('songs', static function (JoinClause $join) use ($user): void {
-            $join->on('albums.id', 'songs.album_id')
-                ->where(static function (JoinClause $query) use ($user): void {
-                    $query->where('songs.owner_id', $user->id)
-                        ->orWhere('songs.is_public', true);
-                });
-        });
+    private static function normalizeSortColumn(string $column): string
+    {
+        return array_key_exists($column, self::SORT_COLUMNS_NORMALIZE_MAP)
+            ? self::SORT_COLUMNS_NORMALIZE_MAP[$column]
+            : $column;
+    }
+
+    public function sort(string $column, string $direction): self
+    {
+        $column = self::normalizeSortColumn($column);
+
+        Assert::oneOf($column, self::VALID_SORT_COLUMNS);
+        Assert::oneOf(strtolower($direction), ['asc', 'desc']);
+
+        return $this
+            ->orderBy($column, $direction)
+            // Depending on the column, we might need to order by the album's name as well.
+            ->when($column === 'albums.artist_name', static fn(self $query) => $query->orderBy('albums.name'))
+            ->when($column === 'albums.year', static fn(self $query) => $query->orderBy('albums.name'));
     }
 }

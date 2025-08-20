@@ -12,11 +12,11 @@ class YouTubeConnector extends Connector
 
     public function resolveBaseUrl(): string
     {
-        return config('charon.youtube.endpoint');
+        return config('charon.services.youtube.endpoint');
     }
 
     protected function defaultAuth(): QueryAuthenticator
     {
-        return new QueryAuthenticator('key', config('charon.youtube.key'));
+        return new QueryAuthenticator('key', config('charon.services.youtube.key'));
     }
 }

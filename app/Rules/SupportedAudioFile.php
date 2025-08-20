@@ -3,25 +3,20 @@
 namespace App\Rules;
 
 use Closure;
-use getID3;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Arr;
-use Webmozart\Assert\Assert;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class SupportedAudioFile implements ValidationRule
 {
-    private const SUPPORTED_FORMATS = ['mp3', 'aac', 'ogg', 'flac', 'wav'];
-
+    /** @param UploadedFile $value */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $passes = rescue(static function () use ($value) {
-            Assert::oneOf(
-                Arr::get((new getID3())->analyze($value->getRealPath()), 'fileformat'),
-                self::SUPPORTED_FORMATS
-            );
-
-            return true;
-        }) ?? false;
+        $passes = array_key_exists(
+            Str::lower(File::mimeType($value->getRealPath())),
+            config('charon.streaming.supported_mime_types')
+        );
 
         if (!$passes) {
             $fail('Unsupported audio file');

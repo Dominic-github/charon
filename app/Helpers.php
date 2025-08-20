@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\File as FileFacade;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
@@ -15,6 +15,11 @@ function static_url(?string $name = null): string
     $cdnUrl = trim(config('charon.cdn.url'), '/ ');
 
     return $cdnUrl ? $cdnUrl . '/' . trim(ltrim($name, '/')) : trim(asset($name));
+}
+
+function base_url(): string
+{
+    return app()->runningUnitTests() ? config('app.url') : asset('');
 }
 
 function album_cover_path(?string $fileName): ?string
@@ -57,9 +62,24 @@ function user_avatar_url(?string $fileName): ?string
     return $fileName ? static_url(config('charon.user_avatar_dir') . $fileName) : null;
 }
 
+function artifact_path(?string $subPath = null, bool $ensureDirectoryExists = true): string
+{
+    $base = rtrim(config('charon.artifacts_path'), DIRECTORY_SEPARATOR . '/');
+
+    $subPath = $subPath ? trim($subPath, DIRECTORY_SEPARATOR . '/') : '';
+
+    $path = $subPath ? $base . DIRECTORY_SEPARATOR . $subPath : $base;
+
+    if ($ensureDirectoryExists) {
+        File::ensureDirectoryExists(dirname($path));
+    }
+
+    return $path;
+}
+
 function charon_version(): string
 {
-    return trim(FileFacade::get(base_path('.version')));
+    return trim(File::get(base_path('.version')));
 }
 
 function rescue_if($condition, callable $callback): mixed
@@ -74,7 +94,10 @@ function rescue_unless($condition, callable $callback): mixed
 
 function gravatar(string $email, int $size = 192): string
 {
-    return sprintf("https://www.gravatar.com/avatar/%s?s=$size&d=robohash", md5(Str::lower($email)));
+    $url = config('services.gravatar.url');
+    $default = config('services.gravatar.default');
+
+    return sprintf("%s/%s?s=$size&d=$default", $url, md5(Str::lower($email)));
 }
 
 function avatar_or_gravatar(?string $avatar, string $email): string
@@ -121,5 +144,41 @@ function get_mtime(string|SplFileInfo $file): int
     $file = is_string($file) ? new SplFileInfo($file) : $file;
 
     // Workaround for #344, where getMTime() fails for certain files with Unicode names on Windows.
-    return rescue(static fn () => $file->getMTime()) ?? time();
+    return rescue(static fn() => $file->getMTime()) ?? time();
+}
+
+/**
+ * Simple, non-cryptographically secure hash function for strings.
+ * This is used for generating hashes for identifiers that do not require high security.
+ */
+function simple_hash(?string $string): string
+{
+    return md5("charon-hash:$string");
+}
+
+function is_image(string $path): bool
+{
+    return rescue(static fn() => (bool) exif_imagetype($path)) ?? false;
+}
+
+/**
+ * @param string|int ...$parts
+ */
+function cache_key(...$parts): string
+{
+    return simple_hash(implode('.', $parts));
+}
+
+/**
+ * @return array<string>
+ */
+function collect_accepted_audio_extensions(): array
+{
+    return array_values(
+        collect(array_values(config('charon.streaming.supported_mime_types')))
+            ->flatten()
+            ->unique()
+            ->map(static fn(string $ext) => Str::lower($ext))
+            ->toArray()
+    );
 }

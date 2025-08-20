@@ -21,10 +21,10 @@ enum SmartPlaylistModel: string
         return match ($this) {
             self::TITLE => 'songs.title',
             self::LENGTH => 'songs.length',
-            self::GENRE => 'songs.genre',
+            self::GENRE => 'genres.name',
             self::YEAR => 'songs.year',
-            self::ALBUM_NAME => 'albums.name',
-            self::ARTIST_NAME => 'artists.name',
+            self::ALBUM_NAME => 'songs.album_name',
+            self::ARTIST_NAME => 'songs.artist_name',
             self::DATE_ADDED => 'songs.created_at',
             self::DATE_MODIFIED => 'songs.updated_at',
             default => $this->value,
@@ -34,5 +34,13 @@ enum SmartPlaylistModel: string
     public function isDate(): bool
     {
         return in_array($this, [self::LAST_PLAYED, self::DATE_ADDED, self::DATE_MODIFIED], true);
+    }
+
+    public function getManyToManyRelation(): ?string
+    {
+        return match ($this) {
+            self::GENRE => 'genres',
+            default => null,
+        };
     }
 }

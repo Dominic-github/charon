@@ -2,26 +2,41 @@
 
 namespace App\Repositories;
 
-use App\Builders\AlbumBuilder;
 use App\Models\Album;
 use App\Models\Artist;
 use App\Models\User;
+use App\Repositories\Contracts\ScoutableRepository;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Laravel\Scout\Builder as ScoutBuilder;
 
 /**
  * @extends Repository<Album>
+ * @implements ScoutableRepository<Album>
  */
-class AlbumRepository extends Repository
+class AlbumRepository extends Repository implements ScoutableRepository
 {
+    /** @param int $id */
+    public function getOne($id, ?User $scopedUser = null): Model
+    {
+        $scopedUser ??= auth()->user();
+
+        return $this->getOneBy([
+            'id' => $id,
+            'user_id' => $scopedUser?->id,
+        ]);
+    }
+
     /** @return Collection|array<array-key, Album> */
     public function getRecentlyAdded(int $count = 6, ?User $user = null): Collection
     {
         return Album::query()
             ->isStandard()
             ->accessibleBy($user ?? $this->auth->user())
-            ->groupBy('albums.id')
             ->distinct()
             ->latest('albums.created_at')
             ->limit($count)
@@ -36,18 +51,15 @@ class AlbumRepository extends Repository
         return Album::query()
             ->isStandard()
             ->accessibleBy($user)
-            ->unless(
-                true, // accessibleBy() would have already joined with `songs`
-                static fn (AlbumBuilder $query) => $query->leftJoin('songs', 'albums.id', 'songs.album_id')
-            )
+            ->leftJoin('songs', 'albums.id', 'songs.album_id')
             ->join('interactions', static function (JoinClause $join) use ($user): void {
                 $join->on('songs.id', 'interactions.song_id')->where('interactions.user_id', $user->id);
             })
-            ->groupBy('albums.id', 'play_count')
-            ->distinct()
+            ->select('albums.*', DB::raw('SUM(interactions.play_count) as play_count'))
+            ->groupBy('albums.id')
             ->orderByDesc('play_count')
             ->limit($count)
-            ->get(['albums.*', 'play_count']);
+            ->get();
     }
 
     /** @return Collection|array<array-key, Album> */
@@ -57,7 +69,6 @@ class AlbumRepository extends Repository
             ->isStandard()
             ->accessibleBy($user ?? auth()->user())
             ->whereIn('albums.id', $ids)
-            ->groupBy('albums.id')
             ->distinct()
             ->get('albums.*');
 
@@ -69,23 +80,41 @@ class AlbumRepository extends Repository
     {
         return Album::query()
             ->accessibleBy($user ?? $this->auth->user())
-            ->where('albums.artist_id', $artist->id)
-            ->orWhereIn('albums.id', $artist->songs()->pluck('album_id'))
+            ->where(static function (Builder $query) use ($artist): void {
+                $query->whereBelongsTo($artist)
+                    ->orWhereHas('songs', static function (Builder $songQuery) use ($artist): void {
+                        $songQuery->whereBelongsTo($artist);
+                    });
+            })
             ->orderBy('albums.name')
-            ->groupBy('albums.id')
             ->distinct()
             ->get('albums.*');
     }
 
-    public function paginate(?User $user = null): Paginator
+    public function getForListing(string $sortColumn, string $sortDirection, ?User $user = null): Paginator
     {
         return Album::query()
             ->accessibleBy($user ?? $this->auth->user())
             ->isStandard()
-            ->orderBy('albums.name')
-            ->groupBy('albums.id')
+            ->sort($sortColumn, $sortDirection)
             ->distinct()
             ->select('albums.*')
             ->simplePaginate(21);
+    }
+
+    /** @return Collection<Album>|array<array-key, Album> */
+    public function search(string $keywords, int $limit, ?User $scopedUser = null): Collection
+    {
+        $scopedUser ??= auth()->user();
+
+        return $this->getMany(
+            ids: Album::search($keywords)
+                ->when(true, static fn(ScoutBuilder $query) => $query->where('user_id', $scopedUser?->id))
+                ->get()
+                ->take($limit)
+                ->modelKeys(),
+            preserveOrder: true,
+            user: $scopedUser,
+        );
     }
 }

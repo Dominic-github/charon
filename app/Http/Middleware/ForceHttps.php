@@ -8,9 +8,7 @@ use Illuminate\Routing\UrlGenerator;
 
 class ForceHttps
 {
-    public function __construct(private UrlGenerator $url)
-    {
-    }
+    public function __construct(private UrlGenerator $url) {}
 
     public function handle(Request $request, Closure $next) // @phpcs:ignore
     {
@@ -19,9 +17,9 @@ class ForceHttps
             $request->setTrustedProxies(
                 [$request->getClientIp()],
                 Request::HEADER_X_FORWARDED_FOR
-                | Request::HEADER_X_FORWARDED_HOST
-                | Request::HEADER_X_FORWARDED_PORT
-                | Request::HEADER_X_FORWARDED_PROTO
+                    | Request::HEADER_X_FORWARDED_HOST
+                    | Request::HEADER_X_FORWARDED_PORT
+                    | Request::HEADER_X_FORWARDED_PROTO
             );
         }
 

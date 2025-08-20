@@ -9,13 +9,11 @@ use Illuminate\Support\Arr;
 
 class SpotifyService
 {
-    public function __construct(private readonly SpotifyClient $client)
-    {
-    }
+    public function __construct(private readonly SpotifyClient $client) {}
 
     public static function enabled(): bool
     {
-        return config('charon.spotify.client_id') && config('charon.spotify.client_secret');
+        return config('charon.services.spotify.client_id') && config('charon.services.spotify.client_secret');
     }
 
     public function tryGetArtistImage(Artist $artist): ?string

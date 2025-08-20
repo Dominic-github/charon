@@ -4,15 +4,19 @@ namespace App\Http\Controllers\API;
 
 use App\Exceptions\MediaPathNotSetException;
 use App\Exceptions\SongUploadFailedException;
+use App\Facades\Dispatcher;
+use App\Helpers\Ulid;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\UploadRequest;
-use App\Http\Resources\AlbumResource;
-use App\Http\Resources\SongResource;
+use App\Jobs\HandleSongUploadJob;
+use App\Models\Song;
 use App\Models\User;
 use App\Repositories\AlbumRepository;
 use App\Repositories\SongRepository;
+use App\Responses\SongUploadResponse;
 use App\Services\SongStorages\SongStorage;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Http\Response;
 
 class UploadController extends Controller
@@ -28,18 +32,26 @@ class UploadController extends Controller
         $this->authorize('upload', User::class);
 
         try {
-            // @todo decouple Song from storage, as storages should not be responsible for creating a song.
-            $song = $songRepository->getOne($storage->storeUploadedFile($request->file, $user)->id, $user);
+            $file = $request->file->move(
+                artifact_path('tmp/' . Ulid::generate()),
+                $request->file->getClientOriginalName()
+            );
 
-            return response()->json([
-                'song' => SongResource::make($song),
-                'album' => AlbumResource::make($albumRepository->getOne($song->album_id)),
-            ]);
+            /** @var Song|PendingDispatch $dispatchedResult */
+            $dispatchedResult = Dispatcher::dispatch(new HandleSongUploadJob($file->getRealPath(), $user));
+
+            if ($dispatchedResult instanceof Song) {
+                $song = $songRepository->getOne($dispatchedResult->id);
+                $album = $albumRepository->getOne($song->album_id);
+
+                return SongUploadResponse::make(song: $song, album: $album)->toResponse();
+            }
+
+            return response()->noContent();
         } catch (MediaPathNotSetException $e) {
             abort(Response::HTTP_FORBIDDEN, $e->getMessage());
         } catch (SongUploadFailedException $e) {
             abort(Response::HTTP_BAD_REQUEST, $e->getMessage());
         }
-
     }
 }

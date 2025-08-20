@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 /**
  * @property string $token
@@ -19,13 +18,6 @@ use Illuminate\Support\Str;
 class PlaylistCollaborationToken extends Model
 {
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        static::creating(static function (PlaylistCollaborationToken $token): void {
-            $token->token ??= Str::uuid()->toString();
-        });
-    }
 
     public function playlist(): BelongsTo
     {

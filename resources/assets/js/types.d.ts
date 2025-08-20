@@ -70,6 +70,7 @@ interface Window {
   IS_DEMO: boolean
   SSO_PROVIDERS: SSOProvider[]
   AUTH_TOKEN: CompositeToken | null
+  ACCEPTED_AUDIO_EXTENSIONS: string[]
 
   readonly PUSHER_APP_KEY: string
   readonly PUSHER_APP_CLUSTER: string
@@ -82,7 +83,7 @@ interface FileSystemEntry {
   createReader: () => FileSystemDirectoryReader
 }
 
-type MediaInfoDisplayMode = 'aside' | 'full'
+type EncyclopediaDisplayMode = 'aside' | 'full'
 type ScreenHeaderLayout = 'expanded' | 'collapsed'
 
 interface AlbumTrack {
@@ -111,7 +112,7 @@ interface ArtistInfo {
 
 interface Artist {
   type: 'artists'
-  readonly id: number
+  readonly id: string
   name: string
   image: string | null
   created_at: string
@@ -119,16 +120,17 @@ interface Artist {
 
 interface Album {
   type: 'albums'
-  readonly id: number
+  readonly id: string
   artist_id: Artist['id']
   artist_name: Artist['name']
   name: string
   cover: string
   thumbnail?: string | null
   created_at: string
+  year: number | null
 }
 
-interface Playable {
+interface BasePlayable {
   type: 'songs' | 'episodes'
   readonly id: string
   title: string
@@ -143,7 +145,7 @@ interface Playable {
   created_at: string
 }
 
-interface Song extends Playable {
+interface Song extends BasePlayable {
   type: 'songs'
   readonly owner_id: User['id']
   album_id: Album['id']
@@ -159,10 +161,17 @@ interface Song extends Playable {
   year: number | null
   lyrics: string
   is_public: boolean
+  is_external: boolean
+  basename?: string
   deleted?: boolean
+  collaboration?: {
+    user: PlaylistCollaborator
+    added_at: string | null
+    fmt_added_at: string | null
+  }
 }
 
-interface Episode extends Playable {
+interface Episode extends BasePlayable {
   type: 'episodes'
   episode_link: string | null
   episode_description: string
@@ -172,13 +181,7 @@ interface Episode extends Playable {
   podcast_author: string
 }
 
-interface CollaborativeSong extends Playable {
-  collaboration: {
-    user: PlaylistCollaborator
-    added_at: string | null
-    fmt_added_at: string | null
-  }
-}
+type Playable = Song | Episode
 
 interface QueueState {
   type: 'queue-states'
@@ -247,7 +250,7 @@ type PlaylistCollaborator = Pick<User, 'id' | 'name' | 'avatar'> & {
 interface Playlist {
   type: 'playlists'
   readonly id: string
-  readonly user_id: User['id']
+  readonly owner_id: User['id']
   name: string
   folder_id: PlaylistFolder['id'] | null
   is_smart: boolean
@@ -302,6 +305,8 @@ interface UserPreferences extends Record<string, any> {
   equalizer: EqualizerPreset
   artists_view_mode: ArtistAlbumViewMode | null
   albums_view_mode: ArtistAlbumViewMode | null
+  albums_sort_field: AlbumListSortField
+  albums_sort_order: SortOrder
   transcode_on_mobile: boolean
   transcode_quality: number
   support_bar_no_bugging: boolean
@@ -309,14 +314,14 @@ interface UserPreferences extends Record<string, any> {
   lyrics_zoom_level: number | null
   theme?: Theme['id'] | null
   visualizer?: Visualizer['id'] | null
-  active_extra_panel_tab: ExtraPanelTab | null
+  active_extra_panel_tab: SideSheetTab | null
   make_uploads_public: boolean
   lastfm_session_key?: string
 }
 
 interface User {
   type: 'users'
-  id: number
+  id: string
   name: string
   email: string
   is_admin: boolean
@@ -451,14 +456,21 @@ interface PlayableListContext {
 }
 
 type PlayableListSortField =
-  keyof Pick<Song, 'track' | 'disc' | 'title' | 'album_name' | 'length' | 'artist_name' | 'created_at'>
+  keyof Pick<Song, 'track' | 'disc' | 'title' | 'album_name' | 'length' | 'artist_name' | 'genre' | 'year' | 'created_at'>
   | keyof Pick<Episode, 'podcast_author' | 'podcast_title'>
   | 'position'
 
 type PodcastListSortField = keyof Pick<Podcast, 'title' | 'last_played_at' | 'subscribed_at' | 'author'>
+type AlbumListSortField = keyof Pick<Album, 'name' | 'year' | 'artist_name' | 'created_at'>
+type ArtistListSortField = keyof Pick<Artist, 'name' | 'created_at'>
+
+interface BasicListSorterDropDownItem<T extends PodcastListSortField | AlbumListSortField | ArtistListSortField> {
+  label: string
+  field: T
+}
 
 type SortOrder = 'asc' | 'desc'
-type MoveType = 'before' | 'after'
+type Placement = 'before' | 'after'
 
 type MethodOf<T> = { [K in keyof T]: T[K] extends Closure ? K : never; }[keyof T]
 
@@ -483,12 +495,13 @@ interface ToastMessage {
 
 interface Genre {
   type: 'genres'
+  id: string
   name: string
   song_count: number
   length: number
 }
 
-type ExtraPanelTab = 'Lyrics' | 'Artist' | 'Album' | 'YouTube'
+type SideSheetTab = 'Lyrics' | 'Artist' | 'Album' | 'YouTube'
 
 interface Visualizer {
   init: (container: HTMLElement) => Promise<Closure>
@@ -500,4 +513,28 @@ interface Visualizer {
   }
 }
 
-type PlayableListColumnName = 'title' | 'album' | 'track' | 'duration' | 'created_at' | 'play_count'
+type PlayableListColumnName =
+  'title'
+  | 'album'
+  | 'artist'
+  | 'track'
+  | 'duration'
+  | 'created_at'
+  | 'play_count'
+  | 'year'
+  | 'genre'
+
+interface Folder {
+  type: 'folders'
+  id: string
+  parent_id: string | null
+  path: string
+  name: string
+}
+
+interface MediaRow {
+  item: Folder | Song
+  selected: boolean
+}
+
+type MediaReference = Pick<Folder, 'type' | 'path'> | Pick<Song, 'type' | 'id'>

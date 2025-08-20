@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\API\AddSongsToPlaylistRequest;
 use App\Http\Requests\API\RemoveSongsFromPlaylistRequest;
 use App\Http\Resources\CollaborativeSongResource;
-use App\Http\Resources\SongResource;
+use App\Http\Resources\SongResourceCollection;
 use App\Models\Playlist;
 use App\Models\User;
 use App\Repositories\SongRepository;
@@ -24,15 +24,14 @@ class PlaylistSongController extends Controller
         private readonly SongRepository $songRepository,
         private readonly PlaylistService $playlistService,
         private readonly SmartPlaylistService $smartPlaylistService,
-        private readonly ?Authenticatable $user
-    ) {
-    }
+        private readonly Authenticatable $user
+    ) {}
 
     public function index(Playlist $playlist)
     {
         if ($playlist->is_smart) {
             $this->authorize('own', $playlist);
-            return SongResource::collection($this->smartPlaylistService->getSongs($playlist, $this->user));
+            return SongResourceCollection::make($this->smartPlaylistService->getSongs($playlist, $this->user));
         }
 
         $this->authorize('collaborate', $playlist);

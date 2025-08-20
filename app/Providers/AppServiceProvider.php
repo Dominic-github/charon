@@ -2,23 +2,26 @@
 
 namespace App\Providers;
 
-use App\Services\Contracts\MusicEncyclopedia;
+use App\Models\Genre;
+use App\Services\Contracts\Encyclopedia;
 use App\Services\LastfmService;
-use App\Services\NullMusicEncyclopedia;
+use App\Services\MusicBrainzService;
+use App\Services\NullEncyclopedia;
+use App\Services\Scanners\Contracts\ScannerCacheStrategy as ScannerCacheStrategyContract;
+use App\Services\Scanners\ScannerCacheStrategy;
+use App\Services\Scanners\ScannerNoCacheStrategy;
 use App\Services\SpotifyService;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use SpotifyWebAPI\Session as SpotifySession;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(Builder $schema, DatabaseManager $db): void
     {
         // Fix utf8mb4-related error starting from Laravel 5.4
@@ -26,34 +29,59 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(!app()->isProduction());
 
-        // Enable on delete cascade for sqlite connections
-        if ($db->connection() instanceof SQLiteConnection) {
-            $db->statement($db->raw('PRAGMA foreign_keys = ON')->getValue($db->getQueryGrammar()));
-        }
+        $this->enableOnDeleteCascadeForSqliteConnections($db);
 
         // disable wrapping JSON resource in a `data` key
         JsonResource::withoutWrapping();
 
         $this->app->bind(SpotifySession::class, static function () {
             return SpotifyService::enabled()
-                ? new SpotifySession(config('charon.spotify.client_id'), config('charon.spotify.client_secret'))
+                ? new SpotifySession(
+                    config('charon.services.spotify.client_id'),
+                    config('charon.services.spotify.client_secret'),
+                )
                 : null;
         });
 
-        $this->app->bind(MusicEncyclopedia::class, function () {
-            return $this->app->get(LastfmService::enabled() ? LastfmService::class : NullMusicEncyclopedia::class);
+        $this->app->bind(Encyclopedia::class, static function () {
+            // Prefer Last.fm over MusicBrainz, and fall back to a null encyclopedia.
+            if (LastfmService::enabled()) {
+                return app(LastfmService::class);
+            }
+
+            if (MusicBrainzService::enabled()) {
+                return app(MusicBrainzService::class);
+            }
+
+            return app(NullEncyclopedia::class);
         });
 
-     
+
+        $this->app->bind(ScannerCacheStrategyContract::class, static function () {
+            // Use a no-cache strategy for unit tests to ensure consistent results
+            return app()->runningUnitTests() ? app(ScannerNoCacheStrategy::class) : app(ScannerCacheStrategy::class);
+        });
+
+        Route::bind('genre', static function (string $value): ?Genre {
+            if ($value === Genre::NO_GENRE_PUBLIC_ID) {
+                return null;
+            }
+
+            return Genre::query()->where('public_id', $value)->firstOrFail();
+        });
     }
 
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        if ($this->app->environment() !== 'production' && class_exists('Laravel\Tinker\TinkerServiceProvider')) {
+        if (class_exists('Laravel\Tinker\TinkerServiceProvider')) {
             $this->app->register('Laravel\Tinker\TinkerServiceProvider');
+        }
+    }
+
+    public function enableOnDeleteCascadeForSqliteConnections(DatabaseManager $db): void
+    {
+        if ($db->connection() instanceof SQLiteConnection) {
+            $db->statement($db->raw('PRAGMA foreign_keys = ON')->getValue($db->getQueryGrammar()));
         }
     }
 }

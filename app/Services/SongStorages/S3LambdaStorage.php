@@ -11,25 +11,30 @@ use App\Models\Song;
 use App\Models\User;
 use App\Repositories\SongRepository;
 use App\Repositories\UserRepository;
-use App\Services\MediaMetadataService;
-use Illuminate\Http\UploadedFile;
+use App\Services\ArtworkService;
+use App\Values\UploadReference;
 
 /**
  * The legacy storage implementation for Lambda and S3, to provide backward compatibility.
  * In this implementation, the songs are supposed to be uploaded to S3 directly.
  */
-final class S3LambdaStorage extends S3CompatibleStorage
+class S3LambdaStorage extends S3CompatibleStorage
 {
-    public function __construct( // @phpcs:ignore
-        private readonly MediaMetadataService $mediaMetadataService,
+    public function __construct(
+        private readonly ArtworkService $artworkService,
         private readonly SongRepository $songRepository,
         private readonly UserRepository $userRepository
     ) {
+        parent::__construct();
     }
 
-    public function storeUploadedFile(UploadedFile $file, User $uploader): Song
+    public function storeUploadedFile(string $uploadedFilePath, User $uploader): UploadReference
     {
+        throw new MethodNotImplementedException('Lambda storage does not support uploading.');
+    }
 
+    public function undoUpload(UploadReference $reference): void
+    {
         throw new MethodNotImplementedException('Lambda storage does not support uploading.');
     }
 
@@ -45,18 +50,18 @@ final class S3LambdaStorage extends S3CompatibleStorage
         int $track,
         string $lyrics
     ): Song {
-        $user = $this->userRepository->getDefaultAdminUser();
+        $user = $this->userRepository->getFirstAdminUser();
         $path = Song::getPathFromS3BucketAndKey($bucket, $key);
-        $artist = Artist::getOrCreate($artistName);
+        $artist = Artist::getOrCreate($user, $artistName);
 
         $albumArtist = $albumArtistName && $albumArtistName !== $artistName
-            ? Artist::getOrCreate($albumArtistName)
+            ? Artist::getOrCreate($user, $albumArtistName)
             : $artist;
 
         $album = Album::getOrCreate($albumArtist, $albumName);
 
         if ($cover) {
-            $this->mediaMetadataService->writeAlbumCover($album, base64_decode($cover['data'], true));
+            $this->artworkService->storeAlbumCover($album, base64_decode($cover['data'], true));
         }
 
         return Song::query()->updateOrCreate(['path' => $path], [
@@ -83,7 +88,7 @@ final class S3LambdaStorage extends S3CompatibleStorage
         $song->delete();
     }
 
-    public function delete(Song $song, bool $backup = false): void
+    public function delete(string $location, bool $backup = false): void
     {
         throw new MethodNotImplementedException('Lambda storage does not support deleting from filesystem.');
     }

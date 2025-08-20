@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\DoctorResult;
 use App\Enums\SongStorageType;
+use App\Helpers\Ulid;
 use App\Http\Integrations\Lastfm\LastfmConnector;
 use App\Http\Integrations\Lastfm\Requests\GetArtistInfoRequest;
 use App\Http\Integrations\Spotify\SpotifyClient;
@@ -25,7 +27,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Throwable;
 use TiBeN\CrontabManager\CrontabAdapter;
@@ -55,9 +56,14 @@ class DoctorCommand extends Command
             return self::FAILURE;
         }
 
-        $this->checkFrameworkDirectoryPermissions();
-        $this->checkMediaStorage();
-        $this->checkDatabaseConnection();
+        $this->checkDirectoryPermissions();
+
+        if ($this->checkDatabaseConnection() === DoctorResult::SUCCESS) {
+            $this->checkMediaStorage();
+        } else {
+            $this->reportWarning('Storage type.', 'UNKNOWN');
+        }
+
         $this->checkFullTextSearch();
         $this->checkApiHealth();
         $this->checkFFMpeg();
@@ -118,10 +124,10 @@ class DoctorCommand extends Command
             return;
         }
 
-        $recipient = Str::uuid() . '@mailinator.com';
+        $recipient = Ulid::generate() . '@mailinator.com';
 
         try {
-            Mail::raw('This is a test email.', static fn (Message $message) => $message->to($recipient));
+            Mail::raw('This is a test email.', static fn(Message $message) => $message->to($recipient));
             $this->reportSuccess('Mailer configuration');
         } catch (Throwable $e) {
             $this->collectError($e);
@@ -236,7 +242,7 @@ class DoctorCommand extends Command
                 condition: File::exists($ffmpegPath) && is_executable($ffmpegPath),
                 success: "FFmpeg binary <info>$ffmpegPath</info> is executable.",
                 warning: "FFmpeg binary <info>$ffmpegPath</info> does not exist or is not executable. "
-                . 'Transcoding will not be available.',
+                    . 'Transcoding will not be available.',
             );
         } else {
             $this->reportWarning('FFmpeg path is not set. Transcoding will not be available.');
@@ -273,14 +279,18 @@ class DoctorCommand extends Command
         }
     }
 
-    private function checkDatabaseConnection(): void
+    private function checkDatabaseConnection(): DoctorResult
     {
         try {
             User::query()->count('id');
             $this->reportSuccess('Checking database connection');
+
+            return DoctorResult::SUCCESS;
         } catch (Throwable $e) {
             $this->collectError($e);
             $this->reportError('Checking database connection');
+
+            return DoctorResult::ERROR;
         }
     }
 
@@ -311,8 +321,9 @@ class DoctorCommand extends Command
         }
     }
 
-    private function checkFrameworkDirectoryPermissions(): void
+    private function checkDirectoryPermissions(): void
     {
+        $this->assertDirectoryPermissions(artifact_path(), 'Artifacts');
         $this->assertDirectoryPermissions(base_path('storage/framework/sessions'), 'Session');
         $this->assertDirectoryPermissions(base_path('storage/framework/cache'), 'Cache');
         $this->assertDirectoryPermissions(base_path('storage/logs'), 'Log');

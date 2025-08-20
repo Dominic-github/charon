@@ -32,7 +32,7 @@ class StorageCommand extends Command
             $choices,
             config('charon.storage_driver')
         );
-        
+
         if ($this->call("charon:storage:$driver") === self::SUCCESS) {
             $this->output->success('Storage has been set up.');
 

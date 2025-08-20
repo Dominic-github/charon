@@ -13,7 +13,7 @@ class AcceptPlaylistCollaborationInviteController extends Controller
     /** @param User $user */
     public function __invoke(PlaylistCollaborationService $service, Authenticatable $user)
     {
-        $playlist = $service->acceptUsingToken(request()->input('token'), $user);
+        $playlist = $service->acceptUsingToken(request('token'), $user);
 
         return PlaylistResource::make($playlist);
     }

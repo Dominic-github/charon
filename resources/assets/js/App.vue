@@ -13,7 +13,7 @@
     @dragover="onDragOver"
     @drop="onDrop"
   >
-    <Hotkeys />
+    <HotkeyListener />
     <MainWrapper />
     <AppFooter />
     <SongContextMenu />
@@ -62,7 +62,7 @@ import AppFooter from '@/components/layout/app-footer/index.vue'
 import GlobalEventListeners from '@/components/utils/GlobalEventListeners.vue'
 import AppInitializer from '@/components/utils/AppInitializer.vue'
 
-const Hotkeys = defineAsyncComponent(() => import('@/components/utils/HotkeyListener.vue'))
+const HotkeyListener = defineAsyncComponent(() => import('@/components/utils/HotkeyListener.vue'))
 const LoginForm = defineAsyncComponentWithLoadingState(() => import('@/components/auth/LoginForm.vue'))
 const RegisterForm = defineAsyncComponentWithLoadingState(() => import('@/components/auth/RegisterForm.vue'))
 const MainWrapper = defineAsyncComponentWithLoadingState(() => import('@/components/layout/main-wrapper/index.vue'))

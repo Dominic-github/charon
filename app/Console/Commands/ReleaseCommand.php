@@ -18,7 +18,7 @@ use function Laravel\Prompts\warning;
 class ReleaseCommand extends Command
 {
     protected $signature
-        = 'charon:release {version? : The version to release, or "patch", "minor", "major" for auto-increment}';
+    = 'charon:release {version? : The version to release, or "patch", "minor", "major" for auto-increment}';
     protected $description = 'Tag and release a new version of Charon';
 
     private Version $currentVersion;
@@ -74,7 +74,7 @@ class ReleaseCommand extends Command
         ];
 
         foreach ($gitCommands as $command) {
-            $this->components->task("Executing `git $command`", static fn () => self::runOkOrThrow("git $command"));
+            $this->components->task("Executing `git $command`", static fn() => self::runOkOrThrow("git $command"));
         }
 
         info("Success! The new version $version has been tagged.");
@@ -110,7 +110,7 @@ class ReleaseCommand extends Command
                 label: 'Enter the version you want to release',
                 placeholder: $patchVersion,
                 required: true,
-                validate: static fn (string $value) => self::tryParseVersion($value)
+                validate: static fn(string $value) => self::tryParseVersion($value)
                     ? null
                     : 'Invalid version format',
             );

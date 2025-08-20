@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    './resources/assets/js/**/*.{vue,js,ts,jsx,tsx}',
+    "./resources/assets/js/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -28,10 +28,10 @@ export default {
         'k-side-sheet-width': 'var(--side-sheet-width)',
       },
       screens: {
-        'no-hover': { raw: '(hover: none)' },
-        'pc': '500px' 
-      },
+        'no-hover': {'raw': '(hover: none)'},
+      }
     },
   },
   plugins: [],
 }
+

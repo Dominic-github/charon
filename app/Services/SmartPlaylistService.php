@@ -8,10 +8,10 @@ use App\Exceptions\NonSmartPlaylistException;
 use App\Models\Playlist;
 use App\Models\Song;
 use App\Models\User;
-use App\Values\SmartPlaylistRule as Rule;
-use App\Values\SmartPlaylistRuleGroup as RuleGroup;
-use App\Values\SmartPlaylistSqlElements as SqlElements;
-use Illuminate\Support\Collection;
+use App\Values\SmartPlaylist\SmartPlaylistQueryModifier as QueryModifier;
+use App\Values\SmartPlaylist\SmartPlaylistRule as Rule;
+use App\Values\SmartPlaylist\SmartPlaylistRuleGroup as RuleGroup;
+use Illuminate\Database\Eloquent\Collection;
 
 class SmartPlaylistService
 {
@@ -20,26 +20,28 @@ class SmartPlaylistService
     {
         throw_unless($playlist->is_smart, NonSmartPlaylistException::create($playlist));
 
-        $query = Song::query(type: PlayableType::SONG, user: $user ?? $playlist->user)
-            ->withMeta()
-            ->when(true, static fn (SongBuilder $query) => $query->accessible())
+
+        $user ??= $playlist->owner;
+
+        $query = Song::query(type: PlayableType::SONG, user: $user)
+            ->withMetaData()
+            ->when(true, static fn(SongBuilder $query) => $query->accessible())
             ->when(
-                $playlist->own_songs_only,
-                static fn (SongBuilder $query) => $query->where('songs.owner_id', $playlist->user_id)
+                $playlist->own_songs_only && true,
+                static fn(SongBuilder $query) => $query->where('songs.owner_id', $user->id)
             );
 
         $playlist->rule_groups->each(static function (RuleGroup $group, int $index) use ($query): void {
             $whereClosure = static function (SongBuilder $subQuery) use ($group): void {
                 $group->rules->each(static function (Rule $rule) use ($subQuery): void {
-                    $tokens = SqlElements::fromRule($rule);
-                    $subQuery->{$tokens->clause}(...$tokens->parameters);
+                    QueryModifier::applyRule($rule, $subQuery);
                 });
             };
 
             $query->when(
                 $index === 0,
-                static fn (SongBuilder $query) => $query->where($whereClosure),
-                static fn (SongBuilder $query) => $query->orWhere($whereClosure)
+                static fn(SongBuilder $query) => $query->where($whereClosure),
+                static fn(SongBuilder $query) => $query->orWhere($whereClosure)
             );
         });
 

@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands\Storage;
 
+use App\Helpers\Ulid;
 use App\Services\SongStorages\DropboxStorage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Jackiedo\DotenvEditor\DotenvEditor;
 use Throwable;
 
@@ -32,7 +32,7 @@ class SetupDropboxStorageCommand extends Command
         $config['DROPBOX_APP_KEY'] = $this->ask('Enter your Dropbox app key');
         $config['DROPBOX_APP_SECRET'] = $this->ask('Enter your Dropbox app secret');
 
-        $cacheKey = Str::uuid()->toString();
+        $cacheKey = Ulid::generate();
 
         Cache::put(
             $cacheKey,
@@ -63,22 +63,23 @@ class SetupDropboxStorageCommand extends Command
             return self::FAILURE;
         }
 
-        Cache::put(
-            'dropbox_access_token',
-            $response->json('access_token'),
-            now()->addSeconds($response->json('expires_in') - 60) // 60 seconds buffer
-        );
-
         $config['DROPBOX_REFRESH_TOKEN'] = $response->json('refresh_token');
-        
+
         $this->dotenvEditor->setKeys($config);
         $this->dotenvEditor->save();
-        Artisan::call('config:clear', ['--quiet' => true]);
+
+        config()->set('filesystems.disks.dropbox', [
+            'app_key' => $config['DROPBOX_APP_KEY'],
+            'app_secret' => $config['DROPBOX_APP_SECRET'],
+            'refresh_token' => $config['DROPBOX_REFRESH_TOKEN'],
+        ]);
 
         $this->comment('Uploading a test file to make sure everything is working...');
 
         try {
-            app(DropboxStorage::class)->testSetup();
+            /** @var DropboxStorage $storage */
+            $storage = app()->build(DropboxStorage::class); // build instead of make to avoid singleton issues
+            $storage->testSetup();
         } catch (Throwable $e) {
             $this->error('Failed to upload test file: ' . $e->getMessage() . '.');
             $this->comment('Please make sure the app has the correct permissions and try again.');

@@ -4,100 +4,73 @@ namespace App\Services\SongStorages;
 
 use App\Enums\SongStorageType;
 use App\Exceptions\MediaPathNotSetException;
-use App\Exceptions\SongUploadFailedException;
+use App\Helpers\Ulid;
 use App\Models\Setting;
-use App\Models\Song;
 use App\Models\User;
-use App\Services\FileScanner;
-use App\Values\ScanConfiguration;
+use App\Values\UploadReference;
 use Exception;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
-use Throwable;
+use Illuminate\Support\Str;
 
-use function Functional\memoize;
-
-final class LocalStorage extends SongStorage
+class LocalStorage extends SongStorage
 {
-    public function __construct(private readonly FileScanner $scanner)
+    public function storeUploadedFile(string $uploadedFilePath, User $uploader): UploadReference
     {
+        $destination = $this->getDestination($uploadedFilePath, $uploader);
+        File::move($uploadedFilePath, $destination);
+
+        // For local storage, the "location" and "localPath" are the same.
+        return UploadReference::make(
+            location: $destination,
+            localPath: $destination,
+        );
     }
 
-    public function storeUploadedFile(UploadedFile $file, User $uploader): Song
+    public function undoUpload(UploadReference $reference): void
     {
-
-        $uploadDirectory = $this->getUploadDirectory($uploader);
-        $targetFileName = $this->getTargetFileName($file, $uploader);
-
-        $file->move($uploadDirectory, $targetFileName);
-        $targetPathName = $uploadDirectory . $targetFileName;
-
-        try {
-            $result = $this->scanner->setFile($targetPathName)
-                ->scan(ScanConfiguration::make(
-                    owner: $uploader,
-                    makePublic: $uploader->preferences->makeUploadsPublic
-                ));
-        } catch (Throwable $e) {
-            File::delete($targetPathName);
-            throw new SongUploadFailedException($e->getMessage());
-        }
-
-        if ($result->isError()) {
-            File::delete($targetPathName);
-            throw new SongUploadFailedException($result->error);
-        }
-
-        return $this->scanner->getSong();
+        // To undo an upload, we simply delete the file from the local disk.
+        File::delete($reference->localPath);
     }
 
     private function getUploadDirectory(User $uploader): string
     {
-        return memoize(static function () use ($uploader): string {
-            $mediaPath = Setting::get('media_path');
+        $mediaPath = Setting::get('media_path');
 
-            throw_unless((bool) $mediaPath, MediaPathNotSetException::class);
+        throw_unless((bool) $mediaPath, MediaPathNotSetException::class);
 
-            $dir = sprintf(
-                '%s%s__CHARON_UPLOADS_$%s__%s',
-                $mediaPath,
-                DIRECTORY_SEPARATOR,
-                $uploader->id,
-                DIRECTORY_SEPARATOR
-            );
+        $dir = "$mediaPath/__CHARON_UPLOADS_\${$uploader->id}__/";
+        File::ensureDirectoryExists($dir);
 
-            File::ensureDirectoryExists($dir);
-
-            return $dir;
-        });
+        return $dir;
     }
 
-    private function getTargetFileName(UploadedFile $file, User $uploader): string
+    private function getDestination(string $sourcePath, User $uploader): string
     {
+        $uploadDirectory = $this->getUploadDirectory($uploader);
+        $sourceName = basename($sourcePath);
+
         // If there's no existing file with the same name in the upload directory, use the original name.
         // Otherwise, prefix the original name with a hash.
         // The whole point is to keep a readable file name when we can.
-        if (!File::exists($this->getUploadDirectory($uploader) . $file->getClientOriginalName())) {
-            return $file->getClientOriginalName();
+        if (!File::exists($uploadDirectory . $sourceName)) {
+            return $uploadDirectory . $sourceName;
         }
 
-        return $this->getUniqueHash() . '_' . $file->getClientOriginalName();
+        return $uploadDirectory . $this->getUniqueHash() . '_' . $sourceName;
     }
 
     private function getUniqueHash(): string
     {
-        return substr(sha1(uniqid()), 0, 6);
+        return Str::take(sha1(Ulid::generate()), 6);
     }
 
-    public function delete(Song $song, bool $backup = false): void
+    public function delete(string $location, bool $backup = false): void
     {
-        $path = $song->storage_metadata->getPath();
-
         if ($backup) {
-            File::move($path, "$path.bak");
+            File::move($location, "$location.bak");
+        } else {
+            throw_unless(File::delete($location), new Exception("Failed to delete song file: $location"));
         }
-
-        throw_unless(File::delete($path), new Exception("Failed to delete song file: $path"));
     }
 
     public function testSetup(): void

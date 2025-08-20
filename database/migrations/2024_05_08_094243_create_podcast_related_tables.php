@@ -53,22 +53,4 @@ return new class extends Migration
             $table->foreign('podcast_id')->references('id')->on('podcasts')->cascadeOnDelete();
         });
     }
-
-    public function down(): void
-    {
-        Schema::table('songs', static function (Blueprint $table): void {
-            $table->dropForeign(['podcast_id']);
-            $table->dropColumn('podcast_id');
-            $table->dropColumn('episode_guid');
-            $table->dropColumn('episode_metadata');
-        });
-
-        Schema::table('podcast_user', static function (Blueprint $table): void {
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['podcast_id']);
-        });
-
-        Schema::dropIfExists('podcast_user');
-        Schema::dropIfExists('podcasts');
-    }
 };

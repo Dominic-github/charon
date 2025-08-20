@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Values\SSOUser;
+use App\Values\SsoUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\IpUtils;
@@ -11,9 +11,7 @@ use Throwable;
 
 class ProxyAuthService
 {
-    public function __construct(private readonly UserService $userService)
-    {
-    }
+    public function __construct(private readonly UserService $userService) {}
 
     public function tryGetProxyAuthenticatedUserFromRequest(Request $request): ?User
     {
@@ -22,7 +20,7 @@ class ProxyAuthService
         }
 
         try {
-            return $this->userService->createOrUpdateUserFromSSO(SSOUser::fromProxyAuthRequest($request));
+            return $this->userService->createOrUpdateUserFromSso(SsoUser::fromProxyAuthRequest($request));
         } catch (Throwable $e) {
             Log::error($e->getMessage(), ['exception' => $e]);
         }

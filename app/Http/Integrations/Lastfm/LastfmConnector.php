@@ -12,11 +12,11 @@ class LastfmConnector extends Connector
 
     public function resolveBaseUrl(): string
     {
-        return config('charon.lastfm.endpoint');
+        return config('charon.services.lastfm.endpoint');
     }
 
     protected function defaultAuth(): LastfmAuthenticator
     {
-        return new LastfmAuthenticator(config('charon.lastfm.key'), config('charon.lastfm.secret'));
+        return new LastfmAuthenticator(config('charon.services.lastfm.key'), config('charon.services.lastfm.secret'));
     }
 }

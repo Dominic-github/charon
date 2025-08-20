@@ -18,6 +18,6 @@ class UserPolicy
 
     public function upload(User $currentUser): bool
     {
-        return  true;
+        return true;
     }
 }
