@@ -40,7 +40,8 @@ context('Sidebar Functionalities', () => {
     cy.$clickSidebarItem(text)
     if (url === '/#/playlist/**') {
       cy.url().should('match', /\/#\/playlists\/[a-f0-9-]+$/)
-    } else {
+    }
+    else {
       cy.url().should('include', url)
     }
   }

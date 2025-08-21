@@ -29,7 +29,6 @@ context('Home Screen', () => {
       cy.get('.leading-none > [data-testid="song-thumbnail"]').click()
     }).should('have.class', 'playing')
     cy.$assertPlaying()
-  
   })
 
   it('a song item has a context menu', () => {

@@ -6,7 +6,7 @@ context('Genres Screen', () => {
     cy.intercept('/api/genres/**/songs?sort=title&order=asc&page=1', { fixture: 'genre-song.get.200.json' })
   })
 
-   it('loads the list of genres', () => {
+  it('loads the list of genres', () => {
     cy.$clickSidebarItem('Genres')
 
     cy.get('#genreWrapper')
@@ -50,5 +50,4 @@ context('Genres Screen', () => {
 
     cy.$assertPlaying()
   })
-
 })

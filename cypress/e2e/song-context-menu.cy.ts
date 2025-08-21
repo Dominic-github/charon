@@ -58,8 +58,8 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
   ;([
     { menuItem: 'queue-after-current', queuedPosition: 1 },
     { menuItem: 'queue-bottom', queuedPosition: 3 },
-    { menuItem: 'queue-top', queuedPosition: 0 }
-  ]).forEach(config => {
+    { menuItem: 'queue-top', queuedPosition: 0 },
+  ]).forEach((config) => {
     it(`queues a song to ${config.menuItem}`, () => {
       cy.$login()
       cy.$shuffleSeveralSongs()
@@ -89,12 +89,12 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
 
   ;[
     { name: 'one song', songCount: 1, message: 'Song added into "Simple Playlist."' },
-    { name: 'several songs', songCount: 2, message: 'Songs added into "Simple Playlist."' }
+    { name: 'several songs', songCount: 2, message: 'Songs added into "Simple Playlist."' },
   ].forEach((config) => {
     it(`adds ${config.name} into a simple playlist`, () => {
       cy.intercept('/api/playlists/**/songs', {
-      fixture: 'playlist-songs.get.200.json',
-    })
+        fixture: 'playlist-songs.get.200.json',
+      })
 
       cy.intercept('PUT', '/api/playlist/**/sync', {})
 
@@ -106,7 +106,8 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
       cy.get('#allSongScreen').within(() => {
         if (config.songCount > 1) {
           cy.$selectSongRange(0, config.songCount - 1).rightclick()
-        } else {
+        }
+        else {
           cy.$getSongRowAt(0).rightclick()
         }
       })
@@ -118,7 +119,6 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
         })
 
       cy.findByText(config.message).should('be.visible')
-
     })
   })
 
@@ -135,7 +135,7 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
 
   it('adds a favorite song from context menu', () => {
     cy.intercept('POST', '/api/interaction/batch/like', {
-      fixture: 'batch-like.post.200.json'
+      fixture: 'batch-like.post.200.json',
     })
     cy.intercept('GET', '/api/songs/favorite', {
       fixture: 'favorites.get.200.json',
@@ -151,13 +151,11 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
       cy.findByText('Favorites').click()
     })
     cy.$assertFavoriteSongCount(4)
-
-
   })
 
   it('initiates editing a song', () => {
     cy.intercept('/api/**/info', {
-      fixture: 'song-info.get.200.json'
+      fixture: 'song-info.get.200.json',
     })
     cy.$login()
     cy.$clickSidebarItem('All Songs')
@@ -174,9 +172,7 @@ context('Song Context Menu', { scrollBehavior: false }, () => {
 
     cy.get('#allSongScreen').within(() => cy.$getSongRowAt(0).rightclick())
     cy.findByTestId('song-context-menu').within(() => cy.findByText('Download').click())
-
   })
-
 
   it('does not have a Download item if download is not allowed', () => {
     cy.$login({ allows_download: false })

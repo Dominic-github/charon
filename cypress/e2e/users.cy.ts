@@ -71,12 +71,11 @@ context('User Management', () => {
       cy.findByText('user-invite-1@charon.test').should('be.visible')
       cy.findByText('user-invite-2@charon.test').should('be.visible')
     })
-
   })
 
   it('revoke user by email', () => {
     cy.intercept('DELETE', '/api/invitations', {
-      statusCode: 204
+      statusCode: 204,
 
     })
 
@@ -102,13 +101,12 @@ context('User Management', () => {
         cy.get('.revoke-user-btn').should('be.visible').click({ force: true })
         cy.$confirm()
         return false
-      } 
+      }
     })
 
-     cy.get('[data-testid=user-card]').each(() => {
+    cy.get('[data-testid=user-card]').each(() => {
       cy.findByText('user-invite@charon.test').should('not.exist')
     })
-
   })
 
   it('redirects to profile for current user', () => {

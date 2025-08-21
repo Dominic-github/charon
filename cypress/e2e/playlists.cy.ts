@@ -9,7 +9,6 @@ context('Playlists', () => {
       fixture: 'collaborators.get.200.json',
     })
 
-
     cy.intercept('POST', '/api/playlists/**/invite', {
       fixture: 'invite-collaborator.post.200.json',
     })
@@ -22,7 +21,6 @@ context('Playlists', () => {
   })
 
   it('displays a playlist when sidebar menu item is clicked', () => {
-
     cy.$clickSidebarItem('Simple Playlist')
 
     cy.get('#playlistScreen').within(() => {
@@ -34,7 +32,6 @@ context('Playlists', () => {
   })
 
   it('deletes a playlist', () => {
-
     cy.$clickSidebarItem('Simple Playlist').as('menuItem')
     cy.get('#playlistScreen .btn-delete-playlist').click().$confirm()
     cy.url().should('contain', '/#/home')
@@ -42,7 +39,6 @@ context('Playlists', () => {
   })
 
   it('deletes a playlist from the sidebar', () => {
-
     cy.get('#sidebar').findByText('Simple Playlist').as('menuItem').rightclick()
     cy.get('#playlist-context-menu').findByText('Delete').click()
     cy.$confirm()
@@ -52,7 +48,6 @@ context('Playlists', () => {
   })
 
   it('creates a simple playlist from the sidebar', () => {
-
     cy.intercept('/api/playlists/**/songs', {
       fixture: 'empty-playlist.get.200.json',
     })
@@ -95,13 +90,11 @@ context('Playlists', () => {
         .should('not.be.visible')
     })
 
-
     cy.findByText('Songs added into "Simple Playlist."').should('be.visible')
     cy.$assertPlaylistSongCount('Simple Playlist', 4)
   })
 
   it('creates a playlist directly from songs', () => {
-
     cy.$clickSidebarItem('All Songs')
 
     cy.get('#allSongScreen').within(() => {
@@ -109,7 +102,6 @@ context('Playlists', () => {
       cy.findByTestId('add-to-btn').click()
 
       cy.findByTestId('add-to-new-playlist').click()
-
     })
 
     cy.get('#create-playlist-form').should('be.visible').within(() => {
@@ -124,7 +116,6 @@ context('Playlists', () => {
   })
 
   it('updates a simple playlist from the sidebar', () => {
-
     cy.get('#sidebar').findByText('Simple Playlist').as('menuItem').rightclick()
     cy.get('#playlist-context-menu').findByText('Edit…').click()
 
@@ -136,10 +127,10 @@ context('Playlists', () => {
   })
 
   it('creates a smart playlist', () => {
-     cy.intercept('/api/playlists/**/songs', {
+    cy.intercept('/api/playlists/**/songs', {
       fixture: 'smartplaylist.get.200.json',
     })
-      cy.intercept('POST', '/api/playlists', {
+    cy.intercept('POST', '/api/playlists', {
       fixture: 'smartplaylist.post.200.json',
     })
     cy.findByTestId('create-playlist-context-menu-button').click()
@@ -167,7 +158,7 @@ context('Playlists', () => {
         cy.get('.smart-playlist-rule-group:nth-child(2) [name="value[]"]').type('a')
 
         // Remove a rule from the first group
-        cy.get(".smart-playlist-rule-group:nth-child(2) .remove-rule-btn").click()
+        cy.get('.smart-playlist-rule-group:nth-child(2) .remove-rule-btn').click()
 
         cy.get('.smart-playlist-rule-group')
           .should('have.length', 1)
@@ -183,7 +174,6 @@ context('Playlists', () => {
   })
 
   it('updates a smart playlist', () => {
-
     cy.get('#sidebar').findByText('Smart Playlist').rightclick()
     cy.get('#playlist-context-menu').findByText('Edit…').click()
 
@@ -214,7 +204,6 @@ context('Playlists', () => {
   })
 
   it('invite user to collection playlist', () => {
-
     cy.get('#sidebar').findByText('Simple Playlist').as('menuItem').rightclick()
     cy.get('#playlist-context-menu').findByText('Collaborate…').click()
 
@@ -247,5 +236,4 @@ context('Playlists', () => {
       cy.$getSongRows().should('have.length', 2)
     })
   })
-
 })

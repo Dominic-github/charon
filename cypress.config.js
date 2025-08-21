@@ -1,10 +1,11 @@
-import { defineConfig } from "cypress";
+import { defineConfig } from 'cypress'
 
 export default defineConfig({
-  projectId: "7bd7aw",
+  projectId: '7bd7aw',
 
   e2e: {
-    baseUrl: "http://localhost:8000",
+    baseUrl: 'http://localhost:8000',
+    experimentalStudio: true,
     chromeWebSecurity: false,
     viewportWidth: 1440,
     viewportHeight: 768,
@@ -14,7 +15,7 @@ export default defineConfig({
     },
     video: true,
     setupNodeEvents(on, config) {
-      return config;
+      return config
     },
   },
 
@@ -23,8 +24,8 @@ export default defineConfig({
 
   component: {
     devServer: {
-      framework: "vue",
-      bundler: "vite",
+      framework: 'vue',
+      bundler: 'vite',
     },
   },
-});
+})

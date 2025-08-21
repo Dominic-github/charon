@@ -4645,12 +4645,7 @@ kind-of@^3.0.2:
   dependencies:
     is-buffer "^1.1.5"
 
-laravel-echo@^2.1.6:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/laravel-echo/-/laravel-echo-2.1.6.tgz#99e39f54865377133ff5dff29a86bd661e9187de"
-  integrity sha512-X7tdIDhG/o8AenMvY83Hcjtw/TN/eKT+zA5WEENHIbY8tq12NQbdxtVePw1yImxXwKC/yZoVWNukFlG+gWqKCA==
-
-laravel-vite-plugin@^1.3.0:
+laravel-vite-plugin@^1.0.2:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/laravel-vite-plugin/-/laravel-vite-plugin-1.3.0.tgz#04a9b109281414b80f4355cd4cef94d98bd7dec4"
   integrity sha512-P5qyG56YbYxM8OuYmK2OkhcKe0AksNVJUjq9LUZ5tOekU9fBn9LujYyctI4t9XoLjuMvHJXXpCoPntY1oKltuA==

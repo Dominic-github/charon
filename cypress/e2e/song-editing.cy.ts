@@ -19,13 +19,10 @@ context('Song Editing', { scrollBehavior: false }, () => {
       fixture: 'edit-song.overview.200.json',
     })
 
-
     cy.get('#allSongScreen').$getSongRowAt(0).rightclick()
     cy.findByTestId('song-context-menu').within(() => cy.findByText('Edit…').click())
 
     cy.findByTestId('edit-song-form').within(() => {
-
-
       ['artist', 'album', 'track'].forEach((selector) => {
         cy.get(`[name=${selector}]`).should('be.visible')
       })
@@ -56,8 +53,8 @@ context('Song Editing', { scrollBehavior: false }, () => {
     })
 
     cy.intercept('/api/overview', {
-        fixture: 'edit-many-song.overview.get.200.json',
-      })
+      fixture: 'edit-many-song.overview.get.200.json',
+    })
 
     cy.get('#allSongScreen').within(() => cy.$selectSongRange(0, 3).rightclick())
     cy.findByTestId('song-context-menu').within(() => cy.findByText('Edit…').click())
@@ -66,7 +63,7 @@ context('Song Editing', { scrollBehavior: false }, () => {
       cy.get(`[name=title]`).should('not.exist')
 
       cy.get('textarea[name=lyrics]').should('not.exist')
-        ;['4 songs selected', 'Mixed Albums'].forEach(text => cy.findByText(text).should('be.visible'))
+      ;['4 songs selected', 'Mixed Albums'].forEach(text => cy.findByText(text).should('be.visible'))
 
       cy.get('[name=album]').invoke('attr', 'placeholder').should('contain', 'Leave unchanged')
       cy.get('[name=album]').type('The Wall')
@@ -77,6 +74,6 @@ context('Song Editing', { scrollBehavior: false }, () => {
     cy.findByText('Updated 4 songs.').should('be.visible')
     cy.findByTestId('edit-song-form').should('not.exist')
 
-      ;[0, 1, 2, 3].forEach(i => cy.get(`#allSongScreen`).$getSongRowAt(i).find('.album').should('have.text', 'The Wall'))
+    ;[0, 1, 2, 3].forEach(i => cy.get(`#allSongScreen`).$getSongRowAt(i).find('.album').should('have.text', 'The Wall'))
   })
 })

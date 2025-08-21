@@ -1,4 +1,4 @@
-import 'cypress-file-upload';
+import 'cypress-file-upload'
 
 context('Uploading', () => {
   beforeEach(() => {
@@ -12,7 +12,6 @@ context('Uploading', () => {
 
   function selectFixtureFile(fileName = 'audio/sample.mp3') {
     cy.get('[type=file]').attachFile(fileName)
-
   }
 
   function executeFailedUpload() {
@@ -76,7 +75,7 @@ context('Uploading', () => {
   })
 
   it('edit song uploaded', () => {
-     cy.intercept('POST', '/api/upload', {
+    cy.intercept('POST', '/api/upload', {
       fixture: 'upload.post.200.json',
     }).as('upload')
 
@@ -90,7 +89,6 @@ context('Uploading', () => {
 
     assertResultsAdded()
     cy.findByTestId('upload-item').findByTitle('Edit').click()
-
   })
 
   it('allows removing individual failed uploads', () => {

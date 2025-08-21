@@ -1,4 +1,4 @@
-context('Authentication', () => {
+describe('Authentication', () => {
   function submitLoginForm() {
     cy.get('[type=email]').type('admin@charon.test')
     cy.get('[type=password]').type('Supersecret4.')
@@ -23,7 +23,6 @@ context('Authentication', () => {
     cy.get('[id=mainContent]', { timeout: 10000 }).should('be.visible')
   })
 
-
   it('fails to log in with invalid credentials', () => {
     cy.intercept('POST', '/api/me', {
       statusCode: 404,
@@ -34,10 +33,21 @@ context('Authentication', () => {
     cy.findByTestId('login-form').should('be.visible').and('have.class', 'error')
   })
 
+  it('fails to log in with wrong password', () => {
+    cy.intercept('POST', '/api/me', {
+      statusCode: 401,
+    })
+
+    cy.visit('/')
+    cy.get('[type=email]').type('admin@charon.test')
+    cy.get('[type=password]').type('123456')
+    cy.get('[type=submit]').click({ force: true })
+    cy.findByTestId('login-form').should('be.visible').and('have.class', 'error')
+  })
 
   it('registers a new user', () => {
     cy.intercept('POST', '/api/register', {
-      statusCode: 201
+      statusCode: 201,
     })
 
     cy.intercept('/api/data', {
@@ -59,7 +69,6 @@ context('Authentication', () => {
     cy.get('[data-testid=register-submit').click()
 
     cy.contains('Account created successfully!').should('be.visible')
-
   })
 
   it('fails to register user', () => {
@@ -86,7 +95,6 @@ context('Authentication', () => {
     cy.get('[data-testid=register-submit').click()
 
     cy.findByTestId('register-form').should('be.visible').and('have.class', 'error')
-
   })
 
   it('when already logged in, redirects to home', () => {
@@ -106,7 +114,7 @@ context('Authentication', () => {
     cy.intercept('POST', '/api/forgot-password', {
       statusCode: 204,
       payload: {
-        email: 'admin@charon.test'
+        email: 'admin@charon.test',
       },
     })
 
@@ -116,8 +124,6 @@ context('Authentication', () => {
     cy.get('[data-testid=email-forget-input]').type('admin@charon.test')
     cy.get('[data-testid=reset-password-btn]').click()
 
-    cy.contains('Password reset link sent. Please check your email.').should('be.visible');
+    cy.contains('Password reset link sent. Please check your email.').should('be.visible')
   })
-
-
 })

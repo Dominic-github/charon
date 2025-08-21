@@ -199,7 +199,7 @@ return [
     'misc' => [
         'home_url' => 'https://charon.dev',
         'docs_url' => 'https://docs.charon.dev',
-        'sponsor_github_url' => 'https://github.com/users/dominic-gtihub/sponsorship',
+        'sponsor_github_url' => 'https://github.com/users/dominic-github/sponsorship',
         'sponsor_open_collective_url' => 'https://opencollective.com/dominic-github',
         'demo' => env('CHARON_DEMO', false),
     ],

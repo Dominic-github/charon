@@ -5,7 +5,6 @@ context('Other Controls', () => {
     cy.$shuffleSeveralSongs(3)
   })
 
-  
   it('toggles queue', () => {
     cy.get('.extra-controls').should('be.visible')
     cy.get('.queue-btn').as('btn').click()
@@ -13,7 +12,6 @@ context('Other Controls', () => {
     cy.get('.queue-btn').as('btn').click()
     cy.url().should('not.contain', '/#/queue')
   })
-
 
   it('toggles the visualizer', () => {
     cy.get('.extra-controls').should('be.visible')
@@ -34,7 +32,6 @@ context('Other Controls', () => {
     cy.get('#volume .unmuteVolumeBtn').should('be.visible')
     cy.get('#volume .unmuteVolumeBtn').as('unmuteBtn').click()
     cy.get('#volume .muteVolumeBtn').should('be.visible')
-
   })
 
   it('toggles the equalizer', () => {
@@ -45,5 +42,4 @@ context('Other Controls', () => {
     cy.get('.equalizer-close-btn').click()
     cy.get('#equalizer-container').should('not.exist')
   })
-
 })

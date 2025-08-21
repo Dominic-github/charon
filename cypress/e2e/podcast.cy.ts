@@ -4,8 +4,7 @@ context('Podcast Screen', () => {
     cy.intercept('/api/podcasts', { fixture: 'podcasts.get.200.json' })
     cy.intercept('/api/podcasts/**/episodes', { fixture: 'episodes.get.200.json' })
   })
-
-   it('loads the list of podcasts', () => {
+  it('loads the list of podcasts', () => {
     cy.$clickSidebarItem('Podcasts')
 
     cy.get('#podcastListScreen')
@@ -29,8 +28,7 @@ context('Podcast Screen', () => {
         cy.get('[data-testid="episode-item"]').should('have.length', 13)
       })
   })
-
-    it('loads the episode screen of podcast', () => {
+  it('loads the episode screen of podcast', () => {
     cy.$clickSidebarItem('Podcasts')
 
     cy.get('#podcastListScreen')
@@ -44,7 +42,6 @@ context('Podcast Screen', () => {
         cy.get('[data-testid="episode-item"]').first().click()
       })
     cy.get('#episodeScreen').should('be.visible')
-
   })
 
   it ('plays a podcast episode', () => {
@@ -65,5 +62,4 @@ context('Podcast Screen', () => {
 
     cy.$assertPlaying()
   })
-
 })

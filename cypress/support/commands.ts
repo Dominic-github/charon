@@ -19,20 +19,18 @@ Cypress.Commands.add('$login', (options: Partial<LoginOptions> = {}) => {
     cy.intercept('/api/data', {
       statusCode: 200,
       body: Object.assign(data, mergedOptions),
-    }).as('getData');
+    }).as('getData')
 
     cy.intercept('/api/overview', {
       fixture: 'overview.data.get.200.json',
-    }).as('getOverview');
+    }).as('getOverview')
 
     cy.intercept('/api/songs?**', { fixture: 'songs.get.200.json' })
-
   }).then(() => {
-    return cy.visit('/', { failOnStatusCode: false });
+    return cy.visit('/', { failOnStatusCode: false })
+  }).then(() => {
+    cy.wait(['@getData', '@getOverview'])
   })
-    .then(() => {
-      cy.wait(['@getData', '@getOverview']);
-    });
 })
 
 Cypress.Commands.add('$loginAsNonAdmin', (options: Partial<LoginOptions> = {}) => {
@@ -63,7 +61,7 @@ Cypress.Commands.add('$mockPlayback', () => {
   cy.intercept('/api/song/**/info', { fixture: 'song-info.get.200.json' })
 
   cy.intercept('/play/**?t=mock-token', {
-    fixture: 'audio/sample.mp3,null'
+    fixture: 'audio/sample.mp3,null',
   })
 
   cy.intercept('POST', '/api/interaction/play', { statusCode: 200, fixture: 'play.post.200.json' })
@@ -82,8 +80,6 @@ Cypress.Commands.add('$mockPlayback', () => {
 
   cy.intercept('PUT', '/api/queue/state', { statusCode: 204 })
   cy.intercept('PUT', '/api/queue/playback-status', { statusCode: 204 })
-
-
 })
 
 Cypress.Commands.add('$shuffleSeveralSongs', (count = 3) => {
@@ -102,9 +98,9 @@ Cypress.Commands.add('$shuffleSeveralSongs', (count = 3) => {
 Cypress.Commands.add('$shuffleAllSongs', () => {
   cy.intercept('/api/songs?**', { fixture: 'songs.get.200.json' })
   cy.intercept('/api/queue/fetch?**', {
-      statusCode: 200,
-      fixture: 'queue.all.get.200.json'
-    })
+    statusCode: 200,
+    fixture: 'queue.all.get.200.json',
+  })
 
   cy.$clickSidebarItem('All Songs')
   cy.get('#allSongScreen').within(() => {
@@ -144,8 +140,8 @@ Cypress.Commands.add('$assertSidebarItemActive', (text: string) => {
   cy.get('#sidebar .current').findByText(text)
 })
 
-Cypress.Commands.add('$getSongRows', () =>
+Cypress.Commands.add('$getSongRows', () => {
   cy.get('.song-item').then($els => Cypress.$($els).slice(0, 5))
+})
 
-);
 Cypress.Commands.add('$getSongRowAt', (position: number) => cy.$getSongRows().eq(position))

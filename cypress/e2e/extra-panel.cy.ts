@@ -12,8 +12,6 @@ context('Extra Information Panel', () => {
     cy.$shuffleSeveralSongs(3)
 
     cy.get('[data-testid="lyrics-panel"]').should('be.visible').and('contain.text', 'No lyrics found.')
-
-    
     cy.findByTestId('add-lyrics-btn').click()
     cy.findByTestId('edit-song-form').should('be.visible')
     cy.get('#editSongPanelLyrics').should('be.visible')

@@ -12,6 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 use function Tests\test_path;
+use function Tests\normalizeLineEndings;
+
 
 class FileScannerTest extends TestCase
 {
@@ -104,8 +106,10 @@ class FileScannerTest extends TestCase
         $lrcFile = $base . '.lrc';
         File::copy(test_path('songs/full.mp3'), $mediaFile);
         File::copy(test_path('fixtures/simple.lrc'), $lrcFile);
+        
+        $expected = normalizeLineEndings("Line 1\nLine 2\nLine 3");
 
-        self::assertSame("Line 1\nLine 2\nLine 3", $this->scanner->scan($mediaFile)->lyrics);
+        self::assertSame($expected, normalizeLineEndings($this->scanner->scan($mediaFile)->lyrics));
     }
 
     #[Test]
@@ -117,7 +121,9 @@ class FileScannerTest extends TestCase
         File::copy(test_path('songs/blank.mp3'), $mediaFile);
         File::copy(test_path('fixtures/simple.lrc'), $lrcFile);
 
-        self::assertSame("Line 1\nLine 2\nLine 3", $this->scanner->scan($mediaFile)->lyrics);
+
+        $expected = normalizeLineEndings("Line 1\nLine 2\nLine 3");
+        self::assertSame($expected, normalizeLineEndings($this->scanner->scan($mediaFile)->lyrics));
     }
 
     #[Test]

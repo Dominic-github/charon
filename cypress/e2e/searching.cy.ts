@@ -11,7 +11,7 @@ context('Searching', () => {
 
   it('performs an excerpt search', () => {
     cy.intercept('/api/search?q=mck', {
-      fixture: 'search-excerpts.get.200.json'
+      fixture: 'search-excerpts.get.200.json',
     })
 
     cy.get('@searchInput').type('mck')
@@ -25,11 +25,11 @@ context('Searching', () => {
 
   it('has a button to view all matching songs', () => {
     cy.intercept('/api/search?q=mck', {
-      fixture: 'search-excerpts.get.200.json'
+      fixture: 'search-excerpts.get.200.json',
     })
 
     cy.intercept('/api/search/songs?q=mck', {
-      fixture: 'search-songs.get.200.json'
+      fixture: 'search-songs.get.200.json',
     })
 
     cy.get('@searchInput').type('mck')
@@ -43,15 +43,15 @@ context('Searching', () => {
   })
 
   it('does not have a View All button if no songs are found', () => {
-      cy.intercept('/api/search?q=mck', {
-        statusCode: 200,
-        body: {
-          songs: [],
-          artists: [],
-          albums: [],
-          podcasts: []
-        }
-      })
+    cy.intercept('/api/search?q=mck', {
+      statusCode: 200,
+      body: {
+        songs: [],
+        artists: [],
+        albums: [],
+        podcasts: [],
+      },
+    })
 
     cy.get('@searchInput').type('mck')
     cy.get('#searchScreen [data-testid=view-all-songs-btn]').should('not.exist')

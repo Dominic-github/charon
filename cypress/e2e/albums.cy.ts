@@ -25,7 +25,7 @@ describe('Albums', { scrollBehavior: false }, () => {
     })
   })
 
-  it('plays album songs', () => { 
+  it('plays album songs', () => {
     cy.$mockPlayback()
     cy.get('#albumListScreen [data-testid=album-card] .thumbnail').first().click()
     cy.url().should('contain', '/#/queue')
@@ -45,7 +45,6 @@ describe('Albums', { scrollBehavior: false }, () => {
     cy.intercept('GET', '/api/artists/**/songs', { fixture: 'artist-song.get.200.json' })
     cy.intercept('GET', '/api/artists/**/information', { fixture: 'artist-info.get.200.json' })
     cy.get('#albumListScreen [data-testid=album-card] [data-testid=artist-name]').first().click()
-    cy.url().should('match', /\/#\/artists\//);
-
+    cy.url().should('match', /\/#\/artists\//)
   })
 })

@@ -40,7 +40,7 @@ context('Queuing', { scrollBehavior: false }, () => {
 
     cy.intercept('/api/queue/fetch?**', {
       statusCode: 200,
-      fixture: 'queue.all.get.200.json'
+      fixture: 'queue.all.get.200.json',
     })
 
     cy.get('#allSongScreen').within(() => {
@@ -48,8 +48,7 @@ context('Queuing', { scrollBehavior: false }, () => {
     })
 
     cy.get('#queueScreen').within(() => {
-      cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN)
-        .first().should('have.class', 'playing')
+      cy.$getSongRows().should('have.length.at.least', MIN_SONG_ITEMS_SHOWN).first().should('have.class', 'playing')
     })
 
     cy.$assertPlaying()
@@ -78,7 +77,7 @@ context('Queuing', { scrollBehavior: false }, () => {
     cy.$shuffleSeveralSongs()
     cy.$clickSidebarItem('All Songs')
 
-    cy.get('#allSongScreen').within(function () {
+    cy.get('#allSongScreen').within(() => {
       cy.$getSongRowAt(4).find('.title').invoke('text').as('title')
       cy.$getSongRowAt(4).dblclick()
     })
@@ -104,7 +103,6 @@ context('Queuing', { scrollBehavior: false }, () => {
 
     cy.get('.play-next-btn').click()
     cy.$getSongRowAt(1).should('have.class', 'playing')
-
 
     cy.get('.play-prev-btn').click()
     cy.$getSongRowAt(0).should('have.class', 'playing')

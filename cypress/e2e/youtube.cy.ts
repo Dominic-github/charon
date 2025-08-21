@@ -1,5 +1,5 @@
 context('YouTube', () => {
-  beforeEach(() => cy.$login()
+  beforeEach(() => cy.$login(),
   )
 
   it('searches for videos when a song is played', () => {
@@ -15,7 +15,6 @@ context('YouTube', () => {
     cy.get('#extraTabYouTube').should('be.visible')
     cy.get('#extraTabYouTube').click()
     cy.get('#extraPanelYouTube').should('be.visible')
-
   })
 
   it('plays a video when a search result is clicked', () => {

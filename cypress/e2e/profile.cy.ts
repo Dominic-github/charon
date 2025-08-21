@@ -5,9 +5,8 @@ context('Profiles & Preferences', () => {
     cy.url().should('contain', '/#/profile')
 
     cy.get('#profileScreen').within(() => {
-      cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
-
-        ;[
+      cy.get('.screen-header').should('contain.text', 'Profile & Preferences');
+      [
         'profile-tab',
         'preferences-tab',
         'themes-tab',
@@ -22,7 +21,6 @@ context('Profiles & Preferences', () => {
         'email',
         'newPassword',
       ].forEach(inputName => cy.get(`[data-testid=${inputName}]`).should('exist'))
-
     })
   })
 
@@ -32,8 +30,7 @@ context('Profiles & Preferences', () => {
     cy.url().should('contain', '/#/profile')
     cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
-
-        ;[
+      ;[
         'profile-tab',
         'preferences-tab',
         'themes-tab',
@@ -42,7 +39,6 @@ context('Profiles & Preferences', () => {
     })
     cy.findByTestId('integrations-tab').click()
     cy.findByTestId('lastfm-not-integrated').should('be.visible')
-
   })
 
   it('shows instruction for Last.fm integrated', () => {
@@ -51,8 +47,7 @@ context('Profiles & Preferences', () => {
     cy.url().should('contain', '/#/profile')
     cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
-
-        ;[
+      ;[
         'profile-tab',
         'preferences-tab',
         'themes-tab',
@@ -105,8 +100,7 @@ context('Profiles & Preferences', () => {
     cy.url().should('contain', '/#/profile')
     cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
-
-        ;[
+      ;[
         'profile-tab',
         'preferences-tab',
         'themes-tab',
@@ -122,19 +116,18 @@ context('Profiles & Preferences', () => {
     cy.get('[name=show_album_art_overlay]').check()
     cy.get('[name=show_album_art_overlay]').should('be.checked')
   })
-  
+
   it('sets a theme', () => {
     cy.$login()
 
     cy.intercept('PATCH', '/api/me/preferences', {
-      statusCode: 200
+      statusCode: 200,
     })
     cy.findByTestId('view-profile-link').click()
     cy.url().should('contain', '/#/profile')
     cy.get('#profileScreen').within(() => {
       cy.get('.screen-header').should('contain.text', 'Profile & Preferences')
-
-        ;[
+      ;[
         'profile-tab',
         'preferences-tab',
         'themes-tab',

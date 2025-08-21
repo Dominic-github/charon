@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use function Tests\normalizeLineEndings;
 
 use function Tests\test_path;
 
@@ -28,8 +29,9 @@ class SimpleLrcReaderTest extends TestCase
         $lrcFile = $base . '.lrc';
 
         File::copy(test_path('fixtures/simple.lrc'), $lrcFile);
+        $expected = normalizeLineEndings("Line 1\nLine 2\nLine 3");
 
-        self::assertSame("Line 1\nLine 2\nLine 3", $this->reader->tryReadForMediaFile($base . '.mp3'));
+        self::assertSame($expected, normalizeLineEndings($this->reader->tryReadForMediaFile($base . '.mp3')));
         File::delete($lrcFile);
     }
 }

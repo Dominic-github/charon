@@ -58,3 +58,8 @@ function create_playlists(int $count, array $attributes = [], ?User $owner = nul
         ->create($attributes)
         ->each(static fn (Playlist $p) => $p->users()->attach($owner ?? create_user(), ['role' => 'owner']));
 }
+
+function normalizeLineEndings(string $text): string
+{
+    return preg_replace("/\r\n|\r|\n/", "\n", $text);
+}

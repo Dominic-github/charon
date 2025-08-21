@@ -12,7 +12,7 @@ context('Shortcut Keys', () => {
   it('shuffles all songs by default when Space is pressed', () => {
     cy.intercept('/api/queue/fetch?**', {
       statusCode: 200,
-      fixture: 'queue.all.get.200.json'
+      fixture: 'queue.all.get.200.json',
     })
     cy.get('body').type(' ')
     cy.$assertPlaying()
@@ -24,7 +24,6 @@ context('Shortcut Keys', () => {
   it('toggles playback when Space is pressed', () => {
     cy.$shuffleSeveralSongs()
     cy.$assertPlaying()
-    
     cy.get('body').type(' ')
     cy.$assertNotPlaying()
 
@@ -56,6 +55,5 @@ context('Shortcut Keys', () => {
 
     cy.get('#queueScreen').type('l')
     cy.get('[data-testid="song-item"] .extra > [data-testid="like-btn"]').first().should('be.visible').and('have.attr', 'title', 'Like')
-
   })
 })
