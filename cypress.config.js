@@ -1,3 +1,4 @@
+import codeCoverage from '@cypress/code-coverage/task'
 import { defineConfig } from 'cypress'
 
 export default defineConfig({
@@ -13,8 +14,9 @@ export default defineConfig({
     retries: {
       runMode: 3,
     },
-    video: true,
+    video: false,
     setupNodeEvents(on, config) {
+      codeCoverage(on, config)
       return config
     },
   },

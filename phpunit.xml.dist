@@ -53,4 +53,10 @@
             <directory>./app/Repositories</directory>
         </exclude>
     </source>
+    <coverage>
+        <report>
+            <html outputDirectory="coverage-php" lowUpperBound="50" highLowerBound="90"/>
+            <text outputFile="coverage-php.txt"/>
+        </report>
+    </coverage>
 </phpunit>
